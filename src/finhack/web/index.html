@@ -348,7 +348,7 @@ body{background:var(--paper);color:var(--ink);font-family:'DM Mono',monospace;he
   <div class="land-right">
     <div class="lr-content">
       <div class="lr-h">Account Login</div>
-      <div class="lr-sub">Sign in to your BladeTrader account or create one to sync holdings, secure access with 2-step auth, and recover passwords when needed.</div>
+      <div class="lr-sub">Sign in to your BladeTrader account or create one to sync holdings and recover passwords when needed.</div>
       <div class="auth-tabs">
         <button class="auth-tab on" id="auth-tab-signin" onclick="switchAuthView('signin')">SIGN IN</button>
         <button class="auth-tab" id="auth-tab-create" onclick="switchAuthView('create')">CREATE ACCOUNT</button>
@@ -391,7 +391,7 @@ body{background:var(--paper);color:var(--ink);font-family:'DM Mono',monospace;he
           <input class="auth-input" id="create-confirm" type="password" placeholder="Re-enter password" />
         </div>
         <div class="auth-row">
-          <label class="auth-check"><input type="checkbox" id="enable-2fa" checked />Enable 2-step auth</label>
+          <label class="auth-check"><input type="checkbox" id="remember-me-create" checked />Keep me signed in</label>
           <span class="auth-link" onclick="switchAuthView('signin')">Have an account?</span>
         </div>
         <button class="land-btn lb-primary" onclick="mockAuthAction('create')">CREATE ACCOUNT →</button>
@@ -406,21 +406,8 @@ body{background:var(--paper);color:var(--ink);font-family:'DM Mono',monospace;he
         <button class="land-btn lb-ghost" onclick="switchAuthView('signin')">BACK TO LOGIN</button>
       </div>
 
-      <div class="auth-view" id="auth-2step">
-        <div class="auth-field">
-          <label class="auth-label" for="otp-code">2-step verification code</label>
-          <input class="auth-input" id="otp-code" type="text" maxlength="6" placeholder="123456" />
-        </div>
-        <div class="auth-row">
-          <span class="auth-helper">Use the 6-digit code from your authenticator app.</span>
-          <span class="auth-link" onclick="switchAuthView('recover')">Use backup</span>
-        </div>
-        <button class="land-btn lb-primary" onclick="mockAuthAction('2step')">VERIFY CODE</button>
-        <button class="land-btn lb-ghost" onclick="switchAuthView('signin')">CANCEL</button>
-      </div>
-
       <div class="auth-status" id="auth-status"></div>
-      <div class="lr-note">Regular login flow wireframe: sign in, create account, password recovery, and optional 2-step verification.</div>
+      <div class="lr-note">Regular login flow: sign in, create account, and password recovery.</div>
     </div>
   </div>
 </div>
@@ -574,7 +561,17 @@ body{background:var(--paper);color:var(--ink);font-family:'DM Mono',monospace;he
         <div class="g3">
           <div class="card"><div class="ch"><span class="ct">Causes</span></div><div class="cb" style="font-family:'Crimson Pro',serif;font-size:13px;font-weight:300;line-height:1.8;color:var(--muted)">EU AI Act enforcement drives compliance spend. Pentagon joint contract with PANW. Enterprise zero-trust adoption accelerating.</div></div>
           <div class="card"><div class="ch"><span class="ct">News effect</span></div><div class="cb" style="font-size:10px;line-height:2"><span style="color:var(--muted)">EU regulation:</span> <span class="up">+4.2%</span><br><span style="color:var(--muted)">Gov contract:</span> <span class="up">+3.1%</span><br><span style="color:var(--muted)">Analyst upgrade:</span> <span class="up">+1.8%</span></div></div>
-          <div class="card"><div class="ch"><span class="ct">Asset relationship</span></div><div class="cb" style="font-size:10px;line-height:2"><span style="color:var(--muted)">EU news links:</span> PANW, ZS<br><span style="color:var(--muted)">Spillover to:</span> MSFT cloud<br><span style="color:var(--g);cursor:pointer" onclick="goPanel('leverage',null)">→ View network</span></div></div>
+          <div class="card"><div class="ch"><span class="ct">Asset relationship</span></div><div class="cb" style="font-size:10px;line-height:2"><span style="color:var(--muted)">EU news links:</span> PANW, ZS<br><span style="color:var(--muted)">Spillover to:</span> MSFT cloud<br><span style="color:var(--g);cursor:pointer" onclick="goPanel('risklev',null)">→ View network</span></div></div>
+        </div>
+        <div class="card" style="margin-top:12px">
+          <div class="ch">
+            <span class="ct">Overspill Risk Monitor — All Tracked Stocks</span>
+            <button class="abtn abg" style="padding:4px 10px" onclick="refreshAssetOverspill()">REFRESH</button>
+          </div>
+          <div class="cb">
+            <div id="asset-overspill-status" style="font-size:9px;color:var(--muted);margin-bottom:8px">Loading overspill risk table...</div>
+            <div id="asset-overspill-list" class="hlist"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -692,18 +689,20 @@ body{background:var(--paper);color:var(--ink);font-family:'DM Mono',monospace;he
     <div class="panel" id="p-news">
       <div class="ps">
         <div class="srow">
-          <div class="stat"><div class="sl">Collected</div><div class="sv" style="color:var(--b)">247</div><div class="ss">articles today</div></div>
-          <div class="stat"><div class="sl">Passed filter</div><div class="sv up">89</div><div class="ss">relevant to holdings</div></div>
-          <div class="stat"><div class="sl">Triggers fired</div><div class="sv" style="color:var(--y)">14</div><div class="ss">active events</div></div>
+          <div class="stat"><div class="sl">Collected</div><div class="sv" id="news-collected" style="color:var(--b)">0</div><div class="ss">articles loaded</div></div>
+          <div class="stat"><div class="sl">Passed filter</div><div class="sv up" id="news-filtered">0</div><div class="ss">with ticker/theme hits</div></div>
+          <div class="stat"><div class="sl">Triggers fired</div><div class="sv" id="news-triggers" style="color:var(--y)">0</div><div class="ss">event signals</div></div>
         </div>
         <div class="card">
-          <div class="ch"><span class="ct">Live feed</span><span class="tag tg">UPDATING</span></div>
-          <div class="cb" style="padding-top:4px">
-            <div class="ni"><div class="ni-meta"><span class="ni-src">Bloomberg</span><span class="ni-t">2m</span></div><div class="ni-h">EU AI Act enforcement begins — cybersecurity vendors face new compliance requirements</div><div class="ni-tags"><span class="tag tr">CRWD</span><span class="tag tr">ZS</span><span class="tag ty">Regulation</span></div></div>
-            <div class="ni"><div class="ni-meta"><span class="ni-src">Reuters</span><span class="ni-t">8m</span></div><div class="ni-h">NVIDIA announces next-gen AI chip with 3× inference throughput, beating analyst estimates</div><div class="ni-tags"><span class="tag tg">NVDA</span><span class="tag tg">AMD</span><span class="tag tg">Bullish</span></div></div>
-            <div class="ni"><div class="ni-meta"><span class="ni-src">WSJ</span><span class="ni-t">14m</span></div><div class="ni-h">Pentagon awards $4.2B AI cybersecurity contract to CrowdStrike and Palo Alto Networks</div><div class="ni-tags"><span class="tag tg">CRWD</span><span class="tag tg">PANW</span><span class="tag tb">Gov</span></div></div>
-            <div class="ni"><div class="ni-meta"><span class="ni-src">FT</span><span class="ni-t">21m</span></div><div class="ni-h">China semiconductor export restrictions tightened — AMD and NVIDIA face Asia Pacific headwinds</div><div class="ni-tags"><span class="tag tr">AMD</span><span class="tag tr">NVDA</span><span class="tag ty">Geopolitical</span></div></div>
-            <div class="ni"><div class="ni-meta"><span class="ni-src">CNBC</span><span class="ni-t">35m</span></div><div class="ni-h">Microsoft Azure AI revenue beats Q1 by 22%, driving broad cloud security adoption</div><div class="ni-tags"><span class="tag tg">MSFT</span><span class="tag tg">Earnings</span></div></div>
+          <div class="ch">
+            <span class="ct">Live feed</span>
+            <span style="display:flex;gap:6px;align-items:center">
+              <button class="abtn abg" style="padding:5px 10px" onclick="refreshLiveNews()">REFRESH</button>
+              <button class="abtn abp" style="padding:5px 10px" onclick="runLiveNewsIngest()">INGEST NOW</button>
+            </span>
+          </div>
+          <div class="cb" id="news-feed" style="padding-top:4px">
+            <div class="ni"><div class="ni-h">Loading live feed...</div></div>
           </div>
         </div>
       </div>
@@ -785,11 +784,13 @@ body{background:var(--paper);color:var(--ink);font-family:'DM Mono',monospace;he
           <div class="set-section" id="ss-import">
             <div class="set-h">IMPORT CSV</div>
             <div class="set-sub">Upload a brokerage export file. SentinelAI supports CSV formats from Schwab, Fidelity, IBKR, and TD Ameritrade.</div>
-            <div class="csv-zone" onclick="fakeUpload()">
+            <div class="csv-zone" onclick="openFilePicker()">
               <div class="csv-icon">📂</div>
               <div class="csv-t">Drop your CSV here or click to browse</div>
               <div class="csv-s">Supports Schwab, Fidelity, IBKR, TD formats · Max 10MB</div>
             </div>
+            <input id="csv-file-input" type="file" accept=".csv,.txt,.json,.jsonl" style="display:none" onchange="uploadSelectedFile(event)" />
+            <div id="csv-upload-status" class="set-sub" style="margin-top:-8px;margin-bottom:14px">No file uploaded yet.</div>
             <div class="card">
               <div class="ch"><span class="ct">Supported formats</span></div>
               <div class="cb">
@@ -906,7 +907,7 @@ const sectorData={
 setInterval(()=>{const el=document.getElementById('clock');if(el)el.textContent=new Date().toLocaleTimeString('en-US',{hour12:false})},1000);
 
 function switchAuthView(view){
-  ['signin','create','recover','2step'].forEach(id=>{
+  ['signin','create','recover'].forEach(id=>{
     const el=document.getElementById('auth-'+id);
     if(el)el.classList.toggle('on',id===view);
   });
@@ -923,11 +924,6 @@ function mockAuthAction(type){
   if(!status)return;
   if(type==='recover'){
     status.textContent='Password reset is disabled in demo build. Use account create/login below.';
-    return;
-  }
-  if(type==='2step'){
-    status.textContent='2-step simulated. Finalizing login...';
-    setTimeout(()=>enterApp(),300);
     return;
   }
   const email=(document.getElementById(type==='signin'?'signin-email':'create-email')||{}).value||'';
@@ -951,8 +947,8 @@ function mockAuthAction(type){
     if(!resp.ok){throw new Error(data.detail||'auth failed');}
     authToken=data.token||'';
     if(authToken)localStorage.setItem('blade_auth_token',authToken);
-    status.textContent=(type==='create'?'Account created. ':'Signed in. ')+'Verifying 2-step authentication...';
-    setTimeout(()=>switchAuthView('2step'),350);
+    status.textContent=(type==='create'?'Account created. ':'Signed in. ')+'Opening dashboard...';
+    setTimeout(()=>enterApp(),300);
   }).catch((err)=>{
     status.textContent='Auth error: '+err.message;
   });
@@ -984,7 +980,8 @@ function sendChatMessage(){
   if(!input||!body)return;
   const text=(input.value||'').trim();
   if(!text)return;
-  body.innerHTML+=`<div class="chat-msg user">${text}<\/div>`;
+  const esc=(s)=>String(s||'').replace(/[&<>"']/g,(m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  body.innerHTML+=`<div class="chat-msg user">${esc(text)}<\/div>`;
   input.value='';
   fetch('/api/chat',{
     method:'POST',
@@ -994,10 +991,10 @@ function sendChatMessage(){
     const data=await resp.json();
     if(!resp.ok){throw new Error(data.detail||'chat failed');}
     chatSessionId=data.session_id||chatSessionId;
-    body.innerHTML+=`<div class="chat-msg bot">${data.reply||'No response.'}<\/div>`;
+    body.innerHTML+=`<div class="chat-msg bot">${esc(data.reply||'No response.')}<\/div>`;
     body.scrollTop=body.scrollHeight;
   }).catch((err)=>{
-    body.innerHTML+=`<div class="chat-msg bot">Chat error: ${err.message}<\/div>`;
+    body.innerHTML+=`<div class="chat-msg bot">Chat error: ${esc(err.message)}<\/div>`;
     body.scrollTop=body.scrollHeight;
   });
 }
@@ -1021,6 +1018,7 @@ function goPanel(id,el){
   document.getElementById('tb-t').textContent=panelTitles[id]||id.toUpperCase();
   if(el){document.querySelectorAll('.sb-item').forEach(n=>n.classList.remove('on'));el.classList.add('on');}
   if(id==='risklev')initNet2();
+  if(id==='news')refreshLiveNews();
 }
 
 // ════════════════
@@ -1126,14 +1124,62 @@ function toggleBroker(id){
   }
 }
 
-function fakeUpload(){
-  const z=document.querySelector('.csv-zone');
-  z.style.borderColor='var(--g)';z.style.background='rgba(10,102,64,0.03)';
-  z.innerHTML='<div class="csv-icon">✓<\/div><div class="csv-t" style="color:var(--g)">portfolio_export.csv imported<\/div><div class="csv-s">12 positions detected · processing...<\/div>';
-  setTimeout(()=>{
-    holdings.push({ticker:'SNOW',name:'Snowflake',value:8400,sector:'Data Infrastructure',change:'+1.1%',up:true,source:'csv'});
-    renderDash();renderSettings();
-  },1200);
+function openFilePicker(){
+  const picker=document.getElementById('csv-file-input');
+  if(picker)picker.click();
+}
+
+function uploadSelectedFile(evt){
+  const input=evt&&evt.target?evt.target:null;
+  if(!input||!input.files||!input.files.length)return;
+  const file=input.files[0];
+  const status=document.getElementById('csv-upload-status');
+  const zone=document.querySelector('.csv-zone');
+  if(status)status.textContent='Uploading '+file.name+' ...';
+  if(zone){
+    zone.style.borderColor='var(--b)';
+    zone.style.background='rgba(26,58,107,0.04)';
+  }
+  const form=new FormData();
+  form.append('file',file);
+  fetch('/api/files/upload',{method:'POST',body:form})
+    .then(async(resp)=>{
+      const data=await resp.json();
+      if(!resp.ok)throw new Error(data.detail||'upload failed');
+      if(zone){
+        zone.style.borderColor='var(--g)';
+        zone.style.background='rgba(10,102,64,0.03)';
+        zone.innerHTML='<div class="csv-icon">✓<\/div><div class="csv-t" style="color:var(--g)">'+data.filename+' uploaded<\/div><div class="csv-s">'+(data.detected_holdings||[]).length+' holdings detected<\/div>';
+      }
+      if(status){
+        status.textContent='Saved to '+data.saved_path+' · '+data.size_bytes+' bytes';
+      }
+      const detected=Array.isArray(data.detected_holdings)?data.detected_holdings:[];
+      if(detected.length){
+        const mapped=detected.map((h)=>({
+          ticker:String(h.ticker||'').toUpperCase(),
+          name:String(h.name||h.ticker||'').trim(),
+          value:Number(h.value||0),
+          sector:String(h.sector||'Other AI'),
+          change:'—',
+          up:true,
+          source:'csv'
+        })).filter((h)=>h.ticker);
+        const existing=new Set(holdings.map((h)=>h.ticker));
+        mapped.forEach((row)=>{ if(!existing.has(row.ticker)) holdings.push(row); });
+        renderDash();
+        renderSettings();
+      }
+      input.value='';
+    })
+    .catch((err)=>{
+      if(status)status.textContent='Upload error: '+err.message;
+      if(zone){
+        zone.style.borderColor='var(--r)';
+        zone.style.background='rgba(191,53,39,0.04)';
+      }
+      input.value='';
+    });
 }
 
 function runAnalysis(){
@@ -1158,6 +1204,130 @@ function runAnalysis(){
     btn.disabled=false;
     alert('Analysis failed: '+err.message);
   });
+}
+
+function _spillRiskScore(row){
+  const move=Math.abs(Number(row&&row.predicted_move_pct||0));
+  const corr=Math.abs(Number(row&&row.correlation_to_sector||0));
+  const edge=row&&row.connected_to?1:0;
+  return (move*7.5)+(corr*32)+(edge*12);
+}
+
+function _spillRiskLabel(score){
+  if(score>=50)return {label:'HIGH',cls:'tr'};
+  if(score>=30)return {label:'MED',cls:'ty'};
+  return {label:'LOW',cls:'tg'};
+}
+
+function renderAssetOverspill(stocks){
+  const status=document.getElementById('asset-overspill-status');
+  const list=document.getElementById('asset-overspill-list');
+  if(!status||!list)return;
+  const rows=Array.isArray(stocks)?stocks:[];
+  if(!rows.length){
+    status.textContent='No universe prediction yet. Click ANALYZE PORTFOLIO or REFRESH.';
+    list.innerHTML='<div class="empty-state"><div class="empty-icon">⚠<\/div>Overspill risk data unavailable.<\/div>';
+    return;
+  }
+  const ranked=rows.map((r)=>({row:r,score:_spillRiskScore(r)})).sort((a,b)=>b.score-a.score);
+  const high=ranked.filter((x)=>x.score>=50).length;
+  const med=ranked.filter((x)=>x.score>=30&&x.score<50).length;
+  status.textContent='Tracked '+ranked.length+' stocks · HIGH '+high+' · MED '+med+' · spillover edges mapped from Case-4 graph.';
+  list.innerHTML=ranked.map((x)=>{
+    const r=x.row;
+    const risk=_spillRiskLabel(x.score);
+    const why=(r.rationale||'No rationale.').replace('Metric ','M').replace('network','spillover network');
+    return '<div class="hrow">'+
+      '<div class="hrow-tk">'+r.symbol+'<\/div>'+
+      '<div class="hrow-info">'+
+        '<div class="hrow-name">'+r.company_name+' <span class="tag '+risk.cls+'" style="font-size:7px">'+risk.label+'<\/span><\/div>'+
+        '<div class="hrow-meta">Move '+(Number(r.predicted_move_pct)>=0?'+':'')+Number(r.predicted_move_pct).toFixed(2)+'% · Corr '+Number(r.correlation_to_sector).toFixed(3)+' · Spill to '+(r.connected_to||'—')+'<\/div>'+
+        '<div class="hrow-meta" style="color:var(--muted)">'+why+'<\/div>'+
+      '<\/div>'+
+      '<button class="hrow-del" onclick="focusAssetStock(\''+r.symbol+'\')">VIEW<\/button>'+
+    '<\/div>';
+  }).join('');
+}
+
+function focusAssetStock(symbol){
+  if(!symbol)return;
+  const row=(universeCache&&Array.isArray(universeCache.stocks)?universeCache.stocks:[]).find((s)=>s.symbol===symbol);
+  if(row){
+    const head=document.querySelector('#p-asset span[style*=\"font-size:34px\"]');
+    if(head)head.textContent=row.symbol;
+    const nameEl=document.querySelector('#p-asset span[style*=\"font-size:13px\"]');
+    if(nameEl)nameEl.textContent=row.company_name;
+  }
+  goPanel('asset',document.querySelectorAll('.sb-item')[1]);
+}
+
+function _tagClassForKeyword(kw){
+  const k=String(kw||'').toLowerCase();
+  if(k.includes('risk')||k.includes('bear')||k.includes('lawsuit')||k.includes('downgrade'))return 'tr';
+  if(k.includes('earn')||k.includes('upgrade')||k.includes('bull')||k.includes('beat'))return 'tg';
+  if(k.includes('gov')||k.includes('policy'))return 'tb';
+  return 'ty';
+}
+
+function renderLiveNews(docs){
+  const feed=document.getElementById('news-feed');
+  const cEl=document.getElementById('news-collected');
+  const fEl=document.getElementById('news-filtered');
+  const tEl=document.getElementById('news-triggers');
+  if(!feed||!cEl||!fEl||!tEl)return;
+  const rows=Array.isArray(docs)?docs:[];
+  cEl.textContent=String(rows.length);
+  const filtered=rows.filter((d)=>Array.isArray(d.keyword_hits)&&d.keyword_hits.length>0).length;
+  fEl.textContent=String(filtered);
+  const triggers=rows.reduce((n,d)=>n+(Array.isArray(d.keyword_hits)?d.keyword_hits.length:0),0);
+  tEl.textContent=String(triggers);
+  if(!rows.length){
+    feed.innerHTML='<div class="ni"><div class="ni-h">No live documents yet. Click INGEST NOW.</div></div>';
+    return;
+  }
+  feed.innerHTML=rows.slice(0,12).map((d)=>{
+    const src=(d.source||'source').toUpperCase();
+    const when=(String(d.published_at||d.fetched_at||'').slice(11,16)||'--:--');
+    const title=d.title||'Untitled';
+    const tags=(Array.isArray(d.keyword_hits)?d.keyword_hits:[]).slice(0,3);
+    const tagHtml=tags.length?tags.map((k)=>'<span class="tag '+_tagClassForKeyword(k)+'">'+k+'</span>').join(''):'<span class="tag tb">AI</span>';
+    return '<div class="ni"><div class="ni-meta"><span class="ni-src">'+src+'</span><span class="ni-t">'+when+
+      '</span></div><div class="ni-h">'+title+'</div><div class="ni-tags">'+tagHtml+'</div></div>';
+  }).join('');
+}
+
+async function refreshLiveNews(){
+  const feed=document.getElementById('news-feed');
+  if(feed){feed.innerHTML='<div class="ni"><div class="ni-h">Refreshing live feed...</div></div>';}
+  try{
+    const docs=await apiGet('/api/agents/news-intake/documents?limit=40');
+    renderLiveNews(docs);
+  }catch(err){
+    if(feed){feed.innerHTML='<div class="ni"><div class="ni-h">Live feed error: '+err.message+'</div></div>';}
+  }
+}
+
+async function runLiveNewsIngest(){
+  const feed=document.getElementById('news-feed');
+  if(feed){feed.innerHTML='<div class="ni"><div class="ni-h">Running ingest...</div></div>';}
+  try{
+    await apiGet('/api/agents/news-intake/run',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        max_queries:10,
+        max_per_query:12,
+        hours_back:24*7,
+        require_gnews:false,
+        require_primary_api:false,
+        enable_gdelt:true,
+        enable_rss_fallback:true
+      })
+    });
+    await refreshLiveNews();
+  }catch(err){
+    if(feed){feed.innerHTML='<div class="ni"><div class="ni-h">Ingest error: '+err.message+'</div></div>';}
+  }
 }
 
 // ════════════════
@@ -1674,8 +1844,14 @@ function closeOv(id){document.getElementById(id).classList.remove('open');}
 
 function apiGet(path,opts){
   return fetch(path,opts).then(async(resp)=>{
-    const data=await resp.json();
-    if(!resp.ok){throw new Error(data.detail||('request failed: '+path));}
+    const contentType=String(resp.headers.get('content-type')||'');
+    const data=contentType.includes('application/json')?await resp.json():await resp.text();
+    if(!resp.ok){
+      const detail=typeof data==='object'&&data!==null
+        ? (Array.isArray(data.detail)?JSON.stringify(data.detail):data.detail)
+        : String(data||'');
+      throw new Error(detail||('request failed: '+path));
+    }
     return data;
   });
 }
@@ -1775,36 +1951,48 @@ function syncUniverseToUi(data){
 }
 
 async function hydrateFromBackend(){
-  try{
-    const [provider,market,summary,news,universe]=await Promise.all([
-      apiGet('/api/market/provider'),
-      apiGet('/api/market/case4/stocks'),
-      apiGet('/api/dashboard/summary'),
-      apiGet('/api/agents/news-intake/documents?limit=5'),
-      apiGet('/api/agents/sector/analyze-all',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({horizon_days:5})}),
-    ]);
+  const tasks=await Promise.allSettled([
+    apiGet('/api/market/provider'),
+    apiGet('/api/market/case4/stocks'),
+    apiGet('/api/dashboard/summary'),
+    apiGet('/api/agents/news-intake/documents?limit=5'),
+    apiGet('/api/agents/sector/analyze-all',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({horizon_days:5})}),
+  ]);
+  const provider=tasks[0].status==='fulfilled'?tasks[0].value:null;
+  const market=tasks[1].status==='fulfilled'?tasks[1].value:null;
+  const summary=tasks[2].status==='fulfilled'?tasks[2].value:null;
+  const news=tasks[3].status==='fulfilled'?tasks[3].value:[];
+  const universe=tasks[4].status==='fulfilled'?tasks[4].value:null;
+  if(universe&&Array.isArray(universe.stocks)){
     universeCache=universe;
     syncUniverseToUi(universe);
-    const modeChip=document.querySelector('.tb-chip');
-    if(modeChip)modeChip.textContent=provider.is_live_ready?'LIVE EODHD MODE':'SETUP MODE';
-    const aiBanner=document.getElementById('rl-ban');
-    if(aiBanner){
-      aiBanner.innerHTML='Case-4 run includes <strong style="color:rgba(255,255,255,0.92)">'+(summary.stock_universe_size||14)+
-        ' tracked stocks</strong> with five-day post-earnings direction prediction and spillover-aware rationale.';
-    }
-    const newsCb=document.querySelector('#p-news .card .cb');
-    if(newsCb&&Array.isArray(news)){
-      newsCb.innerHTML=news.slice(0,5).map((d)=>{
-        const src=(d.source||'source').toUpperCase();
-        const t=String(d.published_at||'').slice(11,16)||'--:--';
-        const title=d.title||'Untitled';
-        const tags=(d.keyword_hits||[]).slice(0,3).map((k)=>'<span class="tag tb">'+k+'</span>').join('');
-        return '<div class="ni"><div class="ni-meta"><span class="ni-src">'+src+'</span><span class="ni-t">'+t+
-          '</span></div><div class="ni-h">'+title+'</div><div class="ni-tags">'+tags+'</div></div>';
-      }).join('');
-    }
+    renderAssetOverspill(universe.stocks);
+  }
+  const modeChip=document.querySelector('.tb-chip');
+  if(modeChip&&provider){
+    modeChip.textContent=provider.is_live_ready?'LIVE EODHD MODE':'SETUP MODE';
+  }
+  const aiBanner=document.getElementById('rl-ban');
+  if(aiBanner&&summary){
+    aiBanner.innerHTML='Case-4 run includes <strong style="color:rgba(255,255,255,0.92)">'+(summary.stock_universe_size||14)+
+      ' tracked stocks</strong> with five-day post-earnings direction prediction and spillover-aware rationale.';
+  }
+  renderLiveNews(Array.isArray(news)?news:[]);
+}
+
+async function refreshAssetOverspill(){
+  const status=document.getElementById('asset-overspill-status');
+  if(status)status.textContent='Refreshing overspill risk map...';
+  try{
+    const data=await apiGet('/api/agents/sector/analyze-all',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({horizon_days:5})
+    });
+    universeCache=data;
+    renderAssetOverspill(Array.isArray(data.stocks)?data.stocks:[]);
   }catch(err){
-    console.error(err);
+    if(status)status.textContent='Overspill refresh failed: '+err.message;
   }
 }
 

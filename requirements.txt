@@ -6,6 +6,7 @@ fastapi>=0.115.0,<1
 uvicorn[standard]>=0.32.0,<1
 pydantic>=2.10.0,<3
 python-dotenv>=1.0.0,<2
+python-multipart>=0.0.22,<1
 httpx>=0.27.0,<1
 
 # Market data: Yahoo (dev/testing) + pandas for pipelines / charts API

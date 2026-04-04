@@ -47,6 +47,7 @@ Case-4 hackathon app for AI-sentiment, cross-company spillover, and 5-7 day post
 - `GET /api/agents/sector/catalog`
 - `POST /api/agents/sector/analyze`
 - `POST /api/agents/sector/analyze-all`
+- `POST /api/files/upload`
 - `POST /api/chat`
 - `GET /api/chat/history/{session_id}`
 - `POST /api/auth/register`

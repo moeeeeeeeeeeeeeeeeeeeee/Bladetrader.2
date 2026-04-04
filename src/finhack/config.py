@@ -27,6 +27,18 @@ def _get_env_bool(key: str, default: bool) -> bool:
     return normalized in {"1", "true", "yes", "on"}
 
 
+def _normalize_database_url(raw: str) -> str:
+    val = (raw or "").strip()
+    if not val:
+        return "data/finhack.db"
+    # Keep sqlite URL/file paths; reject unsupported remote DB URLs for now.
+    if val.startswith("sqlite:///") or val.startswith("sqlite://"):
+        return val
+    if "://" in val:
+        return "data/finhack.db"
+    return val
+
+
 @dataclass(frozen=True)
 class Settings:
     market_data_provider: MarketDataProvider
@@ -52,7 +64,9 @@ class Settings:
             eodhd_api_key=_get_env("EODHD_API_KEY"),
             data_dir=_get_env("DATA_DIR", "data") or "data",
             gnews_api_key=_get_env("GNEWS_API_KEY"),
-            database_url=_get_env("DATABASE_URL", "data/finhack.db") or "data/finhack.db",
+            database_url=_normalize_database_url(
+                _get_env("DATABASE_URL", "data/finhack.db") or "data/finhack.db"
+            ),
             news_trusted_sources_only=_get_env_bool("NEWS_TRUSTED_SOURCES_ONLY", True),
             news_require_gnews=_get_env_bool("NEWS_REQUIRE_GNEWS", True),
             news_require_primary_api=_get_env_bool("NEWS_REQUIRE_PRIMARY_API", True),

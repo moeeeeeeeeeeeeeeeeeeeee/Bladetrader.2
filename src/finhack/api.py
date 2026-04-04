@@ -7,9 +7,11 @@ Run from repo root:
 
 from __future__ import annotations
 
+import csv
 from dataclasses import asdict
 from datetime import datetime, timedelta, timezone
 import hashlib
+import io
 import json
 import os
 from pathlib import Path
@@ -18,7 +20,7 @@ import sqlite3
 from typing import Any
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, Header, HTTPException
+from fastapi import FastAPI, File, Header, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -62,6 +64,7 @@ app.add_middleware(
 )
 
 WEB_DIR = Path(__file__).resolve().parent / "web"
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 app.mount("/app", StaticFiles(directory=WEB_DIR, html=True), name="web")
 
 
@@ -281,8 +284,25 @@ class SectorAnalyzeAllResponse(BaseModel):
     stocks: list[SectorAnalyzeAllStockResponse]
 
 
-CASE4_PATH = Path("data") / "case4_earnings_validation.json"
+class UploadedHolding(BaseModel):
+    ticker: str
+    name: str
+    value: float
+    sector: str
+
+
+class FileUploadResponse(BaseModel):
+    filename: str
+    content_type: str
+    saved_path: str
+    size_bytes: int
+    preview_lines: list[str]
+    detected_holdings: list[UploadedHolding]
+
+
+CASE4_PATH = PROJECT_ROOT / "data" / "case4_earnings_validation.json"
 WEB_INDEX_PATH = WEB_DIR / "index.html"
+UPLOAD_DIR = PROJECT_ROOT / "data" / "uploads"
 
 
 def _load_case4_summary_data() -> dict[str, Any]:
@@ -302,7 +322,13 @@ def _database_path() -> str:
     raw = load_settings().database_url
     if raw.startswith("sqlite:///"):
         raw = raw.replace("sqlite:///", "", 1)
-    return raw
+    if "://" in raw:
+        raw = "data/finhack.db"
+    p = Path(raw)
+    if not p.is_absolute():
+        p = PROJECT_ROOT / p
+    p.parent.mkdir(parents=True, exist_ok=True)
+    return str(p)
 
 
 def _connect_db() -> sqlite3.Connection:
@@ -434,6 +460,68 @@ def _readiness_snapshot() -> DeployReadinessResponse:
     )
 
 
+def _normalize_header(name: str) -> str:
+    return "".join(ch for ch in (name or "").strip().lower() if ch.isalnum())
+
+
+def _extract_holdings_from_csv(raw_text: str) -> list[UploadedHolding]:
+    reader = csv.DictReader(io.StringIO(raw_text))
+    if not reader.fieldnames:
+        return []
+    header_map = {_normalize_header(h): h for h in reader.fieldnames if h}
+    ticker_key = next(
+        (
+            header_map[k]
+            for k in ("ticker", "symbol", "securitysymbol")
+            if k in header_map
+        ),
+        None,
+    )
+    name_key = next(
+        (
+            header_map[k]
+            for k in ("company", "name", "securityname", "description")
+            if k in header_map
+        ),
+        None,
+    )
+    value_key = next(
+        (
+            header_map[k]
+            for k in ("marketvalue", "currentvalue", "value", "positionvalue")
+            if k in header_map
+        ),
+        None,
+    )
+    if ticker_key is None:
+        return []
+
+    out: list[UploadedHolding] = []
+    for row in reader:
+        ticker = str(row.get(ticker_key, "")).strip().upper()
+        if not ticker:
+            continue
+        if len(ticker) > 12:
+            continue
+        name = str(row.get(name_key, "")).strip() if name_key else ticker
+        value_raw = str(row.get(value_key, "")).replace(",", "").replace("$", "") if value_key else ""
+        try:
+            value = float(value_raw) if value_raw else 0.0
+        except ValueError:
+            value = 0.0
+        out.append(
+            UploadedHolding(
+                ticker=ticker,
+                name=name or ticker,
+                value=round(value, 2),
+                sector="Other AI",
+            )
+        )
+        if len(out) >= 50:
+            break
+    return out
+
+
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
@@ -447,6 +535,45 @@ def web_root() -> FileResponse:
 @app.get("/api/deploy/readiness", response_model=DeployReadinessResponse)
 def get_deploy_readiness() -> DeployReadinessResponse:
     return _readiness_snapshot()
+
+
+@app.post("/api/files/upload", response_model=FileUploadResponse)
+async def upload_file(file: UploadFile = File(...)) -> FileUploadResponse:
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="Missing filename")
+    safe_name = Path(file.filename).name
+    suffix = Path(safe_name).suffix.lower()
+    allowed = {".csv", ".txt", ".json", ".jsonl"}
+    if suffix not in allowed:
+        raise HTTPException(status_code=400, detail="Unsupported file type")
+
+    payload = await file.read()
+    size_bytes = len(payload)
+    if size_bytes == 0:
+        raise HTTPException(status_code=400, detail="Uploaded file is empty")
+    if size_bytes > 10 * 1024 * 1024:
+        raise HTTPException(status_code=413, detail="File exceeds 10MB limit")
+
+    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    stored_name = f"{stamp}_{safe_name}"
+    saved_path = UPLOAD_DIR / stored_name
+    saved_path.write_bytes(payload)
+
+    text = payload.decode("utf-8", errors="replace")
+    lines = [ln[:240] for ln in text.splitlines()[:8]]
+    detected: list[UploadedHolding] = []
+    if suffix == ".csv":
+        detected = _extract_holdings_from_csv(text)
+
+    return FileUploadResponse(
+        filename=safe_name,
+        content_type=file.content_type or "application/octet-stream",
+        saved_path=saved_path.as_posix(),
+        size_bytes=size_bytes,
+        preview_lines=lines,
+        detected_holdings=detected,
+    )
 
 
 @app.post("/api/auth/register", response_model=AuthResponse)
