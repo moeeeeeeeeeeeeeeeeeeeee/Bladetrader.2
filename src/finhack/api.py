@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from dataclasses import asdict
 import json
+import os
 from pathlib import Path
 from typing import Any
 
@@ -34,10 +35,23 @@ app = FastAPI(
     version="0.1.0",
 )
 
-# Tighten origins before production.
+def _allowed_origins_from_env() -> list[str]:
+    raw = os.getenv("CORS_ALLOWED_ORIGINS", "").strip()
+    if raw:
+        return [o.strip() for o in raw.split(",") if o.strip()]
+    # Safe local defaults. Add Render URL when present.
+    origins = ["http://127.0.0.1:8000", "http://localhost:8000"]
+    render_url = os.getenv("RENDER_EXTERNAL_URL", "").strip()
+    if render_url:
+        origins.append(render_url)
+    return origins
+
+
+ALLOWED_ORIGINS = _allowed_origins_from_env()
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -175,7 +189,22 @@ class DashboardEventPreview(BaseModel):
     enhanced_confidence: float
 
 
+class ReadinessCheck(BaseModel):
+    name: str
+    ok: bool
+    detail: str
+
+
+class DeployReadinessResponse(BaseModel):
+    ready: bool
+    mode: str
+    checks: list[ReadinessCheck]
+    allowed_origins: list[str]
+    recommendations: list[str]
+
+
 CASE4_PATH = Path("data") / "case4_earnings_validation.json"
+WEB_INDEX_PATH = WEB_DIR / "index.html"
 
 
 def _load_case4_summary_data() -> dict[str, Any]:
@@ -191,6 +220,70 @@ def _load_case4_summary_data() -> dict[str, Any]:
     return payload
 
 
+def _readiness_snapshot() -> DeployReadinessResponse:
+    checks: list[ReadinessCheck] = []
+
+    case4_exists = CASE4_PATH.exists()
+    checks.append(
+        ReadinessCheck(
+            name="case4_summary_file",
+            ok=case4_exists,
+            detail=str(CASE4_PATH) if case4_exists else "Missing data/case4_earnings_validation.json",
+        )
+    )
+
+    web_exists = WEB_INDEX_PATH.exists()
+    checks.append(
+        ReadinessCheck(
+            name="web_index_file",
+            ok=web_exists,
+            detail=str(WEB_INDEX_PATH) if web_exists else "Missing src/finhack/web/index.html",
+        )
+    )
+
+    cors_ok = bool(ALLOWED_ORIGINS) and "*" not in ALLOWED_ORIGINS
+    checks.append(
+        ReadinessCheck(
+            name="cors_config",
+            ok=cors_ok,
+            detail="Restricted origins configured" if cors_ok else "CORS is too permissive",
+        )
+    )
+
+    try:
+        payload = _load_case4_summary_data() if case4_exists else {}
+    except HTTPException:
+        payload = {}
+    offline_only = bool(payload.get("offline_only", False)) if isinstance(payload, dict) else False
+    mode = "offline" if offline_only else "live"
+    checks.append(
+        ReadinessCheck(
+            name="mode",
+            ok=True,
+            detail=f"Running in {mode} mode",
+        )
+    )
+
+    recommendations: list[str] = []
+    if mode == "offline":
+        recommendations.append("Set GNEWS_API_KEY for live ingestion mode when ready.")
+    if os.getenv("GNEWS_API_KEY", "").strip() == "":
+        recommendations.append("GNEWS_API_KEY is not set; news ingestion may stay offline.")
+    if os.getenv("CORS_ALLOWED_ORIGINS", "").strip() == "":
+        recommendations.append(
+            "Set CORS_ALLOWED_ORIGINS to your Render frontend URL for stricter production policy."
+        )
+
+    ready = all(check.ok for check in checks if check.name != "mode")
+    return DeployReadinessResponse(
+        ready=ready,
+        mode=mode,
+        checks=checks,
+        allowed_origins=ALLOWED_ORIGINS,
+        recommendations=recommendations,
+    )
+
+
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
@@ -199,6 +292,11 @@ def health() -> dict[str, str]:
 @app.get("/")
 def web_root() -> FileResponse:
     return FileResponse(WEB_DIR / "index.html")
+
+
+@app.get("/api/deploy/readiness", response_model=DeployReadinessResponse)
+def get_deploy_readiness() -> DeployReadinessResponse:
+    return _readiness_snapshot()
 
 
 @app.get("/api/dashboard/summary", response_model=DashboardSummaryResponse)

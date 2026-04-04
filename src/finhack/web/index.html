@@ -30,6 +30,11 @@
     .status { min-height:18px; font-size:12px; color:var(--green); margin-top:8px; }
     .app { width:100%; display:flex; flex-direction:column; }
     .top { background:#fff; border-bottom:1px solid var(--line); padding:14px 18px; display:flex; justify-content:space-between; align-items:center; }
+    .top-meta { display:flex; align-items:center; gap:10px; }
+    .mode { font-size:12px; border:1px solid var(--line); border-radius:999px; padding:4px 10px; background:#f8fafc; color:#334155; }
+    .mode.live { background:#ddfbea; border-color:#b7f0d0; color:#0f5132; }
+    .mode.offline { background:#fff4db; border-color:#ffe2a5; color:#7a4b00; }
+    .mode.error { background:#ffe4e6; border-color:#fecdd3; color:#9f1239; }
     .main { padding:18px; display:grid; gap:14px; grid-template-columns:1.4fr 1fr; }
     .card { background:#fff; border:1px solid var(--line); border-radius:12px; padding:14px; }
     .muted { color:var(--muted); font-size:13px; }
@@ -100,7 +105,10 @@
   <div class="screen app" id="app-screen">
     <header class="top">
       <strong>BladeTrader Dashboard</strong>
-      <span class="muted" id="clock"></span>
+      <div class="top-meta">
+        <span id="mode-badge" class="mode">MODE: ...</span>
+        <span class="muted" id="clock"></span>
+      </div>
     </header>
     <section class="stats">
       <article class="stat"><div class="k">Events Evaluated</div><div class="v" id="sum-events">-</div></article>
@@ -180,6 +188,7 @@
     function enterDemo() {
       document.getElementById("auth-screen").classList.remove("on");
       document.getElementById("app-screen").classList.add("on");
+      loadDeployReadiness();
       loadDashboardSummary();
       loadDashboardEvents();
       loadNews();
@@ -267,6 +276,34 @@
         document.getElementById("sum-universe").textContent = "err";
         document.getElementById("sum-baseline").textContent = "err";
         document.getElementById("sum-coverage").textContent = "err";
+      }
+    }
+
+    async function loadDeployReadiness() {
+      const badge = document.getElementById("mode-badge");
+      if (!badge) return;
+      try {
+        const resp = await fetch("/api/deploy/readiness");
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.detail || "Readiness unavailable");
+        const mode = (data.mode || "offline").toLowerCase();
+        badge.classList.remove("live", "offline", "error");
+        if (!data.ready) {
+          badge.classList.add("error");
+          badge.textContent = "MODE: CHECK CONFIG";
+          return;
+        }
+        if (mode === "live") {
+          badge.classList.add("live");
+          badge.textContent = "MODE: LIVE";
+        } else {
+          badge.classList.add("offline");
+          badge.textContent = "MODE: OFFLINE";
+        }
+      } catch (err) {
+        badge.classList.remove("live", "offline");
+        badge.classList.add("error");
+        badge.textContent = "MODE: ERROR";
       }
     }
 

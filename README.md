@@ -27,6 +27,10 @@ Quick deploy button:
 Start command used:
 - `uvicorn finhack.api:app --app-dir src --host 0.0.0.0 --port $PORT`
 
+Recommended environment variables:
+- `CORS_ALLOWED_ORIGINS=https://<your-render-domain>`
+- `GNEWS_API_KEY=<optional-for-live-news>`
+
 ### Railway
 
 1. Create a new Railway project from this GitHub repository.
@@ -36,6 +40,7 @@ Start command used:
 ## Available endpoints
 
 - `GET /health`
+- `GET /api/deploy/readiness`
 - `POST /api/chat`
 - `GET /api/chat/history/{session_id}`
 - `POST /api/agents/news-intake/run`
