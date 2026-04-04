@@ -32,7 +32,7 @@ from finhack.agents.news_intake_agent import NewsIntakeAgent
 from finhack.agents.sector_intelligence_agent import CompanyImpact, SectorIntelligenceAgent
 from finhack.config import load_settings
 from finhack.data.company_graph import CASE4_SYMBOLS, SECTOR_BUCKETS, SYMBOL_TO_COMPANY
-from finhack.market_data import get_case4_market_points, get_market_symbols
+from finhack.market_data import get_case4_market_points, get_close_series, get_market_symbols
 from finhack.session_chatbot import (
     answer_user_question,
     get_conversation_history,
@@ -231,6 +231,18 @@ class MarketSymbolsResponse(BaseModel):
     provider: str
     run_at_utc: str
     symbols: list[MarketSymbolResponse]
+
+
+class MarketHistoryPointResponse(BaseModel):
+    t_utc: str
+    close: float
+
+
+class MarketHistoryResponse(BaseModel):
+    symbol: str
+    provider: str
+    run_at_utc: str
+    points: list[MarketHistoryPointResponse]
 
 
 class SectorAnalyzeRequest(BaseModel):
@@ -725,6 +737,39 @@ def get_market_symbols_catalog(limit: int = 1500) -> MarketSymbolsResponse:
         provider=provider,
         run_at_utc=datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
         symbols=[MarketSymbolResponse(**asdict(row)) for row in symbols],
+    )
+
+
+@app.get("/api/market/history/{symbol}", response_model=MarketHistoryResponse)
+def get_market_history(symbol: str, days: int = 60) -> MarketHistoryResponse:
+    safe_symbol = (symbol or "").strip().upper()
+    if not safe_symbol:
+        raise HTTPException(status_code=400, detail="symbol is required")
+    safe_days = max(10, min(days, 365))
+    end_dt = datetime.now(timezone.utc)
+    start_dt = end_dt - timedelta(days=safe_days + 20)
+    series = get_close_series(
+        safe_symbol,
+        start=start_dt.date().isoformat(),
+        end=(end_dt + timedelta(days=1)).date().isoformat(),
+    )
+    points: list[MarketHistoryPointResponse] = []
+    if not series.empty:
+        tail = series.tail(safe_days)
+        for idx, value in tail.items():
+            dt = idx.to_pydatetime() if hasattr(idx, "to_pydatetime") else idx
+            if isinstance(dt, datetime):
+                if dt.tzinfo is None:
+                    dt = dt.replace(tzinfo=timezone.utc)
+                dt_txt = dt.astimezone(timezone.utc).replace(microsecond=0).isoformat()
+            else:
+                dt_txt = str(dt)
+            points.append(MarketHistoryPointResponse(t_utc=dt_txt, close=float(value)))
+    return MarketHistoryResponse(
+        symbol=safe_symbol,
+        provider=load_settings().market_data_provider.value,
+        run_at_utc=end_dt.replace(microsecond=0).isoformat(),
+        points=points,
     )
 
 

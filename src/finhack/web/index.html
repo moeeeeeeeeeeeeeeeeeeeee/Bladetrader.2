@@ -537,25 +537,10 @@ body{background:var(--paper);color:var(--ink);font-family:'DM Mono',monospace;he
           </div>
         </div>
         <div class="card" style="margin-bottom:12px">
-          <div class="ch"><span class="ct">Price — waterfall events marked</span></div>
+          <div class="ch"><span class="ct">Live Price Chart (API)</span></div>
           <div class="cb">
-            <svg width="100%" height="110" viewBox="0 0 560 110">
-              <defs><linearGradient id="ag" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0a6640" stop-opacity="0.1"/><stop offset="100%" stop-color="#0a6640" stop-opacity="0"/></linearGradient></defs>
-              <line x1="0" y1="28" x2="560" y2="28" stroke="var(--border)" stroke-width="1"/>
-              <line x1="0" y1="56" x2="560" y2="56" stroke="var(--border)" stroke-width="1"/>
-              <line x1="0" y1="84" x2="560" y2="84" stroke="var(--border)" stroke-width="1"/>
-              <path d="M20,84 L65,78 L105,82 L145,66 L185,58 L225,50 L245,62 L275,44 L315,38 L355,32 L385,28 L415,34 L445,22 L485,18 L525,12 L548,8 L548,100 L20,100Z" fill="url(#ag)"/>
-              <path d="M20,84 L65,78 L105,82 L145,66 L185,58 L225,50 L245,62 L275,44 L315,38 L355,32 L385,28 L415,34 L445,22 L485,18 L525,12 L548,8" fill="none" stroke="var(--g)" stroke-width="1.8" stroke-linejoin="round"/>
-              <circle cx="145" cy="66" r="4" fill="var(--y)" stroke="var(--surface)" stroke-width="1.5"/>
-              <line x1="145" y1="66" x2="145" y2="100" stroke="var(--y)" stroke-width="1" stroke-dasharray="3 2" opacity="0.5"/>
-              <text x="147" y="99" font-size="7" fill="var(--y)" font-family="DM Mono,monospace">EU news</text>
-              <circle cx="315" cy="38" r="4" fill="var(--g)" stroke="var(--surface)" stroke-width="1.5"/>
-              <line x1="315" y1="38" x2="315" y2="100" stroke="var(--g)" stroke-width="1" stroke-dasharray="3 2" opacity="0.5"/>
-              <text x="317" y="99" font-size="7" fill="var(--g)" font-family="DM Mono,monospace">Gov contract</text>
-              <circle cx="445" cy="22" r="4" fill="var(--b)" stroke="var(--surface)" stroke-width="1.5"/>
-              <line x1="445" y1="22" x2="445" y2="100" stroke="var(--b)" stroke-width="1" stroke-dasharray="3 2" opacity="0.5"/>
-              <text x="447" y="99" font-size="7" fill="var(--b)" font-family="DM Mono,monospace">Upgrade</text>
-            </svg>
+            <div id="asset-chart-wrap" style="height:120px;width:100%"></div>
+            <div id="asset-chart-meta" style="font-size:9px;color:var(--muted);margin-top:6px">Loading chart…</div>
           </div>
         </div>
         <div class="g3" style="margin-bottom:12px">
@@ -905,6 +890,7 @@ let marketSymbolMap={};
 let selectedAssetSymbol='CRWD';
 let enforceApiTickerValidation=false;
 let latestMarketPointMap={};
+let marketHistoryCache={};
 
 const sectorData={
   cyber:{reveal:'You are positioned in Cybersecurity as an AI infrastructure play — a defensive growth thesis. Your holdings reflect a bet that AI adoption accelerates enterprise zero-trust security spend. 38% allocation carries significant inherited regulatory risk from EU AI Act enforcement.',detail:'Holdings: CRWD · PANW · ZS · S · FTNT<br>Inherited risk: <strong>HIGH<\/strong> — EU regulation events cascade across all positions.<br>Waterfall: Cybersecurity → Semiconductors → AI Platforms → Data Infra.',col1:'HIGH',col1s:'Sector very sensitive to AI regulation news',col2:'+4.2%',col2s:'38% allocation amplifies impact',col3:'38%',col3s:'Cascades into semis and AI platforms',tagCls:'tr',risk:'HIGH'},
@@ -1921,6 +1907,21 @@ function buildSymbolCaches(payload){
   enforceApiTickerValidation=String(payload&&payload.provider||'').toLowerCase()==='eodhd'&&marketSymbolsCache.length>=50;
 }
 
+function applyLiveMarketToHoldings(){
+  if(!holdings||!holdings.length)return;
+  holdings=holdings.map((h)=>{
+    const q=latestMarketPointMap[h.ticker]||null;
+    if(!q)return h;
+    const pct=Number(q.change_percent);
+    if(Number.isNaN(pct))return h;
+    return {
+      ...h,
+      change:(pct>=0?'+':'')+pct.toFixed(2)+'%',
+      up:pct>=0
+    };
+  });
+}
+
 function populateTickerDatalist(){
   const dl=document.getElementById('market-symbols-list');
   if(!dl)return;
@@ -2002,17 +2003,27 @@ function updateAssetHeader(symbol){
     const label=(holding&&holding.name)||(universeRow&&universeRow.company_name)||(marketSymbolMap[ticker]&&marketSymbolMap[ticker].company_name)||ticker;
     nameEl.textContent=label;
   }
-  if(priceEl)priceEl.textContent='—';
+  const liveQuote=latestMarketPointMap[ticker]||null;
+  if(priceEl){
+    if(liveQuote&&liveQuote.price!=null){
+      priceEl.textContent='$'+Number(liveQuote.price).toFixed(2);
+    }else{
+      priceEl.textContent='—';
+    }
+  }
   if(holdEl){
     holdEl.textContent=holding?('· $'+Number(holding.value||0).toLocaleString()+' holding'):'· Not in holdings yet';
   }
   if(changeEl){
-    const move=universeRow?Number(universeRow.predicted_move_pct||0):null;
+    const quoteMove=(liveQuote&&liveQuote.change_percent!=null)?Number(liveQuote.change_percent):null;
+    const move=(quoteMove!==null&&!Number.isNaN(quoteMove))
+      ? quoteMove
+      : (universeRow?Number(universeRow.predicted_move_pct||0):null);
     if(move===null||Number.isNaN(move)){
       changeEl.textContent=holding&&holding.change?holding.change:'—';
       changeEl.className='tag ty';
     }else{
-      changeEl.textContent=(move>=0?'▲ +':'▼ ')+Math.abs(move).toFixed(2)+'% (5D)';
+      changeEl.textContent=(move>=0?'▲ +':'▼ ')+Math.abs(move).toFixed(2)+'%'+((quoteMove!==null&&!Number.isNaN(quoteMove))?'':' (5D)');
       changeEl.className=move>=0?'up':'dn';
     }
   }
@@ -2020,12 +2031,74 @@ function updateAssetHeader(symbol){
   if(select&&select.value!==ticker&&Array.from(select.options).some((o)=>o.value===ticker)){
     select.value=ticker;
   }
+  renderAssetChart(ticker);
 }
 
 function selectAssetFromDropdown(){
   const select=document.getElementById('asset-stock-select');
   if(!select)return;
   updateAssetHeader(select.value);
+}
+
+function _assetChartSvg(points,symbol){
+  const w=560;
+  const h=110;
+  const pad=8;
+  const min=Math.min(...points);
+  const max=Math.max(...points);
+  const span=Math.max(1e-9,max-min);
+  const x=(i)=>20+((w-32)*(i/(points.length-1||1)));
+  const y=(v)=>pad+((h-2*pad)*(1-((v-min)/span)));
+  const line=points.map((p,i)=>(i===0?'M':'L')+x(i).toFixed(2)+','+y(p).toFixed(2)).join(' ');
+  const area=line+' L '+x(points.length-1).toFixed(2)+',100 L 20,100 Z';
+  const up=points[points.length-1]>=points[0];
+  const stroke=up?'var(--g)':'var(--r)';
+  const glow=up?'rgba(10,102,64,0.16)':'rgba(191,53,39,0.16)';
+  return '<svg width="100%" height="110" viewBox="0 0 560 110">'+
+    '<defs><linearGradient id="ag-live" x1="0" y1="0" x2="0" y2="1">'+
+      '<stop offset="0%" stop-color="'+(up?'#0a6640':'#bf3527')+'" stop-opacity="0.22"/>'+
+      '<stop offset="100%" stop-color="'+(up?'#0a6640':'#bf3527')+'" stop-opacity="0"/>'+
+    '</linearGradient></defs>'+
+    '<line x1="0" y1="28" x2="560" y2="28" stroke="var(--border)" stroke-width="1"/>'+
+    '<line x1="0" y1="56" x2="560" y2="56" stroke="var(--border)" stroke-width="1"/>'+
+    '<line x1="0" y1="84" x2="560" y2="84" stroke="var(--border)" stroke-width="1"/>'+
+    '<path d="'+area+'" fill="url(#ag-live)"/>'+
+    '<path d="'+line+'" fill="none" stroke="'+stroke+'" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>'+
+    '<circle cx="'+x(points.length-1).toFixed(2)+'" cy="'+y(points[points.length-1]).toFixed(2)+'" r="3.6" fill="'+stroke+'" stroke="'+glow+'" stroke-width="6"/>'+
+    '<text x="22" y="12" font-size="8" fill="var(--muted)" font-family="DM Mono,monospace">'+_escapeHtml(symbol)+' · '+points.length+' points</text>'+
+  '</svg>';
+}
+
+async function renderAssetChart(symbol){
+  const wrap=document.getElementById('asset-chart-wrap');
+  const meta=document.getElementById('asset-chart-meta');
+  if(!wrap||!meta||!symbol)return;
+  if(marketHistoryCache[symbol]&&marketHistoryCache[symbol].length>=2){
+    const pts=marketHistoryCache[symbol];
+    wrap.innerHTML=_assetChartSvg(pts,symbol);
+    const first=pts[0],last=pts[pts.length-1];
+    const pct=((last-first)/Math.max(0.0001,first))*100;
+    meta.textContent='Source: market API · '+(pct>=0?'+':'')+pct.toFixed(2)+'% over chart window';
+    return;
+  }
+  wrap.innerHTML='<div style="height:110px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:10px">Loading '+_escapeHtml(symbol)+' chart…</div>';
+  try{
+    const resp=await apiGet('/api/market/history/'+encodeURIComponent(symbol)+'?days=60');
+    const rows=(resp&&Array.isArray(resp.points)?resp.points:[]).map((p)=>Number(p.close)).filter((n)=>!Number.isNaN(n));
+    if(rows.length>=2){
+      marketHistoryCache[symbol]=rows;
+      wrap.innerHTML=_assetChartSvg(rows,symbol);
+      const first=rows[0],last=rows[rows.length-1];
+      const pct=((last-first)/Math.max(0.0001,first))*100;
+      meta.textContent='Source: '+(resp.provider||'market API')+' · '+(pct>=0?'+':'')+pct.toFixed(2)+'% over 60D';
+    }else{
+      wrap.innerHTML='<div style="height:110px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:10px">No chart data for '+_escapeHtml(symbol)+'.</div>';
+      meta.textContent='Chart unavailable for this ticker right now.';
+    }
+  }catch(err){
+    wrap.innerHTML='<div style="height:110px;display:flex;align-items:center;justify-content:center;color:var(--r);font-size:10px">Chart error: '+_escapeHtml(err.message)+'</div>';
+    meta.textContent='Unable to load live chart.';
+  }
 }
 
 function _sectorIdFromLabel(label){
@@ -2298,6 +2371,7 @@ function syncUniverseToUi(data){
       source:'broker'
     };
   });
+  applyLiveMarketToHoldings();
 
   if(typeof ND!=='undefined'&&Array.isArray(ND)){
     ND.forEach((node)=>{
@@ -2386,6 +2460,9 @@ async function hydrateFromBackend(){
       const sym=String(p&&p.symbol||'').toUpperCase();
       if(sym)latestMarketPointMap[sym]=p;
     });
+    applyLiveMarketToHoldings();
+    renderDash();
+    renderSettings();
   }
   if(symbolsCatalog){
     buildSymbolCaches(symbolsCatalog);
