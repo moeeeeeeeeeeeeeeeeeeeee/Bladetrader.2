@@ -60,6 +60,8 @@ class NewsIngestRequest(BaseModel):
     max_per_query: int = Field(default=10, ge=1, le=50)
     hours_back: int = Field(default=24 * 7, ge=1, le=24 * 180)
     trusted_sources_only: bool | None = None
+    require_gnews: bool | None = None
+    enable_rss_fallback: bool | None = None
 
 
 class NewsDocumentResponse(BaseModel):
@@ -83,6 +85,8 @@ class NewsIngestResponse(BaseModel):
     inserted_documents: int
     skipped_documents: int
     transport: str
+    primary_api_enforced: bool
+    source_counts: dict[str, int]
     documents: list[NewsDocumentResponse]
 
 
@@ -158,6 +162,8 @@ def run_news_intake(body: NewsIngestRequest) -> NewsIngestResponse:
             max_per_query=body.max_per_query,
             hours_back=body.hours_back,
             trusted_sources_only=body.trusted_sources_only,
+            require_gnews=body.require_gnews,
+            enable_rss_fallback=body.enable_rss_fallback,
         )
     except Exception as exc:  # noqa: BLE001 - bubble up for demo iteration
         raise HTTPException(status_code=502, detail=str(exc)) from exc
@@ -168,6 +174,8 @@ def run_news_intake(body: NewsIngestRequest) -> NewsIngestResponse:
         inserted_documents=result.inserted_documents,
         skipped_documents=result.skipped_documents,
         transport=result.transport,
+        primary_api_enforced=result.primary_api_enforced,
+        source_counts=result.source_counts,
         documents=docs,
     )
 

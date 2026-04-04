@@ -249,6 +249,8 @@ class NewsIngestResult:
     skipped_documents: int
     documents: list[NewsDocument]
     transport: str
+    primary_api_enforced: bool
+    source_counts: dict[str, int]
 
 
 def _utc_now_iso() -> str:
@@ -388,6 +390,8 @@ class NewsIntakeAgent:
         max_per_query: int = 10,
         hours_back: int = 24 * 7,
         trusted_sources_only: bool | None = None,
+        require_gnews: bool | None = None,
+        enable_rss_fallback: bool | None = None,
     ) -> NewsIngestResult:
         queries = _build_query_plan(max_queries)
         if not queries:
@@ -398,6 +402,8 @@ class NewsIntakeAgent:
                 skipped_documents=0,
                 documents=[],
                 transport="none",
+                primary_api_enforced=False,
+                source_counts={"gnews": 0, "yfinance_news": 0, "rss": 0},
             )
 
         fetched_count = 0
@@ -413,30 +419,63 @@ class NewsIntakeAgent:
             if trusted_sources_only is None
             else trusted_sources_only
         )
+        enforce_gnews = (
+            self.settings.news_require_gnews
+            if require_gnews is None
+            else require_gnews
+        )
+        use_rss_fallback = (
+            self.settings.news_enable_rss_fallback
+            if enable_rss_fallback is None
+            else enable_rss_fallback
+        )
 
-        transport = "gnews" if self.settings.gnews_api_key else "rss_fallback"
+        if enforce_gnews and not self.settings.gnews_api_key:
+            raise ValueError(
+                "NEWS_REQUIRE_GNEWS=true but GNEWS_API_KEY is missing. "
+                "Set GNEWS_API_KEY in .env for mandatory primary API ingest."
+            )
+
+        source_counts = {"gnews": 0, "yfinance_news": 0, "rss": 0}
+        transports_used: set[str] = set()
         with httpx.Client(timeout=30.0) as client:
             for q in queries:
+                articles: list[dict[str, Any]] = []
+                # Primary APIs first (mandatory ingestion layer).
                 if self.settings.gnews_api_key:
-                    articles = self._fetch_gnews_articles(
+                    gnews_articles = self._fetch_gnews_articles(
                         client=client,
                         query=q,
                         max_per_query=max_per_query,
                         from_iso=from_ts.isoformat(),
                     )
-                else:
+                    articles.extend(gnews_articles)
+                    source_counts["gnews"] += len(gnews_articles)
+                    if gnews_articles:
+                        transports_used.add("gnews")
+
+                yf_articles = self._fetch_yfinance_news_articles(
+                    query=q,
+                    max_per_query=max_per_query,
+                    from_iso=from_ts.isoformat(),
+                )
+                articles.extend(yf_articles)
+                source_counts["yfinance_news"] += len(yf_articles)
+                if yf_articles:
+                    transports_used.add("yfinance_news")
+
+                # Secondary layer: smaller links / RSS expansion.
+                if use_rss_fallback:
                     rss_articles = self._fetch_rss_articles(
                         client=client,
                         query=q,
                         max_per_query=max_per_query,
                         from_iso=from_ts.isoformat(),
                     )
-                    yf_articles = self._fetch_yfinance_news_articles(
-                        query=q,
-                        max_per_query=max_per_query,
-                        from_iso=from_ts.isoformat(),
-                    )
-                    articles = rss_articles + yf_articles
+                    articles.extend(rss_articles)
+                    source_counts["rss"] += len(rss_articles)
+                    if rss_articles:
+                        transports_used.add("rss")
                 fetched_count += len(articles)
                 for raw in articles:
                     candidate = self._to_document(
@@ -463,7 +502,9 @@ class NewsIntakeAgent:
             inserted_documents=inserted_count,
             skipped_documents=skipped_count,
             documents=inserted_docs,
-            transport=transport,
+            transport="+".join(sorted(transports_used)) if transports_used else "none",
+            primary_api_enforced=enforce_gnews,
+            source_counts=source_counts,
         )
 
     def _parse_datetime(self, raw: str | None) -> datetime | None:

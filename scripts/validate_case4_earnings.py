@@ -15,9 +15,12 @@ from pathlib import Path
 from typing import Any
 
 import yfinance as yf
+from dotenv import load_dotenv
 
 from finhack.agents.exposure_agent import ExposureAgent, StockProfile
 from finhack.agents.news_intake_agent import NewsIntakeAgent
+
+load_dotenv()
 
 
 UNIVERSE: tuple[StockProfile, ...] = (
