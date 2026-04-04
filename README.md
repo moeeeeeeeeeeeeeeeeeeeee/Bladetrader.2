@@ -22,6 +22,8 @@ Case-4 hackathon app for AI-sentiment, cross-company spillover, and 5-7 day post
 
 ### Railway
 
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new)
+
 1. Open [Railway](https://railway.app/new) and create a new project from this GitHub repository.
 2. Railway auto-detects `railway.json` and uses the start command.
 3. Set environment variables:
