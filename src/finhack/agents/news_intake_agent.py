@@ -327,6 +327,7 @@ class NewsIntakeAgent:
     def __init__(self, settings: Settings | None = None) -> None:
         self.settings = settings or load_settings()
         self._db_path = self._resolve_db_path()
+        self._last_gdelt_request_at: float | None = None
         self._ensure_db()
 
     def _resolve_db_path(self) -> str:
@@ -875,10 +876,17 @@ class NewsIntakeAgent:
         }
         if to_iso:
             params["enddatetime"] = self._to_gdelt_datetime(to_iso)
-        backoff_seconds = [1.0, 2.0, 4.0]
+        # GDELT free endpoint expects low request cadence (~1 request / 5s).
+        min_gap_seconds = 5.2
+        backoff_seconds = [5.5, 8.0, 12.0]
         for i in range(len(backoff_seconds) + 1):
             try:
+                if self._last_gdelt_request_at is not None:
+                    elapsed = time.time() - self._last_gdelt_request_at
+                    if elapsed < min_gap_seconds:
+                        time.sleep(min_gap_seconds - elapsed)
                 response = client.get(GDELT_DOC_API_URL, params=params)
+                self._last_gdelt_request_at = time.time()
                 response.raise_for_status()
                 payload = response.json()
                 rows = payload.get("articles", [])

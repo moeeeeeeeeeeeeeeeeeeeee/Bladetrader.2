@@ -8,17 +8,22 @@ Case 4-style validation:
 
 from __future__ import annotations
 
+import argparse
 import json
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
 from dataclasses import asdict
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+import sqlite3
 from typing import Any
+from urllib.parse import urlparse
 
 import yfinance as yf
 from dotenv import load_dotenv
 
 from finhack.agents.exposure_agent import ExposureAgent, StockProfile
-from finhack.agents.news_intake_agent import NewsIntakeAgent
+from finhack.agents.news_intake_agent import NewsIngestResult, NewsIntakeAgent
+from finhack.config import load_settings
 
 load_dotenv()
 
@@ -73,9 +78,16 @@ def get_earnings_events(
     limit: int = 8,
     recent_days: int = 365,
 ) -> list[datetime]:
-    t = yf.Ticker(symbol)
+    def _fetch():
+        t = yf.Ticker(symbol)
+        return t.get_earnings_dates(limit=limit)
+
     try:
-        df = t.get_earnings_dates(limit=limit)
+        with ThreadPoolExecutor(max_workers=1) as ex:
+            fut = ex.submit(_fetch)
+            df = fut.result(timeout=20)
+    except FuturesTimeoutError:
+        return []
     except Exception:
         return []
     if df is None or df.empty:
@@ -174,32 +186,157 @@ def accuracy(rows: list[dict[str, Any]], pred_key: str) -> tuple[int, int, float
     return correct, total, correct / total
 
 
+def _resolve_db_path(database_url: str) -> Path:
+    raw = database_url
+    if raw.startswith("sqlite:///"):
+        raw = raw.replace("sqlite:///", "", 1)
+    p = Path(raw)
+    return p if p.is_absolute() else Path.cwd() / p
+
+
+def _extract_domain(url: str) -> str:
+    host = (urlparse(url).netloc or "").lower()
+    return host[4:] if host.startswith("www.") else host
+
+
+def _stub_ingest_result(transport: str) -> NewsIngestResult:
+    return NewsIngestResult(
+        queries_used=[],
+        fetched_articles=0,
+        inserted_documents=0,
+        skipped_documents=0,
+        documents=[],
+        transport=transport,
+        primary_api_enforced=False,
+        source_counts={"gnews": 0, "gdelt": 0, "yfinance_news": 0, "rss": 0},
+    )
+
+
+def hydrate_db_from_snapshot(snapshot_path: Path, db_path: Path) -> int:
+    if not snapshot_path.exists():
+        raise FileNotFoundError(f"Snapshot file not found: {snapshot_path}")
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(str(db_path))
+    try:
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS document (
+                doc_id TEXT PRIMARY KEY,
+                url TEXT NOT NULL UNIQUE,
+                published_at TEXT,
+                fetched_at TEXT NOT NULL,
+                source TEXT NOT NULL,
+                source_url TEXT,
+                source_domain TEXT NOT NULL,
+                title TEXT,
+                body TEXT,
+                keyword_hits TEXT NOT NULL,
+                relevance_score REAL NOT NULL,
+                query TEXT NOT NULL
+            )
+            """
+        )
+        conn.execute("DELETE FROM document")
+        inserted = 0
+        with snapshot_path.open("r", encoding="utf-8") as f:
+            for line in f:
+                raw = line.strip()
+                if not raw:
+                    continue
+                row = json.loads(raw)
+                url = str(row.get("url", "")).strip()
+                if not url:
+                    continue
+                source_domain = str(row.get("source_domain", "")).strip() or _extract_domain(url)
+                keyword_hits = row.get("keyword_hits", [])
+                if not isinstance(keyword_hits, list):
+                    keyword_hits = []
+                conn.execute(
+                    """
+                    INSERT OR IGNORE INTO document (
+                        doc_id, url, published_at, fetched_at, source, source_url, source_domain,
+                        title, body, keyword_hits, relevance_score, query
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        str(row.get("doc_id", "")).strip() or None,
+                        url,
+                        row.get("published_at"),
+                        row.get("fetched_at") or datetime.now(timezone.utc).isoformat(),
+                        str(row.get("source", "")).strip() or "unknown",
+                        row.get("source_url"),
+                        source_domain,
+                        str(row.get("title", "")).strip(),
+                        str(row.get("body", "")).strip(),
+                        json.dumps(keyword_hits),
+                        float(row.get("relevance_score", 0.0) or 0.0),
+                        str(row.get("query", "")).strip(),
+                    ),
+                )
+                inserted += 1
+        conn.commit()
+        return inserted
+    finally:
+        conn.close()
+
+
 def main() -> None:
+    parser = argparse.ArgumentParser(description="Case 4 earnings validator")
+    parser.add_argument("--offline-only", action="store_true")
+    parser.add_argument(
+        "--snapshot-path",
+        default="data/case4_dataset_snapshot.jsonl",
+        help="Snapshot JSONL path used for offline mode",
+    )
+    args = parser.parse_args()
+
     news = NewsIntakeAgent()
     exposure = ExposureAgent()
 
-    backfill = news.run_historical_backfill(
-        days_back=90,
-        chunk_days=30,
-        max_queries=4,
-        max_per_query=20,
-        max_pages=1,
-        trusted_sources_only=False,
-        require_gnews=False,
-        require_primary_api=True,
-        enable_gdelt=True,
-    )
-    # Top up latest window after backfill.
-    ingest = news.run_ingest(
-        max_queries=4,
-        max_per_query=10,
-        hours_back=24 * 90,
-        trusted_sources_only=False,
-        require_gnews=False,
-        require_primary_api=True,
-        enable_gdelt=True,
-        enable_rss_fallback=True,
-    )
+    backfill_warning: str | None = None
+    offline_snapshot_loaded = 0
+    if args.offline_only:
+        settings = load_settings()
+        db_path = _resolve_db_path(settings.database_url)
+        offline_snapshot_loaded = hydrate_db_from_snapshot(Path(args.snapshot_path), db_path)
+        backfill = _stub_ingest_result("offline_snapshot")
+        ingest = _stub_ingest_result("offline_snapshot")
+    else:
+        try:
+            backfill = news.run_historical_backfill(
+                days_back=90,
+                chunk_days=30,
+                max_queries=4,
+                max_per_query=20,
+                max_pages=1,
+                trusted_sources_only=False,
+                require_gnews=False,
+                require_primary_api=True,
+                enable_gdelt=True,
+            )
+        except Exception as exc:  # noqa: BLE001 - continue with top-up ingest
+            backfill_warning = str(exc)
+            backfill = news.run_ingest(
+                max_queries=4,
+                max_per_query=10,
+                hours_back=24 * 90,
+                trusted_sources_only=False,
+                require_gnews=False,
+                require_primary_api=False,
+                enable_gdelt=True,
+                enable_rss_fallback=True,
+            )
+        # Top up latest window after backfill.
+        ingest = news.run_ingest(
+            max_queries=4,
+            max_per_query=10,
+            hours_back=24 * 90,
+            trusted_sources_only=False,
+            require_gnews=False,
+            require_primary_api=True,
+            enable_gdelt=True,
+            enable_rss_fallback=True,
+        )
 
     rows: list[dict[str, Any]] = []
     per_symbol_count: dict[str, int] = {}
@@ -222,7 +359,11 @@ def main() -> None:
 
     summary = {
         "run_at_utc": datetime.now(timezone.utc).isoformat(),
+        "offline_only": args.offline_only,
+        "snapshot_path": args.snapshot_path if args.offline_only else None,
+        "offline_snapshot_loaded_rows": offline_snapshot_loaded,
         "backfill": asdict(backfill),
+        "backfill_warning": backfill_warning,
         "ingest": asdict(ingest),
         "stock_universe_size": len(UNIVERSE),
         "earnings_events_evaluated": len(rows),
