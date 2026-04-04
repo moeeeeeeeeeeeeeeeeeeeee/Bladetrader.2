@@ -1,0 +1,25 @@
+---
+description: Keep all work aligned to Case 4 objective
+alwaysApply: true
+---
+
+# Case 4 North Star
+
+Treat the end product as a sentiment-driven prediction system for post-earnings stock direction, while allowing iterative prototype quality during development.
+
+- Always prioritize features that support:
+  - baseline vs sentiment-enhanced model comparison
+  - company-level sentiment + cross-company spillover features
+  - five-trading-day post-earnings direction prediction
+- Keep strict leakage controls: only use information available in the 7-day window ending at earnings date `T`.
+- Use time-aware validation and avoid random splits that leak future information.
+- Ensure outputs are explainable: show source links, feature rationale, spillover path, and confidence.
+- Prefer practical pipeline steps over perfect modeling early; optimize quality after end-to-end flow works.
+- When proposing changes, tie them back to one of these deliverables:
+  - data pipeline
+  - sentiment methodology
+  - feature design
+  - validation approach
+  - dashboard visual evidence
+  - findings and improvement roadmap
+

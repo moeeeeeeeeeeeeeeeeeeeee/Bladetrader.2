@@ -1,0 +1,20 @@
+{
+  "NVDA": [
+    "nvidia corp",
+    "blackwell",
+    "h100",
+    "h200"
+  ],
+  "MSFT": [
+    "copilot",
+    "microsoft ai"
+  ],
+  "GOOGL": [
+    "gemini",
+    "google deepmind"
+  ],
+  "AMZN": [
+    "amazon aws",
+    "bedrock"
+  ]
+}
