@@ -1,20 +1,26 @@
 # BladeTrader
 
-FastAPI backend plus a deployable frontend entrypoint for Case 4-style sentiment and exposure workflows.
+Case-4 hackathon app for AI-sentiment, cross-company spillover, and 5-7 day post-event direction workflows across 14 tracked stocks.
 
 ## Run locally
 
-1. Install dependencies:
-   - `python -m pip install -r requirements.txt`
-2. Copy `.env.example` to `.env` and set keys as needed.
-3. Start API + web app:
-   - `uvicorn finhack.api:app --app-dir src --reload --host 127.0.0.1 --port 8000`
-4. Open:
-   - `http://127.0.0.1:8000/`
+1. Install dependencies: `python -m pip install -r requirements.txt`
+2. Copy `.env.example` to `.env`
+3. Set `.env` values:
+   - `MARKET_DATA_PROVIDER=eodhd`
+   - `EODHD_API_KEY=<your key>`
+   - `GNEWS_API_KEY=<optional but recommended>`
+4. Start API/UI: `uvicorn finhack.api:app --app-dir src --reload --host 127.0.0.1 --port 8000`
+5. Open `http://127.0.0.1:8000/`
 
-## Deploy (public app link)
+## Core agents
 
-### Render (recommended)
+- **Agent 1 (`news_intake_agent`)**: ingests AI-market news from GNews/GDELT/Yahoo/RSS into SQLite.
+- **Agent 3/4 (`sector_intelligence_agent`)**: learns 5-year pattern links between AI news and sector/company movement using metrics A/B/C/D and produces 5-7 day forecasts.
+
+## Deploy
+
+### Render
 
 1. Push your latest `main` branch to GitHub.
 2. In Render, choose **New +** -> **Blueprint**.
@@ -38,34 +44,27 @@ Recommended environment variables:
 2. Railway auto-detects `railway.json` and uses the start command.
 3. Open the generated domain from Railway project settings.
 
-## Available endpoints
+## API overview
 
 - `GET /health`
 - `GET /api/deploy/readiness`
-- `POST /api/chat`
-- `GET /api/chat/history/{session_id}`
+- `GET /api/market/provider`
+- `GET /api/market/case4/stocks`
+- `GET /api/dashboard/summary`
+- `GET /api/dashboard/events`
 - `POST /api/agents/news-intake/run`
 - `GET /api/agents/news-intake/documents`
 - `POST /api/agents/news-intake/backfill`
-- `POST /api/agents/exposure/analyze`
-- `POST /api/research/annual/build`
-- `GET /api/research/annual/events`
-- `GET /api/research/annual/spillover`
-
-## Annual AI-report dataset (14 primary companies + spillovers)
-
-Build historical annual-anchor sentiment/spillover features into SQLite:
-
-- `py scripts/build_annual_ai_dataset.py --years-back 5 --pre-days 30 --post-days 20 --max-news-per-event 25`
-
-What this writes:
-
-- `annual_company_universe` table (14 primary AI names + spillover names)
-- `annual_event` table (one annual anchor event per symbol/year, with pre/post return and target)
-- `annual_event_news` table (AI-event news items around each annual anchor)
-- `annual_spillover_effect` table (weighted spillover paths from source AI leaders to related targets)
+- `GET /api/agents/sector/catalog`
+- `POST /api/agents/sector/analyze`
+- `POST /api/chat`
+- `GET /api/chat/history/{session_id}`
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `GET /api/auth/me`
 
 ## Notes
 
-- The chatbot backend currently uses in-memory session state in `src/finhack/session_chatbot.py`.
-- Frontend entrypoint is served from `src/finhack/web/index.html`.
+- Frontend is served from `src/finhack/web/index.html`.
+- Chat history and auth sessions are stored in SQLite (`DATABASE_URL`).
+- Never commit `.env` or API keys.

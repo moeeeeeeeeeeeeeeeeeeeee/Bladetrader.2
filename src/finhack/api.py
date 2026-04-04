@@ -8,13 +8,17 @@ Run from repo root:
 from __future__ import annotations
 
 from dataclasses import asdict
+from datetime import datetime, timedelta, timezone
+import hashlib
 import json
 import os
 from pathlib import Path
+import secrets
+import sqlite3
 from typing import Any
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -22,17 +26,19 @@ from fastapi.staticfiles import StaticFiles
 load_dotenv()
 from pydantic import BaseModel, Field
 
-from finhack.agents.exposure_agent import ExposureAgent, StockProfile
 from finhack.agents.news_intake_agent import NewsIntakeAgent
-from finhack.annual_intelligence import AnnualIntelligenceBuilder
+from finhack.agents.sector_intelligence_agent import CompanyImpact, SectorIntelligenceAgent
+from finhack.config import load_settings
+from finhack.data.company_graph import CASE4_SYMBOLS, SECTOR_BUCKETS
+from finhack.market_data import get_case4_market_points
 from finhack.session_chatbot import (
     answer_user_question,
     get_conversation_history,
 )
 
 app = FastAPI(
-    title="FinHack26 API",
-    description="Session chatbot and future data/model endpoints.",
+    title="BladeTrader API",
+    description="Case 4 sentiment + spillover API for hackathon workflow.",
     version="0.1.0",
 )
 
@@ -127,43 +133,30 @@ class NewsIngestResponse(BaseModel):
     documents: list[NewsDocumentResponse]
 
 
-class ExposureAnalyzeRequest(BaseModel):
-    symbol: str = Field(..., min_length=1, max_length=20)
-    company_name: str | None = None
-    sector: str | None = None
-    aliases: list[str] | None = None
-    ai_themes: list[str] | None = None
-    hours_back: int = Field(default=24 * 14, ge=1, le=24 * 365)
-    max_documents: int = Field(default=250, ge=10, le=1000)
-    top_k: int = Field(default=8, ge=1, le=15)
+class AuthRegisterRequest(BaseModel):
+    username: str = Field(..., min_length=3, max_length=50)
+    password: str = Field(..., min_length=8, max_length=120)
+    display_name: str | None = Field(default=None, max_length=80)
 
 
-class ExposureDriverResponse(BaseModel):
-    doc_id: str
-    title: str
-    url: str
-    source: str
-    published_at: str | None
-    impact_direction: str
-    impact_score: float
-    direct_mention: bool
-    matched_themes: list[str]
-    why: str
+class AuthLoginRequest(BaseModel):
+    username: str = Field(..., min_length=3, max_length=50)
+    password: str = Field(..., min_length=8, max_length=120)
 
 
-class ExposureAnalyzeResponse(BaseModel):
-    symbol: str
-    looked_back_hours: int
-    documents_considered: int
-    direct_mentions: int
-    spillover_mentions: int
-    exposure_score: float
-    direct_exposure_score: float
-    spillover_exposure_score: float
-    impact_direction: str
-    confidence: float
-    matched_themes: list[str]
-    top_drivers: list[ExposureDriverResponse]
+class AuthResponse(BaseModel):
+    token: str
+    user_id: int
+    username: str
+    display_name: str | None
+    expires_at_utc: str
+
+
+class AuthMeResponse(BaseModel):
+    user_id: int
+    username: str
+    display_name: str | None
+    created_at_utc: str
 
 
 class DashboardSummaryResponse(BaseModel):
@@ -204,51 +197,67 @@ class DeployReadinessResponse(BaseModel):
     recommendations: list[str]
 
 
-class AnnualBuildRequest(BaseModel):
-    years_back: int = Field(default=5, ge=2, le=12)
-    pre_days: int = Field(default=30, ge=7, le=120)
-    post_days: int = Field(default=20, ge=5, le=120)
-    max_news_per_event: int = Field(default=25, ge=5, le=100)
-
-
-class AnnualBuildResponse(BaseModel):
-    run_at_utc: str
-    years_back: int
-    pre_days: int
-    post_days: int
-    max_news_per_event: int
-    symbols_processed: int
-    events_written: int
-    news_written: int
-    spillover_written: int
-    provider: str
-    news_provider: str
-
-
-class AnnualEventResponse(BaseModel):
-    event_id: str
+class MarketPointResponse(BaseModel):
     symbol: str
-    event_year: int
-    anchor_date: str
-    pre_window_start: str
-    pre_window_end: str
-    post_window_end: str
-    pre_return_pct: float | None
-    post_return_pct: float | None
-    target_sign: int
-    news_count: int
-    mean_sentiment: float
-    ai_term_hits: int
-    created_at: str
+    price: float | None
+    previous_close: float | None
+    change: float | None
+    change_percent: float | None
+    as_of_utc: str
+    source: str
+    impacted_symbols: list[str]
 
 
-class AnnualSpilloverResponse(BaseModel):
-    event_id: str
-    source_symbol: str
-    target_symbol: str
-    edge_weight: float
-    spillover_score: float
+class Case4MarketResponse(BaseModel):
+    provider: str
+    run_at_utc: str
+    symbols: list[MarketPointResponse]
+
+
+class MarketProviderResponse(BaseModel):
+    provider: str
+    has_eodhd_key: bool
+    is_live_ready: bool
+    notes: list[str]
+
+
+class SectorAnalyzeRequest(BaseModel):
+    sector: str
+    owned_symbols: list[str] | None = None
+    horizon_days: int = Field(default=5, ge=5, le=7)
+
+
+class SectorCompanyResponse(BaseModel):
+    symbol: str
+    company_name: str
+    role: str
+    current_price: float | None
+    predicted_direction: str
+    predicted_move_pct: float
+    correlation_to_sector: float
+    leverage_or_hedge: str
     rationale: str
+    connected_to: str | None
+
+
+class SectorAnalyzeResponse(BaseModel):
+    sector: str
+    horizon_days: int
+    predicted_sector_move_pct: float
+    confidence: float
+    metric_a_news_pressure: float
+    metric_b_correlation_strength: float
+    metric_c_content_impact: float
+    metric_d_network_spillover: float
+    news_articles_7d: int
+    top_owned: list[SectorCompanyResponse]
+    movers_not_owned: list[SectorCompanyResponse]
+    generated_at_utc: str
+
+
+class SectorCatalogResponse(BaseModel):
+    sectors: list[str]
+    tracked_symbols: list[str]
 
 
 CASE4_PATH = Path("data") / "case4_earnings_validation.json"
@@ -266,6 +275,78 @@ def _load_case4_summary_data() -> dict[str, Any]:
     if not isinstance(payload, dict):
         raise HTTPException(status_code=500, detail="Invalid case4 summary payload")
     return payload
+
+
+def _database_path() -> str:
+    raw = load_settings().database_url
+    if raw.startswith("sqlite:///"):
+        raw = raw.replace("sqlite:///", "", 1)
+    return raw
+
+
+def _connect_db() -> sqlite3.Connection:
+    conn = sqlite3.connect(_database_path())
+    conn.row_factory = sqlite3.Row
+    return conn
+
+
+def _ensure_auth_tables() -> None:
+    with _connect_db() as conn:
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS app_user (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                username TEXT NOT NULL UNIQUE,
+                password_hash TEXT NOT NULL,
+                password_salt TEXT NOT NULL,
+                display_name TEXT,
+                created_at TEXT NOT NULL
+            )
+            """
+        )
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS app_session (
+                token TEXT PRIMARY KEY,
+                user_id INTEGER NOT NULL,
+                created_at TEXT NOT NULL,
+                expires_at TEXT NOT NULL,
+                FOREIGN KEY(user_id) REFERENCES app_user(id)
+            )
+            """
+        )
+
+
+def _hash_password(password: str, salt_hex: str) -> str:
+    digest = hashlib.pbkdf2_hmac(
+        "sha256",
+        password.encode("utf-8"),
+        bytes.fromhex(salt_hex),
+        200_000,
+    )
+    return digest.hex()
+
+
+def _auth_from_header(authorization: str | None) -> tuple[int, str, str | None]:
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Missing Bearer token")
+    token = authorization.replace("Bearer ", "", 1).strip()
+    now = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+    with _connect_db() as conn:
+        row = conn.execute(
+            """
+            SELECT s.user_id, s.expires_at, u.username, u.display_name
+            FROM app_session s
+            JOIN app_user u ON u.id = s.user_id
+            WHERE s.token = ?
+            """,
+            (token,),
+        ).fetchone()
+    if row is None:
+        raise HTTPException(status_code=401, detail="Invalid session token")
+    if str(row["expires_at"]) < now:
+        raise HTTPException(status_code=401, detail="Session expired")
+    return int(row["user_id"]), str(row["username"]), row["display_name"]
 
 
 def _readiness_snapshot() -> DeployReadinessResponse:
@@ -345,6 +426,175 @@ def web_root() -> FileResponse:
 @app.get("/api/deploy/readiness", response_model=DeployReadinessResponse)
 def get_deploy_readiness() -> DeployReadinessResponse:
     return _readiness_snapshot()
+
+
+@app.post("/api/auth/register", response_model=AuthResponse)
+def register_user(body: AuthRegisterRequest) -> AuthResponse:
+    _ensure_auth_tables()
+    now = datetime.now(timezone.utc).replace(microsecond=0)
+    salt = secrets.token_hex(16)
+    pw_hash = _hash_password(body.password, salt)
+    username = body.username.strip().lower()
+    if not username:
+        raise HTTPException(status_code=400, detail="Invalid username")
+    try:
+        with _connect_db() as conn:
+            cur = conn.execute(
+                """
+                INSERT INTO app_user (username, password_hash, password_salt, display_name, created_at)
+                VALUES (?, ?, ?, ?, ?)
+                """,
+                (username, pw_hash, salt, body.display_name, now.isoformat()),
+            )
+            user_id = int(cur.lastrowid)
+    except sqlite3.IntegrityError as exc:
+        raise HTTPException(status_code=409, detail="Username already exists") from exc
+
+    token = secrets.token_urlsafe(32)
+    expires = (now + timedelta(days=14)).isoformat()
+    with _connect_db() as conn:
+        conn.execute(
+            """
+            INSERT INTO app_session (token, user_id, created_at, expires_at)
+            VALUES (?, ?, ?, ?)
+            """,
+            (token, user_id, now.isoformat(), expires),
+        )
+    return AuthResponse(
+        token=token,
+        user_id=user_id,
+        username=username,
+        display_name=body.display_name,
+        expires_at_utc=expires,
+    )
+
+
+@app.post("/api/auth/login", response_model=AuthResponse)
+def login_user(body: AuthLoginRequest) -> AuthResponse:
+    _ensure_auth_tables()
+    username = body.username.strip().lower()
+    with _connect_db() as conn:
+        user = conn.execute(
+            """
+            SELECT id, username, password_hash, password_salt, display_name
+            FROM app_user
+            WHERE username = ?
+            """,
+            (username,),
+        ).fetchone()
+    if user is None:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    expected = _hash_password(body.password, str(user["password_salt"]))
+    if expected != str(user["password_hash"]):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    now = datetime.now(timezone.utc).replace(microsecond=0)
+    token = secrets.token_urlsafe(32)
+    expires = (now + timedelta(days=14)).isoformat()
+    with _connect_db() as conn:
+        conn.execute(
+            """
+            INSERT INTO app_session (token, user_id, created_at, expires_at)
+            VALUES (?, ?, ?, ?)
+            """,
+            (token, int(user["id"]), now.isoformat(), expires),
+        )
+    return AuthResponse(
+        token=token,
+        user_id=int(user["id"]),
+        username=str(user["username"]),
+        display_name=user["display_name"],
+        expires_at_utc=expires,
+    )
+
+
+@app.get("/api/auth/me", response_model=AuthMeResponse)
+def get_me(authorization: str | None = Header(default=None)) -> AuthMeResponse:
+    _ensure_auth_tables()
+    user_id, _, _ = _auth_from_header(authorization)
+    with _connect_db() as conn:
+        row = conn.execute(
+            """
+            SELECT id, username, display_name, created_at
+            FROM app_user
+            WHERE id = ?
+            """,
+            (user_id,),
+        ).fetchone()
+    if row is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return AuthMeResponse(
+        user_id=int(row["id"]),
+        username=str(row["username"]),
+        display_name=row["display_name"],
+        created_at_utc=str(row["created_at"]),
+    )
+
+
+@app.get("/api/market/provider", response_model=MarketProviderResponse)
+def get_market_provider() -> MarketProviderResponse:
+    settings = load_settings()
+    provider = settings.market_data_provider.value
+    has_eodhd_key = bool((settings.eodhd_api_key or "").strip())
+    notes: list[str] = []
+    if provider == "eodhd" and not has_eodhd_key:
+        notes.append("EODHD provider selected but EODHD_API_KEY is missing.")
+    if provider == "yahoo":
+        notes.append("Provider is set to Yahoo; set MARKET_DATA_PROVIDER=eodhd for live hackathon mode.")
+    return MarketProviderResponse(
+        provider=provider,
+        has_eodhd_key=has_eodhd_key,
+        is_live_ready=(provider == "eodhd" and has_eodhd_key),
+        notes=notes,
+    )
+
+
+@app.get("/api/market/case4/stocks", response_model=Case4MarketResponse)
+def get_case4_market_stocks() -> Case4MarketResponse:
+    provider, points = get_case4_market_points()
+    return Case4MarketResponse(
+        provider=provider,
+        run_at_utc=points[0].as_of_utc if points else "",
+        symbols=[MarketPointResponse(**asdict(p)) for p in points],
+    )
+
+
+@app.get("/api/agents/sector/catalog", response_model=SectorCatalogResponse)
+def get_sector_catalog() -> SectorCatalogResponse:
+    return SectorCatalogResponse(
+        sectors=list(SECTOR_BUCKETS),
+        tracked_symbols=list(CASE4_SYMBOLS),
+    )
+
+
+@app.post("/api/agents/sector/analyze", response_model=SectorAnalyzeResponse)
+def analyze_sector(body: SectorAnalyzeRequest) -> SectorAnalyzeResponse:
+    try:
+        agent = SectorIntelligenceAgent()
+        result = agent.predict_sector(
+            sector=body.sector,
+            owned_symbols=body.owned_symbols,
+            horizon_days=body.horizon_days,
+        )
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+    def _as_company(c: CompanyImpact) -> SectorCompanyResponse:
+        return SectorCompanyResponse(**asdict(c))
+
+    return SectorAnalyzeResponse(
+        sector=result.sector,
+        horizon_days=result.horizon_days,
+        predicted_sector_move_pct=result.predicted_sector_move_pct,
+        confidence=result.confidence,
+        metric_a_news_pressure=result.metric_a_news_pressure,
+        metric_b_correlation_strength=result.metric_b_correlation_strength,
+        metric_c_content_impact=result.metric_c_content_impact,
+        metric_d_network_spillover=result.metric_d_network_spillover,
+        news_articles_7d=result.news_articles_7d,
+        top_owned=[_as_company(c) for c in result.top_owned],
+        movers_not_owned=[_as_company(c) for c in result.movers_not_owned],
+        generated_at_utc=result.generated_at_utc,
+    )
 
 
 @app.get("/api/dashboard/summary", response_model=DashboardSummaryResponse)
@@ -483,74 +733,3 @@ def backfill_news_intake(body: NewsBackfillRequest) -> NewsIngestResponse:
     )
 
 
-@app.post("/api/agents/exposure/analyze", response_model=ExposureAnalyzeResponse)
-def analyze_exposure(body: ExposureAnalyzeRequest) -> ExposureAnalyzeResponse:
-    try:
-        agent = ExposureAgent()
-        profile = StockProfile(
-            symbol=body.symbol.strip().upper(),
-            company_name=body.company_name,
-            sector=body.sector,
-            aliases=body.aliases,
-            ai_themes=body.ai_themes,
-        )
-        result = agent.analyze_stock_exposure(
-            profile,
-            hours_back=body.hours_back,
-            max_documents=body.max_documents,
-            top_k=body.top_k,
-        )
-    except Exception as exc:  # noqa: BLE001 - bubble up for demo iteration
-        raise HTTPException(status_code=502, detail=str(exc)) from exc
-    drivers = [ExposureDriverResponse(**asdict(d)) for d in result.top_drivers]
-    return ExposureAnalyzeResponse(
-        symbol=result.symbol,
-        looked_back_hours=result.looked_back_hours,
-        documents_considered=result.documents_considered,
-        direct_mentions=result.direct_mentions,
-        spillover_mentions=result.spillover_mentions,
-        exposure_score=result.exposure_score,
-        direct_exposure_score=result.direct_exposure_score,
-        spillover_exposure_score=result.spillover_exposure_score,
-        impact_direction=result.impact_direction,
-        confidence=result.confidence,
-        matched_themes=result.matched_themes,
-        top_drivers=drivers,
-    )
-
-
-@app.post("/api/research/annual/build", response_model=AnnualBuildResponse)
-def build_annual_intelligence(body: AnnualBuildRequest) -> AnnualBuildResponse:
-    try:
-        builder = AnnualIntelligenceBuilder()
-        summary = builder.build(
-            years_back=body.years_back,
-            pre_days=body.pre_days,
-            post_days=body.post_days,
-            max_news_per_event=body.max_news_per_event,
-        )
-    except Exception as exc:  # noqa: BLE001 - demo-safe bubbling
-        raise HTTPException(status_code=502, detail=str(exc)) from exc
-    return AnnualBuildResponse(**summary)
-
-
-@app.get("/api/research/annual/events", response_model=list[AnnualEventResponse])
-def list_annual_events(limit: int = 100) -> list[AnnualEventResponse]:
-    try:
-        builder = AnnualIntelligenceBuilder()
-        rows = builder.list_events(limit=limit)
-    except Exception as exc:  # noqa: BLE001
-        raise HTTPException(status_code=502, detail=str(exc)) from exc
-    return [AnnualEventResponse(**row) for row in rows]
-
-
-@app.get("/api/research/annual/spillover", response_model=list[AnnualSpilloverResponse])
-def list_annual_spillover(
-    event_id: str | None = None, limit: int = 200
-) -> list[AnnualSpilloverResponse]:
-    try:
-        builder = AnnualIntelligenceBuilder()
-        rows = builder.list_spillovers(event_id=event_id, limit=limit)
-    except Exception as exc:  # noqa: BLE001
-        raise HTTPException(status_code=502, detail=str(exc)) from exc
-    return [AnnualSpilloverResponse(**row) for row in rows]

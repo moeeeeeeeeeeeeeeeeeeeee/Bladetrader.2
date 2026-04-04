@@ -39,7 +39,6 @@ class Settings:
     news_require_primary_api: bool
     news_enable_gdelt: bool
     news_enable_rss_fallback: bool
-    ticker_aliases_path: str | None
 
     @classmethod
     def load(cls) -> Settings:
@@ -59,7 +58,6 @@ class Settings:
             news_require_primary_api=_get_env_bool("NEWS_REQUIRE_PRIMARY_API", True),
             news_enable_gdelt=_get_env_bool("NEWS_ENABLE_GDELT", True),
             news_enable_rss_fallback=_get_env_bool("NEWS_ENABLE_RSS_FALLBACK", True),
-            ticker_aliases_path=_get_env("TICKER_ALIASES_PATH"),
         )
 
 
