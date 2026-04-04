@@ -12,6 +12,27 @@ FastAPI backend plus a deployable frontend entrypoint for Case 4-style sentiment
 4. Open:
    - `http://127.0.0.1:8000/`
 
+## Deploy (public app link)
+
+### Render (recommended)
+
+1. Push your latest `main` branch to GitHub.
+2. In Render, choose **New +** -> **Blueprint**.
+3. Select this repository. Render will use `render.yaml`.
+4. Deploy and open the generated URL.
+
+Quick deploy button:
+- [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/moeeeeeeeeeeeeeeeeeeeee/Bladetrader.2)
+
+Start command used:
+- `uvicorn finhack.api:app --app-dir src --host 0.0.0.0 --port $PORT`
+
+### Railway
+
+1. Create a new Railway project from this GitHub repository.
+2. Railway auto-detects `railway.json` and uses the start command.
+3. Open the generated domain from Railway project settings.
+
 ## Available endpoints
 
 - `GET /health`
