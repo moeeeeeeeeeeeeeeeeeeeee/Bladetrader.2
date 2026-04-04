@@ -2,3 +2,6 @@ __pycache__/
 *.py[cod]
 .env
 data/finhack.db
+*.db
+data/uploads/
+data/case4_visuals/
