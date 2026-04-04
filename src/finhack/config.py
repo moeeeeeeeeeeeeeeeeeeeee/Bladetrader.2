@@ -36,6 +36,8 @@ class Settings:
     database_url: str
     news_trusted_sources_only: bool
     news_require_gnews: bool
+    news_require_primary_api: bool
+    news_enable_gdelt: bool
     news_enable_rss_fallback: bool
     ticker_aliases_path: str | None
 
@@ -54,6 +56,8 @@ class Settings:
             database_url=_get_env("DATABASE_URL", "data/finhack.db") or "data/finhack.db",
             news_trusted_sources_only=_get_env_bool("NEWS_TRUSTED_SOURCES_ONLY", True),
             news_require_gnews=_get_env_bool("NEWS_REQUIRE_GNEWS", True),
+            news_require_primary_api=_get_env_bool("NEWS_REQUIRE_PRIMARY_API", True),
+            news_enable_gdelt=_get_env_bool("NEWS_ENABLE_GDELT", True),
             news_enable_rss_fallback=_get_env_bool("NEWS_ENABLE_RSS_FALLBACK", True),
             ticker_aliases_path=_get_env("TICKER_ALIASES_PATH"),
         )

@@ -23,27 +23,22 @@ from finhack.agents.news_intake_agent import NewsIntakeAgent
 load_dotenv()
 
 
+# Hackathon-optimized Top 14 AI-sensitive stocks.
 UNIVERSE: tuple[StockProfile, ...] = (
     StockProfile("NVDA", "NVIDIA", "Semiconductors"),
     StockProfile("MSFT", "Microsoft", "Software"),
     StockProfile("GOOGL", "Alphabet", "Internet"),
     StockProfile("AMZN", "Amazon", "Cloud"),
     StockProfile("META", "Meta Platforms", "Internet"),
-    StockProfile("AAPL", "Apple", "Hardware"),
     StockProfile("AMD", "Advanced Micro Devices", "Semiconductors"),
     StockProfile("AVGO", "Broadcom", "Semiconductors"),
     StockProfile("TSM", "Taiwan Semiconductor", "Semiconductors"),
     StockProfile("ASML", "ASML Holding", "Semiconductors"),
-    StockProfile("QCOM", "Qualcomm", "Semiconductors"),
-    StockProfile("INTC", "Intel", "Semiconductors"),
     StockProfile("ANET", "Arista Networks", "Hardware"),
     StockProfile("SMCI", "Super Micro Computer", "Hardware"),
     StockProfile("PLTR", "Palantir", "Software"),
-    StockProfile("SNOW", "Snowflake", "Software"),
     StockProfile("ORCL", "Oracle", "Software"),
     StockProfile("CRM", "Salesforce", "Software"),
-    StockProfile("PANW", "Palo Alto Networks", "Cybersecurity"),
-    StockProfile("CRWD", "CrowdStrike", "Cybersecurity"),
 )
 
 
@@ -75,7 +70,7 @@ def compute_return_pct(series, i0: int, i1: int) -> float | None:
 
 def get_earnings_events(
     symbol: str,
-    limit: int = 12,
+    limit: int = 8,
     recent_days: int = 365,
 ) -> list[datetime]:
     t = yf.Ticker(symbol)
@@ -183,18 +178,33 @@ def main() -> None:
     news = NewsIntakeAgent()
     exposure = ExposureAgent()
 
-    # Keep trusted filter on for quality; widen horizon for more potential earnings windows.
-    ingest = news.run_ingest(
-        max_queries=14,
-        max_per_query=25,
-        hours_back=24 * 365,
+    backfill = news.run_historical_backfill(
+        days_back=90,
+        chunk_days=30,
+        max_queries=4,
+        max_per_query=20,
+        max_pages=1,
         trusted_sources_only=False,
+        require_gnews=False,
+        require_primary_api=True,
+        enable_gdelt=True,
+    )
+    # Top up latest window after backfill.
+    ingest = news.run_ingest(
+        max_queries=4,
+        max_per_query=10,
+        hours_back=24 * 90,
+        trusted_sources_only=False,
+        require_gnews=False,
+        require_primary_api=True,
+        enable_gdelt=True,
+        enable_rss_fallback=True,
     )
 
     rows: list[dict[str, Any]] = []
     per_symbol_count: dict[str, int] = {}
     for profile in UNIVERSE:
-        events = get_earnings_events(profile.symbol, limit=14, recent_days=365)
+        events = get_earnings_events(profile.symbol, limit=8, recent_days=365)
         for t_event in events:
             row = evaluate_event(profile, t_event, exposure)
             if not row:
@@ -212,6 +222,7 @@ def main() -> None:
 
     summary = {
         "run_at_utc": datetime.now(timezone.utc).isoformat(),
+        "backfill": asdict(backfill),
         "ingest": asdict(ingest),
         "stock_universe_size": len(UNIVERSE),
         "earnings_events_evaluated": len(rows),
@@ -245,6 +256,8 @@ def main() -> None:
         json.dumps(
             {
                 "events": summary["earnings_events_evaluated"],
+                "backfill_inserted_documents": summary["backfill"]["inserted_documents"],
+                "backfill_transport": summary["backfill"]["transport"],
                 "baseline_accuracy": summary["baseline"]["accuracy"],
                 "enhanced_accuracy": summary["enhanced"]["accuracy"],
                 "uplift_vs_baseline_pp": summary["uplift_vs_baseline_pp"],

@@ -12,6 +12,7 @@ import json
 import os
 import re
 import sqlite3
+import time
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
@@ -24,6 +25,7 @@ import httpx
 from finhack.config import Settings, load_settings
 
 GNEWS_SEARCH_URL = "https://gnews.io/api/v4/search"
+GDELT_DOC_API_URL = "https://api.gdeltproject.org/api/v2/doc/doc"
 
 # Extracted from user-provided keyword doc and grouped for relevance checks.
 AI_CORE_TERMS: tuple[str, ...] = (
@@ -391,6 +393,8 @@ class NewsIntakeAgent:
         hours_back: int = 24 * 7,
         trusted_sources_only: bool | None = None,
         require_gnews: bool | None = None,
+        require_primary_api: bool | None = None,
+        enable_gdelt: bool | None = None,
         enable_rss_fallback: bool | None = None,
     ) -> NewsIngestResult:
         queries = _build_query_plan(max_queries)
@@ -403,7 +407,7 @@ class NewsIntakeAgent:
                 documents=[],
                 transport="none",
                 primary_api_enforced=False,
-                source_counts={"gnews": 0, "yfinance_news": 0, "rss": 0},
+                source_counts={"gnews": 0, "gdelt": 0, "yfinance_news": 0, "rss": 0},
             )
 
         fetched_count = 0
@@ -424,6 +428,12 @@ class NewsIntakeAgent:
             if require_gnews is None
             else require_gnews
         )
+        enforce_primary_api = (
+            self.settings.news_require_primary_api
+            if require_primary_api is None
+            else require_primary_api
+        )
+        use_gdelt = self.settings.news_enable_gdelt if enable_gdelt is None else enable_gdelt
         use_rss_fallback = (
             self.settings.news_enable_rss_fallback
             if enable_rss_fallback is None
@@ -436,7 +446,7 @@ class NewsIntakeAgent:
                 "Set GNEWS_API_KEY in .env for mandatory primary API ingest."
             )
 
-        source_counts = {"gnews": 0, "yfinance_news": 0, "rss": 0}
+        source_counts = {"gnews": 0, "gdelt": 0, "yfinance_news": 0, "rss": 0}
         transports_used: set[str] = set()
         with httpx.Client(timeout=30.0) as client:
             for q in queries:
@@ -453,6 +463,18 @@ class NewsIntakeAgent:
                     source_counts["gnews"] += len(gnews_articles)
                     if gnews_articles:
                         transports_used.add("gnews")
+
+                if use_gdelt:
+                    gdelt_articles = self._fetch_gdelt_articles(
+                        client=client,
+                        query=q,
+                        max_per_query=max_per_query,
+                        from_iso=from_ts.isoformat(),
+                    )
+                    articles.extend(gdelt_articles)
+                    source_counts["gdelt"] += len(gdelt_articles)
+                    if gdelt_articles:
+                        transports_used.add("gdelt")
 
                 yf_articles = self._fetch_yfinance_news_articles(
                     query=q,
@@ -496,6 +518,17 @@ class NewsIntakeAgent:
                     else:
                         skipped_count += 1
 
+        if enforce_gnews and source_counts["gnews"] == 0:
+            raise ValueError(
+                "Primary GNews ingest returned zero articles. "
+                "Your API quota may be exhausted or the query window returned no data."
+            )
+        if enforce_primary_api and (source_counts["gnews"] + source_counts["gdelt"]) == 0:
+            raise ValueError(
+                "Primary API ingest returned zero articles (GNews + GDELT). "
+                "Check provider quotas or query windows."
+            )
+
         return NewsIngestResult(
             queries_used=queries,
             fetched_articles=fetched_count,
@@ -503,7 +536,162 @@ class NewsIntakeAgent:
             skipped_documents=skipped_count,
             documents=inserted_docs,
             transport="+".join(sorted(transports_used)) if transports_used else "none",
-            primary_api_enforced=enforce_gnews,
+            primary_api_enforced=enforce_primary_api,
+            source_counts=source_counts,
+        )
+
+    def run_historical_backfill(
+        self,
+        *,
+        days_back: int = 365,
+        chunk_days: int = 7,
+        max_queries: int = 14,
+        max_per_query: int = 50,
+        max_pages: int = 2,
+        trusted_sources_only: bool | None = None,
+        require_gnews: bool | None = None,
+        require_primary_api: bool | None = None,
+        enable_gdelt: bool | None = None,
+    ) -> NewsIngestResult:
+        queries = _build_query_plan(max_queries)
+        if not queries:
+            return NewsIngestResult(
+                queries_used=[],
+                fetched_articles=0,
+                inserted_documents=0,
+                skipped_documents=0,
+                documents=[],
+                transport="none",
+                primary_api_enforced=True,
+                source_counts={"gnews": 0, "gdelt": 0, "yfinance_news": 0, "rss": 0},
+            )
+
+        enforce_trusted = (
+            self.settings.news_trusted_sources_only
+            if trusted_sources_only is None
+            else trusted_sources_only
+        )
+        enforce_gnews = (
+            self.settings.news_require_gnews
+            if require_gnews is None
+            else require_gnews
+        )
+        enforce_primary_api = (
+            self.settings.news_require_primary_api
+            if require_primary_api is None
+            else require_primary_api
+        )
+        use_gdelt = self.settings.news_enable_gdelt if enable_gdelt is None else enable_gdelt
+        if enforce_gnews and not self.settings.gnews_api_key:
+            raise ValueError(
+                "NEWS_REQUIRE_GNEWS=true but GNEWS_API_KEY is missing. "
+                "Set GNEWS_API_KEY in .env for mandatory primary API ingest."
+            )
+        if not self.settings.gnews_api_key and not use_gdelt:
+            raise ValueError("Historical backfill requires GNEWS_API_KEY or NEWS_ENABLE_GDELT=true")
+
+        now = datetime.now(timezone.utc).replace(microsecond=0)
+        start = now - timedelta(days=max(1, days_back))
+        slice_days = max(1, chunk_days)
+        pages = max(1, min(max_pages, 10))
+
+        fetched_count = 0
+        inserted_count = 0
+        skipped_count = 0
+        inserted_docs: list[NewsDocument] = []
+        dedupe_urls: set[str] = set()
+        source_counts = {"gnews": 0, "gdelt": 0, "yfinance_news": 0, "rss": 0}
+
+        with httpx.Client(timeout=30.0) as client:
+            cursor = start
+            while cursor < now:
+                chunk_end = min(now, cursor + timedelta(days=slice_days))
+                from_iso = cursor.isoformat()
+                to_iso = chunk_end.isoformat()
+                for q in queries:
+                    if self.settings.gnews_api_key:
+                        for page in range(1, pages + 1):
+                            articles = self._fetch_gnews_articles(
+                                client=client,
+                                query=q,
+                                max_per_query=max_per_query,
+                                from_iso=from_iso,
+                                to_iso=to_iso,
+                                page=page,
+                            )
+                            time.sleep(0.15)
+                            if not articles:
+                                break
+                            fetched_count += len(articles)
+                            source_counts["gnews"] += len(articles)
+                            for raw in articles:
+                                candidate = self._to_document(
+                                    raw,
+                                    query=q,
+                                    trusted_sources_only=enforce_trusted,
+                                )
+                                if not candidate:
+                                    skipped_count += 1
+                                    continue
+                                if candidate.url in dedupe_urls:
+                                    skipped_count += 1
+                                    continue
+                                dedupe_urls.add(candidate.url)
+                                if self._insert_document(candidate):
+                                    inserted_count += 1
+                                    inserted_docs.append(candidate)
+                                else:
+                                    skipped_count += 1
+                            if len(articles) < max_per_query:
+                                break
+                    if use_gdelt:
+                        gdelt_rows = self._fetch_gdelt_articles(
+                            client=client,
+                            query=q,
+                            max_per_query=max_per_query,
+                            from_iso=from_iso,
+                            to_iso=to_iso,
+                        )
+                        fetched_count += len(gdelt_rows)
+                        source_counts["gdelt"] += len(gdelt_rows)
+                        for raw in gdelt_rows:
+                            candidate = self._to_document(
+                                raw,
+                                query=q,
+                                trusted_sources_only=enforce_trusted,
+                            )
+                            if not candidate:
+                                skipped_count += 1
+                                continue
+                            if candidate.url in dedupe_urls:
+                                skipped_count += 1
+                                continue
+                            dedupe_urls.add(candidate.url)
+                            if self._insert_document(candidate):
+                                inserted_count += 1
+                                inserted_docs.append(candidate)
+                            else:
+                                skipped_count += 1
+                cursor = chunk_end
+
+        if enforce_gnews and source_counts["gnews"] == 0:
+            raise ValueError(
+                "Historical backfill fetched zero GNews articles. "
+                "Check GNews quota/plan or reduce backfill scope."
+            )
+        if enforce_primary_api and (source_counts["gnews"] + source_counts["gdelt"]) == 0:
+            raise ValueError(
+                "Historical backfill fetched zero primary API articles (GNews + GDELT)."
+            )
+
+        return NewsIngestResult(
+            queries_used=queries,
+            fetched_articles=fetched_count,
+            inserted_documents=inserted_count,
+            skipped_documents=skipped_count,
+            documents=inserted_docs,
+            transport="gnews+gdelt_backfill",
+            primary_api_enforced=enforce_primary_api,
             source_counts=source_counts,
         )
 
@@ -664,6 +852,78 @@ class NewsIntakeAgent:
                     )
         return items
 
+    def _to_gdelt_datetime(self, iso_text: str) -> str:
+        dt = self._parse_datetime(iso_text) or datetime.now(timezone.utc)
+        return dt.strftime("%Y%m%d%H%M%S")
+
+    def _fetch_gdelt_articles(
+        self,
+        *,
+        client: httpx.Client,
+        query: str,
+        max_per_query: int,
+        from_iso: str,
+        to_iso: str | None = None,
+    ) -> list[dict[str, Any]]:
+        params = {
+            "query": query,
+            "mode": "ArtList",
+            "format": "json",
+            "sort": "DateDesc",
+            "maxrecords": max(1, min(max_per_query, 250)),
+            "startdatetime": self._to_gdelt_datetime(from_iso),
+        }
+        if to_iso:
+            params["enddatetime"] = self._to_gdelt_datetime(to_iso)
+        backoff_seconds = [1.0, 2.0, 4.0]
+        for i in range(len(backoff_seconds) + 1):
+            try:
+                response = client.get(GDELT_DOC_API_URL, params=params)
+                response.raise_for_status()
+                payload = response.json()
+                rows = payload.get("articles", [])
+                if not isinstance(rows, list):
+                    return []
+                out: list[dict[str, Any]] = []
+                for row in rows:
+                    if not isinstance(row, dict):
+                        continue
+                    seen_raw = _compact_text(str(row.get("seendate", "")))
+                    seen_iso = seen_raw
+                    if len(seen_raw) == 14 and seen_raw.isdigit():
+                        try:
+                            seen_iso = datetime.strptime(
+                                seen_raw, "%Y%m%d%H%M%S"
+                            ).replace(tzinfo=timezone.utc).isoformat()
+                        except ValueError:
+                            seen_iso = seen_raw
+                    out.append(
+                        {
+                            "title": _compact_text(str(row.get("title", ""))),
+                            "url": _compact_text(str(row.get("url", ""))),
+                            "description": _compact_text(f"{row.get('title', '')} {query}"),
+                            "content": _compact_text(f"{row.get('title', '')} {query}"),
+                            "publishedAt": seen_iso,
+                            "source": {
+                                "name": _compact_text(str(row.get("domain", ""))) or "gdelt",
+                                "url": None,
+                            },
+                        }
+                    )
+                return out
+            except httpx.HTTPStatusError as exc:
+                status = exc.response.status_code
+                if status in {429, 500, 502, 503, 504} and i < len(backoff_seconds):
+                    time.sleep(backoff_seconds[i])
+                    continue
+                return []
+            except Exception:  # noqa: BLE001
+                if i < len(backoff_seconds):
+                    time.sleep(backoff_seconds[i])
+                    continue
+                return []
+        return []
+
     def _fetch_gnews_articles(
         self,
         *,
@@ -671,6 +931,8 @@ class NewsIntakeAgent:
         query: str,
         max_per_query: int,
         from_iso: str,
+        to_iso: str | None = None,
+        page: int = 1,
     ) -> list[dict[str, Any]]:
         params = {
             "q": query,
@@ -678,15 +940,34 @@ class NewsIntakeAgent:
             "max": max(1, min(max_per_query, 50)),
             "expand": "content",
             "from": from_iso,
+            "page": max(1, page),
             "apikey": self.settings.gnews_api_key,
         }
-        response = client.get(GNEWS_SEARCH_URL, params=params)
-        response.raise_for_status()
-        payload = response.json()
-        rows = payload.get("articles", [])
-        if not isinstance(rows, list):
-            return []
-        return [r for r in rows if isinstance(r, dict)]
+        if to_iso:
+            params["to"] = to_iso
+        backoff_seconds = [1.0, 2.0, 4.0]
+        for i in range(len(backoff_seconds) + 1):
+            try:
+                response = client.get(GNEWS_SEARCH_URL, params=params)
+                response.raise_for_status()
+                payload = response.json()
+                rows = payload.get("articles", [])
+                if not isinstance(rows, list):
+                    return []
+                return [r for r in rows if isinstance(r, dict)]
+            except httpx.HTTPStatusError as exc:
+                status = exc.response.status_code
+                # Rate limit / transient errors: retry with backoff.
+                if status in {429, 500, 502, 503, 504} and i < len(backoff_seconds):
+                    time.sleep(backoff_seconds[i])
+                    continue
+                return []
+            except Exception:  # noqa: BLE001
+                if i < len(backoff_seconds):
+                    time.sleep(backoff_seconds[i])
+                    continue
+                return []
+        return []
 
     def _to_document(
         self,

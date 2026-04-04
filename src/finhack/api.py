@@ -61,7 +61,21 @@ class NewsIngestRequest(BaseModel):
     hours_back: int = Field(default=24 * 7, ge=1, le=24 * 180)
     trusted_sources_only: bool | None = None
     require_gnews: bool | None = None
+    require_primary_api: bool | None = None
+    enable_gdelt: bool | None = None
     enable_rss_fallback: bool | None = None
+
+
+class NewsBackfillRequest(BaseModel):
+    days_back: int = Field(default=365, ge=7, le=3650)
+    chunk_days: int = Field(default=7, ge=1, le=30)
+    max_queries: int = Field(default=14, ge=1, le=20)
+    max_per_query: int = Field(default=50, ge=1, le=50)
+    max_pages: int = Field(default=2, ge=1, le=10)
+    trusted_sources_only: bool | None = None
+    require_gnews: bool | None = None
+    require_primary_api: bool | None = None
+    enable_gdelt: bool | None = None
 
 
 class NewsDocumentResponse(BaseModel):
@@ -163,6 +177,8 @@ def run_news_intake(body: NewsIngestRequest) -> NewsIngestResponse:
             hours_back=body.hours_back,
             trusted_sources_only=body.trusted_sources_only,
             require_gnews=body.require_gnews,
+            require_primary_api=body.require_primary_api,
+            enable_gdelt=body.enable_gdelt,
             enable_rss_fallback=body.enable_rss_fallback,
         )
     except Exception as exc:  # noqa: BLE001 - bubble up for demo iteration
@@ -189,6 +205,36 @@ def list_news_documents(limit: int = 50) -> list[NewsDocumentResponse]:
     except Exception as exc:  # noqa: BLE001 - bubble up for demo iteration
         raise HTTPException(status_code=502, detail=str(exc)) from exc
     return [NewsDocumentResponse(**d.__dict__) for d in docs]
+
+
+@app.post("/api/agents/news-intake/backfill", response_model=NewsIngestResponse)
+def backfill_news_intake(body: NewsBackfillRequest) -> NewsIngestResponse:
+    try:
+        agent = NewsIntakeAgent()
+        result = agent.run_historical_backfill(
+            days_back=body.days_back,
+            chunk_days=body.chunk_days,
+            max_queries=body.max_queries,
+            max_per_query=body.max_per_query,
+            max_pages=body.max_pages,
+            trusted_sources_only=body.trusted_sources_only,
+            require_gnews=body.require_gnews,
+            require_primary_api=body.require_primary_api,
+            enable_gdelt=body.enable_gdelt,
+        )
+    except Exception as exc:  # noqa: BLE001 - bubble up for demo iteration
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    docs = [NewsDocumentResponse(**d.__dict__) for d in result.documents]
+    return NewsIngestResponse(
+        queries_used=result.queries_used,
+        fetched_articles=result.fetched_articles,
+        inserted_documents=result.inserted_documents,
+        skipped_documents=result.skipped_documents,
+        transport=result.transport,
+        primary_api_enforced=result.primary_api_enforced,
+        source_counts=result.source_counts,
+        documents=docs,
+    )
 
 
 @app.post("/api/agents/exposure/analyze", response_model=ExposureAnalyzeResponse)
