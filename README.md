@@ -4,6 +4,8 @@ Case-4 hackathon app for AI-sentiment, cross-company spillover, and 5-7 day post
 
 ## Run locally
 
+bladetrader2-production.up.railway.app
+
 1. Install dependencies: `python -m pip install -r requirements.txt`
 2. Copy `.env.example` to `.env`
 3. Set `.env` values:
