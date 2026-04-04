@@ -7,11 +7,15 @@ Run from repo root:
 
 from __future__ import annotations
 
+from dataclasses import asdict
+from pathlib import Path
 from typing import Any
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 load_dotenv()
 from pydantic import BaseModel, Field
@@ -37,6 +41,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+WEB_DIR = Path(__file__).resolve().parent / "web"
+app.mount("/app", StaticFiles(directory=WEB_DIR, html=True), name="web")
 
 
 class ChatRequest(BaseModel):
@@ -148,6 +155,11 @@ def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
+@app.get("/")
+def web_root() -> FileResponse:
+    return FileResponse(WEB_DIR / "index.html")
+
+
 @app.post("/api/chat", response_model=ChatResponse)
 def post_chat(body: ChatRequest) -> ChatResponse:
     try:
@@ -183,7 +195,7 @@ def run_news_intake(body: NewsIngestRequest) -> NewsIngestResponse:
         )
     except Exception as exc:  # noqa: BLE001 - bubble up for demo iteration
         raise HTTPException(status_code=502, detail=str(exc)) from exc
-    docs = [NewsDocumentResponse(**d.__dict__) for d in result.documents]
+    docs = [NewsDocumentResponse(**asdict(d)) for d in result.documents]
     return NewsIngestResponse(
         queries_used=result.queries_used,
         fetched_articles=result.fetched_articles,
@@ -204,7 +216,7 @@ def list_news_documents(limit: int = 50) -> list[NewsDocumentResponse]:
         docs = agent.list_documents(limit=safe_limit)
     except Exception as exc:  # noqa: BLE001 - bubble up for demo iteration
         raise HTTPException(status_code=502, detail=str(exc)) from exc
-    return [NewsDocumentResponse(**d.__dict__) for d in docs]
+    return [NewsDocumentResponse(**asdict(d)) for d in docs]
 
 
 @app.post("/api/agents/news-intake/backfill", response_model=NewsIngestResponse)
@@ -224,7 +236,7 @@ def backfill_news_intake(body: NewsBackfillRequest) -> NewsIngestResponse:
         )
     except Exception as exc:  # noqa: BLE001 - bubble up for demo iteration
         raise HTTPException(status_code=502, detail=str(exc)) from exc
-    docs = [NewsDocumentResponse(**d.__dict__) for d in result.documents]
+    docs = [NewsDocumentResponse(**asdict(d)) for d in result.documents]
     return NewsIngestResponse(
         queries_used=result.queries_used,
         fetched_articles=result.fetched_articles,
@@ -256,7 +268,7 @@ def analyze_exposure(body: ExposureAnalyzeRequest) -> ExposureAnalyzeResponse:
         )
     except Exception as exc:  # noqa: BLE001 - bubble up for demo iteration
         raise HTTPException(status_code=502, detail=str(exc)) from exc
-    drivers = [ExposureDriverResponse(**d.__dict__) for d in result.top_drivers]
+    drivers = [ExposureDriverResponse(**asdict(d)) for d in result.top_drivers]
     return ExposureAnalyzeResponse(
         symbol=result.symbol,
         looked_back_hours=result.looked_back_hours,

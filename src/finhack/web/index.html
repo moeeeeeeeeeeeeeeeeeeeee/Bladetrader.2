@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BladeTrader</title>
+  <style>
+    :root { --bg:#0b0d12; --panel:#121723; --card:#ffffff; --muted:#7c879c; --line:#dde3ee; --green:#1dd98a; --text:#111827; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: Inter, Arial, sans-serif; background:#f3f5f9; color:var(--text); }
+    .screen { min-height:100vh; display:none; }
+    .screen.on { display:flex; }
+    .auth-left { flex:1; background:var(--bg); color:#fff; padding:48px; position:relative; }
+    .auth-left h1 { margin:0 0 10px; font-size:54px; letter-spacing:1px; }
+    .auth-left h1 em { color:var(--green); font-style:normal; }
+    .auth-left p { max-width:460px; color:rgba(255,255,255,0.68); line-height:1.6; }
+    .auth-right { width:420px; background:var(--panel); color:#fff; padding:36px; }
+    .tabs { display:flex; gap:6px; margin:12px 0 16px; }
+    .tab { flex:1; border:1px solid rgba(255,255,255,.12); background:transparent; color:rgba(255,255,255,.65); border-radius:8px; padding:10px; cursor:pointer; }
+    .tab.on { background:rgba(29,217,138,.16); color:var(--green); border-color:rgba(29,217,138,.45); }
+    .view { display:none; }
+    .view.on { display:block; }
+    label { display:block; font-size:12px; margin:10px 0 6px; color:rgba(255,255,255,.7); }
+    input { width:100%; padding:10px 12px; border-radius:8px; border:1px solid rgba(255,255,255,.18); background:rgba(255,255,255,.04); color:#fff; }
+    .row { display:flex; justify-content:space-between; align-items:center; margin:10px 0; font-size:12px; }
+    .link { color:var(--green); cursor:pointer; }
+    .btn { width:100%; padding:11px; border-radius:8px; border:none; cursor:pointer; margin-top:8px; }
+    .btn.primary { background:var(--green); color:#0b0d12; font-weight:600; }
+    .btn.ghost { background:transparent; border:1px solid rgba(255,255,255,.18); color:#fff; }
+    .status { min-height:18px; font-size:12px; color:var(--green); margin-top:8px; }
+    .app { width:100%; display:flex; flex-direction:column; }
+    .top { background:#fff; border-bottom:1px solid var(--line); padding:14px 18px; display:flex; justify-content:space-between; align-items:center; }
+    .main { padding:18px; display:grid; gap:14px; grid-template-columns:1.4fr 1fr; }
+    .card { background:#fff; border:1px solid var(--line); border-radius:12px; padding:14px; }
+    .muted { color:var(--muted); font-size:13px; }
+    .list { display:grid; gap:10px; max-height:360px; overflow:auto; }
+    .news-item { border:1px solid var(--line); border-radius:10px; padding:10px; }
+    .news-item a { color:#124ea5; text-decoration:none; }
+    .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .mini { background:#f7f9fc; border-radius:10px; padding:10px; border:1px solid var(--line); }
+    .fab { position:fixed; right:16px; bottom:16px; width:52px; height:52px; border-radius:50%; border:none; background:#0f172a; color:#fff; cursor:pointer; box-shadow:0 12px 26px rgba(0,0,0,.25); }
+    .chat { position:fixed; right:16px; bottom:16px; width:330px; height:430px; background:#fff; border:1px solid var(--line); border-radius:12px; display:flex; flex-direction:column; box-shadow:0 18px 38px rgba(0,0,0,.25); }
+    .chat.min { display:none; }
+    .chat-h { height:44px; background:#0f172a; color:#fff; display:flex; justify-content:space-between; align-items:center; padding:0 10px; font-size:12px; }
+    .chat-h button { border:1px solid rgba(255,255,255,.2); background:transparent; color:#fff; border-radius:5px; width:24px; height:24px; cursor:pointer; }
+    .chat-b { flex:1; background:#f8fafc; padding:10px; overflow:auto; }
+    .msg { max-width:88%; padding:8px 10px; border-radius:9px; margin-bottom:8px; font-size:13px; line-height:1.4; }
+    .msg.user { margin-left:auto; background:#dff7ec; border:1px solid #bde8d2; }
+    .msg.bot { margin-right:auto; background:#fff; border:1px solid var(--line); }
+    .chat-i { border-top:1px solid var(--line); padding:8px; display:flex; gap:6px; }
+    .chat-i input { color:#111827; background:#fff; border:1px solid var(--line); }
+    .chat-i button { border:none; border-radius:7px; background:#0f172a; color:#fff; padding:9px 10px; cursor:pointer; }
+  </style>
+</head>
+<body>
+  <div class="screen on" id="auth-screen">
+    <section class="auth-left">
+      <h1>BLADE<em>TRADER</em></h1>
+      <p>Event-driven intelligence for post-earnings direction, sentiment, and spillover risk analysis.</p>
+    </section>
+    <section class="auth-right">
+      <h2 style="margin:0">Account Login</h2>
+      <p class="muted" style="color:rgba(255,255,255,.65)">Sign in, create an account, recover password, and verify with 2-step auth.</p>
+      <div class="tabs">
+        <button class="tab on" id="tab-signin" onclick="switchAuth('signin')">Sign In</button>
+        <button class="tab" id="tab-create" onclick="switchAuth('create')">Create Account</button>
+      </div>
+      <div id="v-signin" class="view on">
+        <label>Email</label><input id="signin-email" type="email" />
+        <label>Password</label><input id="signin-password" type="password" />
+        <div class="row"><span>Remember me</span><span class="link" onclick="switchAuth('recover')">Forgot password?</span></div>
+        <button class="btn primary" onclick="signin()">Sign In</button>
+        <button class="btn ghost" onclick="enterDemo()">Enter Demo</button>
+      </div>
+      <div id="v-create" class="view">
+        <label>Full name</label><input id="create-name" type="text" />
+        <label>Email</label><input id="create-email" type="email" />
+        <label>Password</label><input id="create-password" type="password" />
+        <div class="row"><span>Enable 2-step auth</span><span class="link" onclick="switchAuth('signin')">Have an account?</span></div>
+        <button class="btn primary" onclick="createAccount()">Create Account</button>
+      </div>
+      <div id="v-recover" class="view">
+        <label>Recovery email</label><input id="recover-email" type="email" />
+        <button class="btn primary" onclick="recoverPassword()">Send Reset Link</button>
+        <button class="btn ghost" onclick="switchAuth('signin')">Back</button>
+      </div>
+      <div id="v-2step" class="view">
+        <label>2-step code</label><input id="two-step-code" maxlength="6" />
+        <button class="btn primary" onclick="verify2Step()">Verify</button>
+        <button class="btn ghost" onclick="switchAuth('signin')">Cancel</button>
+      </div>
+      <div class="status" id="auth-status"></div>
+    </section>
+  </div>
+
+  <div class="screen app" id="app-screen">
+    <header class="top">
+      <strong>BladeTrader Dashboard</strong>
+      <span class="muted" id="clock"></span>
+    </header>
+    <main class="main">
+      <section class="card">
+        <h3 style="margin:0 0 8px">News Feed</h3>
+        <p class="muted">Latest stored documents from news intake.</p>
+        <button class="btn primary" style="max-width:210px" onclick="loadNews()">Refresh News</button>
+        <div id="news-list" class="list" style="margin-top:10px"></div>
+      </section>
+      <section class="card">
+        <h3 style="margin:0 0 8px">Exposure Analyzer</h3>
+        <p class="muted">Analyze direct mentions and cross-company spillover.</p>
+        <div class="grid2">
+          <div>
+            <label style="color:#334155">Ticker</label>
+            <input id="exp-symbol" value="NVDA" />
+          </div>
+          <div>
+            <label style="color:#334155">Hours Back</label>
+            <input id="exp-hours" type="number" value="336" />
+          </div>
+        </div>
+        <button class="btn primary" style="margin-top:12px" onclick="analyzeExposure()">Run Exposure</button>
+        <div id="exp-status" class="muted" style="margin:8px 0"></div>
+        <div class="mini">
+          <div><strong>Direction:</strong> <span id="exp-direction">-</span></div>
+          <div><strong>Confidence:</strong> <span id="exp-confidence">-</span></div>
+          <div><strong>Exposure Score:</strong> <span id="exp-score">-</span></div>
+          <div><strong>Spillover Mentions:</strong> <span id="exp-spill">-</span></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <button id="chat-fab" class="fab" onclick="openChat()">CHAT</button>
+  <div id="chat-widget" class="chat min">
+    <div class="chat-h">
+      <span>BladeTrader Assistant</span>
+      <span>
+        <button onclick="minimizeChat()">-</button>
+        <button onclick="closeChat()">x</button>
+      </span>
+    </div>
+    <div id="chat-body" class="chat-b">
+      <div class="msg bot">Hi, ask me about news, exposure, or earnings direction.</div>
+    </div>
+    <div class="chat-i">
+      <input id="chat-input" placeholder="Type message..." onkeydown="if(event.key==='Enter'){sendChat();}" />
+      <button onclick="sendChat()">Send</button>
+    </div>
+  </div>
+
+  <script>
+    let chatSessionId = null;
+
+    function switchAuth(view) {
+      ["signin", "create", "recover", "2step"].forEach((id) => {
+        document.getElementById("v-" + id).classList.toggle("on", id === view);
+      });
+      document.getElementById("tab-signin").classList.toggle("on", view === "signin");
+      document.getElementById("tab-create").classList.toggle("on", view === "create");
+      document.getElementById("auth-status").textContent = "";
+    }
+
+    function signin() { document.getElementById("auth-status").textContent = "Checking credentials..."; setTimeout(() => switchAuth("2step"), 350); }
+    function createAccount() { document.getElementById("auth-status").textContent = "Account created (demo mode)."; setTimeout(enterDemo, 450); }
+    function recoverPassword() { document.getElementById("auth-status").textContent = "Password reset email sent (demo mode)."; }
+    function verify2Step() { document.getElementById("auth-status").textContent = "2-step verified."; setTimeout(enterDemo, 350); }
+
+    function enterDemo() {
+      document.getElementById("auth-screen").classList.remove("on");
+      document.getElementById("app-screen").classList.add("on");
+      loadNews();
+    }
+
+    function openChat() {
+      document.getElementById("chat-widget").classList.remove("min");
+      document.getElementById("chat-fab").style.display = "none";
+    }
+    function minimizeChat() {
+      document.getElementById("chat-widget").classList.add("min");
+      document.getElementById("chat-fab").style.display = "block";
+    }
+    function closeChat() { minimizeChat(); }
+
+    function addMessage(role, text) {
+      const body = document.getElementById("chat-body");
+      const div = document.createElement("div");
+      div.className = "msg " + role;
+      div.textContent = text;
+      body.appendChild(div);
+      body.scrollTop = body.scrollHeight;
+    }
+
+    async function sendChat() {
+      const input = document.getElementById("chat-input");
+      const text = input.value.trim();
+      if (!text) return;
+      addMessage("user", text);
+      input.value = "";
+      try {
+        const resp = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: text, session_id: chatSessionId }),
+        });
+        const data = await resp.json();
+        chatSessionId = data.session_id || chatSessionId;
+        addMessage("bot", data.reply || "No response.");
+      } catch (err) {
+        addMessage("bot", "Chat API unavailable right now.");
+      }
+    }
+
+    async function loadNews() {
+      const list = document.getElementById("news-list");
+      list.innerHTML = "<div class='muted'>Loading...</div>";
+      try {
+        const resp = await fetch("/api/agents/news-intake/documents?limit=8");
+        const data = await resp.json();
+        list.innerHTML = "";
+        if (!Array.isArray(data) || data.length === 0) {
+          list.innerHTML = "<div class='muted'>No documents yet. Run ingestion first.</div>";
+          return;
+        }
+        data.forEach((doc) => {
+          const el = document.createElement("article");
+          el.className = "news-item";
+          el.innerHTML = "<div><strong>" + (doc.source || "Source") + "</strong></div>" +
+            "<div style='margin:4px 0 6px'>" + (doc.title || "Untitled") + "</div>" +
+            "<a href='" + (doc.url || "#") + "' target='_blank' rel='noreferrer'>Open article</a>";
+          list.appendChild(el);
+        });
+      } catch (err) {
+        list.innerHTML = "<div class='muted'>Unable to load news documents.</div>";
+      }
+    }
+
+    async function analyzeExposure() {
+      const status = document.getElementById("exp-status");
+      status.textContent = "Running analysis...";
+      const symbol = document.getElementById("exp-symbol").value.trim().toUpperCase();
+      const hours = Number(document.getElementById("exp-hours").value || 336);
+      try {
+        const resp = await fetch("/api/agents/exposure/analyze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ symbol: symbol, hours_back: hours }),
+        });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.detail || "Analyze failed");
+        document.getElementById("exp-direction").textContent = data.impact_direction;
+        document.getElementById("exp-confidence").textContent = data.confidence;
+        document.getElementById("exp-score").textContent = data.exposure_score;
+        document.getElementById("exp-spill").textContent = data.spillover_mentions;
+        status.textContent = "Done.";
+      } catch (err) {
+        status.textContent = "Exposure API error: " + err.message;
+      }
+    }
+
+    setInterval(() => {
+      document.getElementById("clock").textContent = new Date().toLocaleString();
+    }, 1000);
+  </script>
+</body>
+</html>
