@@ -17,10 +17,9 @@ from pathlib import Path
 from statistics import mean
 from typing import Any
 
-import yfinance as yf
-
 from finhack.agents.exposure_agent import ExposureAgent, StockProfile
 from finhack.agents.news_intake_agent import NewsIntakeAgent
+from finhack.market_data import get_close_series
 
 
 STOCK_UNIVERSE: tuple[StockProfile, ...] = (
@@ -70,10 +69,7 @@ def _parse_iso(raw: str | None) -> datetime | None:
 def five_day_return_pct(symbol: str, event_dt: datetime) -> float | None:
     start = (event_dt - timedelta(days=2)).date().isoformat()
     end = (event_dt + timedelta(days=20)).date().isoformat()
-    df = yf.Ticker(symbol).history(start=start, end=end, auto_adjust=False)
-    if df.empty:
-        return None
-    closes = df["Close"].dropna()
+    closes = get_close_series(symbol, start, end)
     if closes.empty:
         return None
     idx = list(closes.index)

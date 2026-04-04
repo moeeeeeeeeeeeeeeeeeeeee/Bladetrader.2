@@ -30,6 +30,7 @@ Start command used:
 Recommended environment variables:
 - `CORS_ALLOWED_ORIGINS=https://<your-render-domain>`
 - `GNEWS_API_KEY=<optional-for-live-news>`
+- `MARKET_DATA_PROVIDER=eodhd` and `EODHD_API_KEY=<required-for-eodhd-market-and-news>`
 
 ### Railway
 
@@ -47,6 +48,22 @@ Recommended environment variables:
 - `GET /api/agents/news-intake/documents`
 - `POST /api/agents/news-intake/backfill`
 - `POST /api/agents/exposure/analyze`
+- `POST /api/research/annual/build`
+- `GET /api/research/annual/events`
+- `GET /api/research/annual/spillover`
+
+## Annual AI-report dataset (14 primary companies + spillovers)
+
+Build historical annual-anchor sentiment/spillover features into SQLite:
+
+- `py scripts/build_annual_ai_dataset.py --years-back 5 --pre-days 30 --post-days 20 --max-news-per-event 25`
+
+What this writes:
+
+- `annual_company_universe` table (14 primary AI names + spillover names)
+- `annual_event` table (one annual anchor event per symbol/year, with pre/post return and target)
+- `annual_event_news` table (AI-event news items around each annual anchor)
+- `annual_spillover_effect` table (weighted spillover paths from source AI leaders to related targets)
 
 ## Notes
 

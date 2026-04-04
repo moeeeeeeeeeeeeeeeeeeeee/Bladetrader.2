@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import argparse
 import json
-from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
 from dataclasses import asdict
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -18,12 +17,12 @@ import sqlite3
 from typing import Any
 from urllib.parse import urlparse
 
-import yfinance as yf
 from dotenv import load_dotenv
 
 from finhack.agents.exposure_agent import ExposureAgent, StockProfile
 from finhack.agents.news_intake_agent import NewsIngestResult, NewsIntakeAgent
 from finhack.config import load_settings
+from finhack.market_data import get_close_series, get_earnings_events
 
 load_dotenv()
 
@@ -73,39 +72,6 @@ def compute_return_pct(series, i0: int, i1: int) -> float | None:
     return ((p1 - p0) / p0) * 100.0
 
 
-def get_earnings_events(
-    symbol: str,
-    limit: int = 8,
-    recent_days: int = 365,
-) -> list[datetime]:
-    def _fetch():
-        t = yf.Ticker(symbol)
-        return t.get_earnings_dates(limit=limit)
-
-    try:
-        with ThreadPoolExecutor(max_workers=1) as ex:
-            fut = ex.submit(_fetch)
-            df = fut.result(timeout=20)
-    except FuturesTimeoutError:
-        return []
-    except Exception:
-        return []
-    if df is None or df.empty:
-        return []
-    out: list[datetime] = []
-    now = datetime.now(timezone.utc)
-    cutoff = now - timedelta(days=max(30, recent_days))
-    for idx in df.index:
-        dt = idx.to_pydatetime()
-        if dt.tzinfo is None:
-            dt = dt.replace(tzinfo=timezone.utc)
-        else:
-            dt = dt.astimezone(timezone.utc)
-        if cutoff <= dt < now:
-            out.append(dt)
-    return sorted(out)
-
-
 def evaluate_event(
     profile: StockProfile,
     t_event: datetime,
@@ -113,10 +79,7 @@ def evaluate_event(
 ) -> dict[str, Any] | None:
     start = (t_event - timedelta(days=45)).date().isoformat()
     end = (t_event + timedelta(days=20)).date().isoformat()
-    px = yf.Ticker(profile.symbol).history(start=start, end=end, auto_adjust=False)
-    if px.empty or "Close" not in px.columns:
-        return None
-    close = px["Close"].dropna()
+    close = get_close_series(profile.symbol, start, end)
     if close.empty:
         return None
 

@@ -24,6 +24,7 @@ from pydantic import BaseModel, Field
 
 from finhack.agents.exposure_agent import ExposureAgent, StockProfile
 from finhack.agents.news_intake_agent import NewsIntakeAgent
+from finhack.annual_intelligence import AnnualIntelligenceBuilder
 from finhack.session_chatbot import (
     answer_user_question,
     get_conversation_history,
@@ -201,6 +202,53 @@ class DeployReadinessResponse(BaseModel):
     checks: list[ReadinessCheck]
     allowed_origins: list[str]
     recommendations: list[str]
+
+
+class AnnualBuildRequest(BaseModel):
+    years_back: int = Field(default=5, ge=2, le=12)
+    pre_days: int = Field(default=30, ge=7, le=120)
+    post_days: int = Field(default=20, ge=5, le=120)
+    max_news_per_event: int = Field(default=25, ge=5, le=100)
+
+
+class AnnualBuildResponse(BaseModel):
+    run_at_utc: str
+    years_back: int
+    pre_days: int
+    post_days: int
+    max_news_per_event: int
+    symbols_processed: int
+    events_written: int
+    news_written: int
+    spillover_written: int
+    provider: str
+    news_provider: str
+
+
+class AnnualEventResponse(BaseModel):
+    event_id: str
+    symbol: str
+    event_year: int
+    anchor_date: str
+    pre_window_start: str
+    pre_window_end: str
+    post_window_end: str
+    pre_return_pct: float | None
+    post_return_pct: float | None
+    target_sign: int
+    news_count: int
+    mean_sentiment: float
+    ai_term_hits: int
+    created_at: str
+
+
+class AnnualSpilloverResponse(BaseModel):
+    event_id: str
+    source_symbol: str
+    target_symbol: str
+    edge_weight: float
+    spillover_score: float
+    rationale: str
 
 
 CASE4_PATH = Path("data") / "case4_earnings_validation.json"
@@ -469,3 +517,40 @@ def analyze_exposure(body: ExposureAnalyzeRequest) -> ExposureAnalyzeResponse:
         matched_themes=result.matched_themes,
         top_drivers=drivers,
     )
+
+
+@app.post("/api/research/annual/build", response_model=AnnualBuildResponse)
+def build_annual_intelligence(body: AnnualBuildRequest) -> AnnualBuildResponse:
+    try:
+        builder = AnnualIntelligenceBuilder()
+        summary = builder.build(
+            years_back=body.years_back,
+            pre_days=body.pre_days,
+            post_days=body.post_days,
+            max_news_per_event=body.max_news_per_event,
+        )
+    except Exception as exc:  # noqa: BLE001 - demo-safe bubbling
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    return AnnualBuildResponse(**summary)
+
+
+@app.get("/api/research/annual/events", response_model=list[AnnualEventResponse])
+def list_annual_events(limit: int = 100) -> list[AnnualEventResponse]:
+    try:
+        builder = AnnualIntelligenceBuilder()
+        rows = builder.list_events(limit=limit)
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    return [AnnualEventResponse(**row) for row in rows]
+
+
+@app.get("/api/research/annual/spillover", response_model=list[AnnualSpilloverResponse])
+def list_annual_spillover(
+    event_id: str | None = None, limit: int = 200
+) -> list[AnnualSpilloverResponse]:
+    try:
+        builder = AnnualIntelligenceBuilder()
+        rows = builder.list_spillovers(event_id=event_id, limit=limit)
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+    return [AnnualSpilloverResponse(**row) for row in rows]
