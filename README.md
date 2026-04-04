@@ -20,29 +20,16 @@ Case-4 hackathon app for AI-sentiment, cross-company spillover, and 5-7 day post
 
 ## Deploy
 
-### Render
-
-1. Push your latest `main` branch to GitHub.
-2. In Render, choose **New +** -> **Blueprint**.
-3. Select this repository. Render will use `render.yaml`.
-4. Deploy and open the generated URL.
-
-Quick deploy button:
-- [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/moeeeeeeeeeeeeeeeeeeeee/Bladetrader.2)
-
-Start command used:
-- `uvicorn finhack.api:app --app-dir src --host 0.0.0.0 --port $PORT`
-
-Recommended environment variables:
-- `CORS_ALLOWED_ORIGINS=https://<your-render-domain>`
-- `GNEWS_API_KEY=<optional-for-live-news>`
-- `MARKET_DATA_PROVIDER=eodhd` and `EODHD_API_KEY=<required-for-eodhd-market-and-news>`
-
 ### Railway
 
-1. Create a new Railway project from this GitHub repository.
+1. Open [Railway](https://railway.app/new) and create a new project from this GitHub repository.
 2. Railway auto-detects `railway.json` and uses the start command.
-3. Open the generated domain from Railway project settings.
+3. Set environment variables:
+   - `CORS_ALLOWED_ORIGINS=https://<your-railway-domain>`
+   - `GNEWS_API_KEY=<optional-for-live-news>`
+   - `MARKET_DATA_PROVIDER=eodhd`
+   - `EODHD_API_KEY=<required-for-eodhd-market-and-news>`
+4. Open the generated domain from Railway project settings.
 
 ## API overview
 

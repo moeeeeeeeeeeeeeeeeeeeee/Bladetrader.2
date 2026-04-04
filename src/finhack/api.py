@@ -46,11 +46,8 @@ def _allowed_origins_from_env() -> list[str]:
     raw = os.getenv("CORS_ALLOWED_ORIGINS", "").strip()
     if raw:
         return [o.strip() for o in raw.split(",") if o.strip()]
-    # Safe local defaults. Add Render URL when present.
+    # Safe local defaults. Add platform URL via CORS_ALLOWED_ORIGINS in deployment.
     origins = ["http://127.0.0.1:8000", "http://localhost:8000"]
-    render_url = os.getenv("RENDER_EXTERNAL_URL", "").strip()
-    if render_url:
-        origins.append(render_url)
     return origins
 
 
@@ -400,7 +397,7 @@ def _readiness_snapshot() -> DeployReadinessResponse:
         recommendations.append("GNEWS_API_KEY is not set; news ingestion may stay offline.")
     if os.getenv("CORS_ALLOWED_ORIGINS", "").strip() == "":
         recommendations.append(
-            "Set CORS_ALLOWED_ORIGINS to your Render frontend URL for stricter production policy."
+            "Set CORS_ALLOWED_ORIGINS to your Railway frontend URL for stricter production policy."
         )
 
     ready = all(check.ok for check in checks if check.name != "mode")
