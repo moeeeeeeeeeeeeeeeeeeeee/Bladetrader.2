@@ -521,14 +521,19 @@ body{background:var(--paper);color:var(--ink);font-family:'DM Mono',monospace;he
     <div class="panel" id="p-asset">
       <div class="ps">
         <div style="margin-bottom:16px">
-          <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:3px">
-            <span style="font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:1px">CRWD</span>
-            <span style="font-size:13px;color:var(--muted)">CrowdStrike Holdings</span>
+          <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin-bottom:3px;flex-wrap:wrap">
+            <div style="display:flex;align-items:baseline;gap:14px">
+              <span id="asset-symbol" style="font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:1px">CRWD</span>
+              <span id="asset-name" style="font-size:13px;color:var(--muted)">CrowdStrike Holdings</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;min-width:260px">
+              <select class="fselect" id="asset-stock-select" onchange="selectAssetFromDropdown()"></select>
+            </div>
           </div>
           <div style="display:flex;align-items:baseline;gap:12px">
-            <span style="font-family:'Bebas Neue',sans-serif;font-size:30px">$348.20</span>
-            <span class="up">▲ +3.42%</span>
-            <span style="font-size:10px;color:var(--muted)">· $42,110 holding</span>
+            <span id="asset-price" style="font-family:'Bebas Neue',sans-serif;font-size:30px">$348.20</span>
+            <span id="asset-change" class="up">▲ +3.42%</span>
+            <span id="asset-holding" style="font-size:10px;color:var(--muted)">· $42,110 holding</span>
           </div>
         </div>
         <div class="card" style="margin-bottom:12px">
@@ -731,11 +736,13 @@ body{background:var(--paper);color:var(--ink);font-family:'DM Mono',monospace;he
             <div class="madd-form">
               <div style="font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px">Add stock manually</div>
               <div class="madd-row">
-                <div class="finput-wrap"><div class="finput-label">Ticker</div><input class="finput" id="add-ticker" placeholder="AAPL" maxlength="6" style="text-transform:uppercase"/></div>
+                <div class="finput-wrap"><div class="finput-label">Ticker</div><input class="finput" id="add-ticker" placeholder="AAPL" maxlength="12" style="text-transform:uppercase" list="market-symbols-list"/></div>
                 <div class="finput-wrap"><div class="finput-label">Company name</div><input class="finput" id="add-name" placeholder="Apple Inc."/></div>
                 <div class="finput-wrap"><div class="finput-label">Value ($)</div><input class="finput" id="add-value" placeholder="10000" type="number"/></div>
                 <button class="add-btn" onclick="addStock()">+ ADD</button>
               </div>
+              <datalist id="market-symbols-list"></datalist>
+              <div id="add-stock-status" style="font-size:9px;color:var(--muted);margin:0 0 10px 0"></div>
               <div class="madd-row" style="grid-template-columns:1fr 1fr;margin-bottom:0">
                 <div class="finput-wrap"><div class="finput-label">AI Sector</div>
                   <select class="fselect" id="add-sector">
@@ -893,6 +900,11 @@ let holdings=[
 let chatSessionId=null;
 let authToken=localStorage.getItem('blade_auth_token')||'';
 let universeCache=null;
+let marketSymbolsCache=[];
+let marketSymbolMap={};
+let selectedAssetSymbol='CRWD';
+let enforceApiTickerValidation=false;
+let latestMarketPointMap={};
 
 const sectorData={
   cyber:{reveal:'You are positioned in Cybersecurity as an AI infrastructure play — a defensive growth thesis. Your holdings reflect a bet that AI adoption accelerates enterprise zero-trust security spend. 38% allocation carries significant inherited regulatory risk from EU AI Act enforcement.',detail:'Holdings: CRWD · PANW · ZS · S · FTNT<br>Inherited risk: <strong>HIGH<\/strong> — EU regulation events cascade across all positions.<br>Waterfall: Cybersecurity → Semiconductors → AI Platforms → Data Infra.',col1:'HIGH',col1s:'Sector very sensitive to AI regulation news',col2:'+4.2%',col2s:'38% allocation amplifies impact',col3:'38%',col3s:'Cascades into semis and AI platforms',tagCls:'tr',risk:'HIGH'},
@@ -1004,6 +1016,8 @@ function enterApp(){
   document.getElementById('s-app').classList.add('active');
   renderDash();
   renderSettings();
+  populateAssetSelector();
+  updateAssetHeader(selectedAssetSymbol);
   initNet();
   hydrateFromBackend();
 }
@@ -1079,17 +1093,31 @@ function renderSettings(){
 // ════════════════
 function addStock(){
   const ticker=(document.getElementById('add-ticker').value||'').toUpperCase().trim();
-  const name=document.getElementById('add-name').value.trim();
+  const info=marketSymbolMap[ticker]||null;
+  const nameInput=document.getElementById('add-name').value.trim();
+  const name=nameInput||((info&&info.company_name)||ticker);
   const value=parseFloat(document.getElementById('add-value').value)||0;
   const sector=document.getElementById('add-sector').value;
-  if(!ticker){document.getElementById('add-ticker').focus();return;}
+  if(!ticker){document.getElementById('add-ticker').focus();_statusAddStock('Ticker is required.',true);return;}
+  if(enforceApiTickerValidation&&(!info)){
+    _statusAddStock('Ticker not found in stock API catalog. Please choose an API-listed symbol.',true);
+    document.getElementById('add-ticker').focus();
+    return;
+  }
+  if(holdings.some((h)=>h.ticker===ticker)){
+    _statusAddStock('This ticker is already in your holdings.',true);
+    return;
+  }
   if(!name){document.getElementById('add-name').focus();return;}
   if(!value){document.getElementById('add-value').focus();return;}
   holdings.push({ticker,name,value,sector,change:'—',up:true,source:'manual'});
   document.getElementById('add-ticker').value='';
   document.getElementById('add-name').value='';
   document.getElementById('add-value').value='';
+  _statusAddStock('Added '+ticker+' to holdings.',false);
   renderDash();renderSettings();
+  populateAssetSelector();
+  updateAssetHeader(ticker);
   // show added feedback
   const btn=document.querySelector('.add-btn');
   const orig=btn.textContent;btn.textContent='✓ ADDED';btn.style.background='var(--g)';
@@ -1101,6 +1129,8 @@ function addStock(){
 function removeStock(i){
   holdings.splice(i,1);
   renderDash();renderSettings();
+  populateAssetSelector();
+  updateAssetHeader(selectedAssetSymbol);
 }
 
 // ════════════════
@@ -1169,6 +1199,8 @@ function uploadSelectedFile(evt){
         mapped.forEach((row)=>{ if(!existing.has(row.ticker)) holdings.push(row); });
         renderDash();
         renderSettings();
+        populateAssetSelector();
+        updateAssetHeader(selectedAssetSymbol);
       }
       input.value='';
     })
@@ -1251,13 +1283,7 @@ function renderAssetOverspill(stocks){
 
 function focusAssetStock(symbol){
   if(!symbol)return;
-  const row=(universeCache&&Array.isArray(universeCache.stocks)?universeCache.stocks:[]).find((s)=>s.symbol===symbol);
-  if(row){
-    const head=document.querySelector('#p-asset span[style*=\"font-size:34px\"]');
-    if(head)head.textContent=row.symbol;
-    const nameEl=document.querySelector('#p-asset span[style*=\"font-size:13px\"]');
-    if(nameEl)nameEl.textContent=row.company_name;
-  }
+  updateAssetHeader(symbol);
   goPanel('asset',document.querySelectorAll('.sb-item')[1]);
 }
 
@@ -1869,12 +1895,142 @@ function percent(n,total){
   return Math.max(1,Math.round((n/total)*100));
 }
 
+function _escapeHtml(raw){
+  return String(raw||'').replace(/[&<>"']/g,(m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+function _statusAddStock(msg,isError){
+  const el=document.getElementById('add-stock-status');
+  if(!el)return;
+  el.textContent=msg||'';
+  el.style.color=isError?'var(--r)':'var(--muted)';
+}
+
+function buildSymbolCaches(payload){
+  const rows=(payload&&Array.isArray(payload.symbols)?payload.symbols:[]);
+  marketSymbolsCache=rows.map((row)=>({
+    symbol:String(row.symbol||'').toUpperCase(),
+    company_name:String(row.company_name||row.symbol||'').trim(),
+    source:String(row.source||payload.provider||'api')
+  })).filter((row)=>row.symbol);
+  marketSymbolMap={};
+  marketSymbolsCache.forEach((row)=>{marketSymbolMap[row.symbol]=row;});
+  enforceApiTickerValidation=String(payload&&payload.provider||'').toLowerCase()==='eodhd'&&marketSymbolsCache.length>=50;
+}
+
+function populateTickerDatalist(){
+  const dl=document.getElementById('market-symbols-list');
+  if(!dl)return;
+  if(!marketSymbolsCache.length){
+    dl.innerHTML='';
+    return;
+  }
+  dl.innerHTML=marketSymbolsCache.slice(0,3000).map((row)=>{
+    return '<option value="'+_escapeHtml(row.symbol)+'">'+_escapeHtml(row.company_name)+'</option>';
+  }).join('');
+}
+
+function autoFillAddNameSectorFromTicker(){
+  const tickerEl=document.getElementById('add-ticker');
+  const nameEl=document.getElementById('add-name');
+  const sectorEl=document.getElementById('add-sector');
+  if(!tickerEl||!nameEl||!sectorEl)return;
+  const ticker=String(tickerEl.value||'').toUpperCase().trim();
+  tickerEl.value=ticker;
+  if(!ticker){
+    _statusAddStock('');
+    return;
+  }
+  const info=marketSymbolMap[ticker];
+  if(info&&(!String(nameEl.value||'').trim())){
+    nameEl.value=info.company_name;
+  }
+  const fromUniverse=(universeCache&&Array.isArray(universeCache.stocks)?universeCache.stocks:[])
+    .find((row)=>row.symbol===ticker);
+  if(fromUniverse&&fromUniverse.sector){
+    sectorEl.value=toUiSector(fromUniverse.sector);
+  }
+  _statusAddStock(info?'Found in API symbol catalog.':'Ticker not in current API catalog.');
+}
+
+function populateAssetSelector(){
+  const select=document.getElementById('asset-stock-select');
+  if(!select)return;
+  const universeRows=(universeCache&&Array.isArray(universeCache.stocks)?universeCache.stocks:[]);
+  const seen=new Set();
+  const rows=[];
+  holdings.forEach((h)=>{
+    if(!h||!h.ticker||seen.has(h.ticker))return;
+    seen.add(h.ticker);
+    rows.push({symbol:h.ticker,name:h.name});
+  });
+  universeRows.forEach((s)=>{
+    if(!s||!s.symbol||seen.has(s.symbol))return;
+    seen.add(s.symbol);
+    rows.push({symbol:s.symbol,name:s.company_name||s.symbol});
+  });
+  rows.sort((a,b)=>a.symbol.localeCompare(b.symbol));
+  if(!rows.length){
+    select.innerHTML='<option value="">No stocks loaded</option>';
+    return;
+  }
+  if(!seen.has(selectedAssetSymbol)){
+    selectedAssetSymbol=rows[0].symbol;
+  }
+  select.innerHTML=rows.map((row)=>{
+    return '<option value="'+_escapeHtml(row.symbol)+'">'+_escapeHtml(row.symbol+' — '+row.name)+'</option>';
+  }).join('');
+  select.value=selectedAssetSymbol;
+}
+
+function updateAssetHeader(symbol){
+  const ticker=String(symbol||selectedAssetSymbol||'').toUpperCase().trim();
+  if(!ticker)return;
+  selectedAssetSymbol=ticker;
+  const holding=holdings.find((h)=>h.ticker===ticker)||null;
+  const universeRow=(universeCache&&Array.isArray(universeCache.stocks)?universeCache.stocks:[]).find((s)=>s.symbol===ticker)||null;
+  const symbolEl=document.getElementById('asset-symbol');
+  const nameEl=document.getElementById('asset-name');
+  const priceEl=document.getElementById('asset-price');
+  const changeEl=document.getElementById('asset-change');
+  const holdEl=document.getElementById('asset-holding');
+  if(symbolEl)symbolEl.textContent=ticker;
+  if(nameEl){
+    const label=(holding&&holding.name)||(universeRow&&universeRow.company_name)||(marketSymbolMap[ticker]&&marketSymbolMap[ticker].company_name)||ticker;
+    nameEl.textContent=label;
+  }
+  if(priceEl)priceEl.textContent='—';
+  if(holdEl){
+    holdEl.textContent=holding?('· $'+Number(holding.value||0).toLocaleString()+' holding'):'· Not in holdings yet';
+  }
+  if(changeEl){
+    const move=universeRow?Number(universeRow.predicted_move_pct||0):null;
+    if(move===null||Number.isNaN(move)){
+      changeEl.textContent=holding&&holding.change?holding.change:'—';
+      changeEl.className='tag ty';
+    }else{
+      changeEl.textContent=(move>=0?'▲ +':'▼ ')+Math.abs(move).toFixed(2)+'% (5D)';
+      changeEl.className=move>=0?'up':'dn';
+    }
+  }
+  const select=document.getElementById('asset-stock-select');
+  if(select&&select.value!==ticker&&Array.from(select.options).some((o)=>o.value===ticker)){
+    select.value=ticker;
+  }
+}
+
+function selectAssetFromDropdown(){
+  const select=document.getElementById('asset-stock-select');
+  if(!select)return;
+  updateAssetHeader(select.value);
+}
+
 function syncUniverseToUi(data){
   if(!data||!Array.isArray(data.stocks))return;
   const marketIndex={};
   holdings=holdings||[];
   holdings.forEach((h)=>{marketIndex[h.ticker]=h;});
-  const stocks=data.stocks.slice(0,14);
+  const stocks=data.stocks.slice();
   holdings=stocks.map((s)=>{
     const prev=marketIndex[s.symbol];
     const value=prev&&prev.value?prev.value:Math.max(5000,Math.round(Math.abs(Number(s.predicted_move_pct||0))*3000+9000));
@@ -1904,6 +2060,8 @@ function syncUniverseToUi(data){
   }
   renderDash();
   renderSettings();
+  populateAssetSelector();
+  updateAssetHeader(selectedAssetSymbol);
 
   const total=holdings.reduce((a,h)=>a+Number(h.value||0),0);
   const secAlloc={};
@@ -1954,15 +2112,26 @@ async function hydrateFromBackend(){
   const tasks=await Promise.allSettled([
     apiGet('/api/market/provider'),
     apiGet('/api/market/case4/stocks'),
+    apiGet('/api/market/symbols?limit=2500'),
     apiGet('/api/dashboard/summary'),
     apiGet('/api/agents/news-intake/documents?limit=5'),
     apiGet('/api/agents/sector/analyze-all',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({horizon_days:5})}),
   ]);
   const provider=tasks[0].status==='fulfilled'?tasks[0].value:null;
   const market=tasks[1].status==='fulfilled'?tasks[1].value:null;
-  const summary=tasks[2].status==='fulfilled'?tasks[2].value:null;
-  const news=tasks[3].status==='fulfilled'?tasks[3].value:[];
-  const universe=tasks[4].status==='fulfilled'?tasks[4].value:null;
+  const symbolsCatalog=tasks[2].status==='fulfilled'?tasks[2].value:null;
+  const summary=tasks[3].status==='fulfilled'?tasks[3].value:null;
+  const news=tasks[4].status==='fulfilled'?tasks[4].value:[];
+  const universe=tasks[5].status==='fulfilled'?tasks[5].value:null;
+  if(symbolsCatalog){
+    buildSymbolCaches(symbolsCatalog);
+    populateTickerDatalist();
+    _statusAddStock(
+      enforceApiTickerValidation
+        ? ('Loaded '+marketSymbolsCache.length+' stock symbols from API catalog.')
+        : ('Loaded '+marketSymbolsCache.length+' tracked symbols. You can still add custom tickers manually.')
+    );
+  }
   if(universe&&Array.isArray(universe.stocks)){
     universeCache=universe;
     syncUniverseToUi(universe);
@@ -1997,7 +2166,18 @@ async function refreshAssetOverspill(){
 }
 
 // init on load
-window.onload=function(){renderDash();renderSettings();hydrateFromBackend();};
+window.onload=function(){
+  const tickerInput=document.getElementById('add-ticker');
+  if(tickerInput){
+    tickerInput.addEventListener('change',autoFillAddNameSectorFromTicker);
+    tickerInput.addEventListener('blur',autoFillAddNameSectorFromTicker);
+  }
+  renderDash();
+  renderSettings();
+  populateAssetSelector();
+  updateAssetHeader(selectedAssetSymbol);
+  hydrateFromBackend();
+};
 
 </script>
 </body>

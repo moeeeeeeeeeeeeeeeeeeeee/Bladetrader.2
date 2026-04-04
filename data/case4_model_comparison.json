@@ -1,0 +1,214 @@
+{
+  "generated_at_utc": "2026-04-04T19:43:12.482464+00:00",
+  "objective": "Predict five-day post-earnings direction and compare baseline vs sentiment-enhanced model.",
+  "dataset": {
+    "events_total": 78,
+    "train_events": 54,
+    "test_events": 24,
+    "symbols": [
+      "AAPL",
+      "AMD",
+      "AMZN",
+      "ANET",
+      "ASML",
+      "AVGO",
+      "CRM",
+      "CRWD",
+      "GOOGL",
+      "INTC",
+      "META",
+      "MSFT",
+      "NVDA",
+      "ORCL",
+      "PANW",
+      "PLTR",
+      "QCOM",
+      "SMCI",
+      "SNOW",
+      "TSM"
+    ],
+    "features_baseline": [
+      "baseline_pre_7d_return_pct",
+      "baseline_pre_7d_abs_return"
+    ],
+    "features_enhanced": [
+      "baseline_pre_7d_return_pct",
+      "baseline_pre_7d_abs_return",
+      "sent_doc_count",
+      "sent_mean_score",
+      "sent_mean_relevance",
+      "spillover_mentions_7d",
+      "spillover_density_7d"
+    ]
+  },
+  "leakage_controls": {
+    "window_policy": "Features only from 7-day window ending at earnings date T.",
+    "target_policy": "Target is direction over the 5 trading days after T.",
+    "validation_policy": "Chronological split by event date; no random shuffling."
+  },
+  "results": {
+    "baseline": {
+      "accuracy": 0.375,
+      "precision": 0.1111111111111111,
+      "recall": 0.125,
+      "f1": 0.11764705882352941,
+      "n_test": 24
+    },
+    "sentiment_enhanced": {
+      "accuracy": 0.375,
+      "precision": 0.1111111111111111,
+      "recall": 0.125,
+      "f1": 0.11764705882352941,
+      "n_test": 24
+    },
+    "accuracy_uplift_pp": 0.0
+  },
+  "test_predictions_preview": [
+    {
+      "symbol": "CRWD",
+      "t_event_utc": "2025-12-02T21:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 0,
+      "enhanced_pred": 0
+    },
+    {
+      "symbol": "SNOW",
+      "t_event_utc": "2025-12-03T21:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1
+    },
+    {
+      "symbol": "CRM",
+      "t_event_utc": "2025-12-03T21:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 0,
+      "enhanced_pred": 0
+    },
+    {
+      "symbol": "ORCL",
+      "t_event_utc": "2025-12-10T21:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1
+    },
+    {
+      "symbol": "AVGO",
+      "t_event_utc": "2025-12-11T21:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1
+    },
+    {
+      "symbol": "TSM",
+      "t_event_utc": "2026-01-15T06:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 0
+    },
+    {
+      "symbol": "INTC",
+      "t_event_utc": "2026-01-22T21:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1
+    },
+    {
+      "symbol": "ASML",
+      "t_event_utc": "2026-01-28T00:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1
+    },
+    {
+      "symbol": "MSFT",
+      "t_event_utc": "2026-01-28T21:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1
+    },
+    {
+      "symbol": "AAPL",
+      "t_event_utc": "2026-01-29T21:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 0,
+      "enhanced_pred": 0
+    },
+    {
+      "symbol": "PLTR",
+      "t_event_utc": "2026-02-02T21:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 0
+    },
+    {
+      "symbol": "AMD",
+      "t_event_utc": "2026-02-03T21:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 0
+    },
+    {
+      "symbol": "SMCI",
+      "t_event_utc": "2026-02-03T21:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 0,
+      "enhanced_pred": 0
+    },
+    {
+      "symbol": "GOOGL",
+      "t_event_utc": "2026-02-04T21:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 0
+    },
+    {
+      "symbol": "QCOM",
+      "t_event_utc": "2026-02-04T21:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 0
+    },
+    {
+      "symbol": "AMZN",
+      "t_event_utc": "2026-02-05T21:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 0
+    },
+    {
+      "symbol": "ANET",
+      "t_event_utc": "2026-02-12T21:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 0
+    },
+    {
+      "symbol": "PANW",
+      "t_event_utc": "2026-02-17T21:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1
+    },
+    {
+      "symbol": "SNOW",
+      "t_event_utc": "2026-02-25T21:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 0
+    },
+    {
+      "symbol": "NVDA",
+      "t_event_utc": "2026-02-25T21:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1
+    }
+  ],
+  "visualizations": {
+    "sentiment_trend": "data/case4_visuals/sentiment_trend.png",
+    "sentiment_vs_return": "data/case4_visuals/sentiment_vs_return.png",
+    "spillover_relationships": "data/case4_visuals/spillover_relationships.png",
+    "model_comparison": "data/case4_visuals/model_comparison.png"
+  }
+}

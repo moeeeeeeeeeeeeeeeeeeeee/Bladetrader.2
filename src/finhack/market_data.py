@@ -11,7 +11,7 @@ import pandas as pd
 import yfinance as yf
 
 from finhack.config import MarketDataProvider, Settings, load_settings
-from finhack.data.company_graph import CASE4_SYMBOLS, SPILLOVER_MAP
+from finhack.data.company_graph import CASE4_SYMBOLS, SPILLOVER_MAP, SYMBOL_TO_COMPANY
 
 EODHD_BASE_URL = "https://eodhd.com/api"
 
@@ -56,6 +56,13 @@ class MarketPoint:
     as_of_utc: str
     source: str
     impacted_symbols: list[str]
+
+
+@dataclass(slots=True)
+class MarketSymbol:
+    symbol: str
+    company_name: str
+    source: str
 
 
 def _to_float(value: Any) -> float | None:
@@ -260,6 +267,64 @@ def _fetch_eodhd_realtime(symbol: str, api_key: str) -> dict[str, Any]:
     if payload.get("code"):
         raise ValueError(f"EODHD error for {symbol}: {payload.get('message') or payload.get('code')}")
     return payload
+
+
+def _fetch_eodhd_us_symbols(api_key: str, limit: int) -> list[MarketSymbol]:
+    with httpx.Client(timeout=45.0) as client:
+        resp = client.get(
+            f"{EODHD_BASE_URL}/exchange-symbol-list/US",
+            params={"api_token": api_key, "fmt": "json"},
+        )
+        resp.raise_for_status()
+        payload = resp.json()
+    if not isinstance(payload, list):
+        return []
+
+    out: list[MarketSymbol] = []
+    for row in payload:
+        if not isinstance(row, dict):
+            continue
+        code = str(row.get("Code") or "").strip().upper()
+        name = str(row.get("Name") or "").strip()
+        if not code or len(code) > 12:
+            continue
+        stock_type = str(row.get("Type") or "").strip().lower()
+        if stock_type and stock_type not in {"common stock", "etf", "fund"}:
+            continue
+        out.append(
+            MarketSymbol(
+                symbol=code,
+                company_name=name or code,
+                source="eodhd",
+            )
+        )
+        if len(out) >= limit:
+            break
+    return out
+
+
+def get_market_symbols(limit: int = 1500, settings: Settings | None = None) -> tuple[str, list[MarketSymbol]]:
+    cfg = settings or load_settings()
+    safe_limit = max(50, min(limit, 5000))
+    provider = cfg.market_data_provider.value
+    if provider == "eodhd" and cfg.eodhd_api_key:
+        try:
+            rows = _fetch_eodhd_us_symbols(cfg.eodhd_api_key, safe_limit)
+            if rows:
+                return provider, rows
+        except Exception:
+            pass
+
+    fallback = sorted(CASE4_SYMBOLS)[:safe_limit]
+    rows = [
+        MarketSymbol(
+            symbol=symbol,
+            company_name=SYMBOL_TO_COMPANY.get(symbol).name if SYMBOL_TO_COMPANY.get(symbol) else symbol,
+            source="case4",
+        )
+        for symbol in fallback
+    ]
+    return provider, rows
 
 
 def get_case4_market_points(settings: Settings | None = None) -> tuple[str, list[MarketPoint]]:

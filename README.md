@@ -1,6 +1,6 @@
 # BladeTrader
 
-Case-4 hackathon app for AI-sentiment, cross-company spillover, and 5-7 day post-event direction workflows across 14 tracked stocks.
+Case-4 hackathon app for AI-sentiment, cross-company spillover, and 5-7 day post-event direction workflows across the full tracked universe.
 
 ## Run locally
 
@@ -53,6 +53,18 @@ Case-4 hackathon app for AI-sentiment, cross-company spillover, and 5-7 day post
 - `POST /api/auth/register`
 - `POST /api/auth/login`
 - `GET /api/auth/me`
+
+## Case-4 prototype modeling
+
+- Run: `python scripts/train_case4_prototype_model.py`
+- Output metrics JSON: `data/case4_model_comparison.json`
+- Output visuals:
+  - `data/case4_visuals/sentiment_trend.png`
+  - `data/case4_visuals/sentiment_vs_return.png`
+  - `data/case4_visuals/spillover_relationships.png`
+  - `data/case4_visuals/model_comparison.png`
+
+The script enforces leakage controls by using only features in the 7-day window ending at earnings date `T` and evaluating target direction over the next five trading days with a chronological split.
 
 ## Notes
 

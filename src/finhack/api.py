@@ -32,7 +32,7 @@ from finhack.agents.news_intake_agent import NewsIntakeAgent
 from finhack.agents.sector_intelligence_agent import CompanyImpact, SectorIntelligenceAgent
 from finhack.config import load_settings
 from finhack.data.company_graph import CASE4_SYMBOLS, SECTOR_BUCKETS, SYMBOL_TO_COMPANY
-from finhack.market_data import get_case4_market_points
+from finhack.market_data import get_case4_market_points, get_market_symbols
 from finhack.session_chatbot import (
     answer_user_question,
     get_conversation_history,
@@ -219,6 +219,18 @@ class MarketProviderResponse(BaseModel):
     has_eodhd_key: bool
     is_live_ready: bool
     notes: list[str]
+
+
+class MarketSymbolResponse(BaseModel):
+    symbol: str
+    company_name: str
+    source: str
+
+
+class MarketSymbolsResponse(BaseModel):
+    provider: str
+    run_at_utc: str
+    symbols: list[MarketSymbolResponse]
 
 
 class SectorAnalyzeRequest(BaseModel):
@@ -703,6 +715,16 @@ def get_case4_market_stocks() -> Case4MarketResponse:
         provider=provider,
         run_at_utc=points[0].as_of_utc if points else "",
         symbols=[MarketPointResponse(**asdict(p)) for p in points],
+    )
+
+
+@app.get("/api/market/symbols", response_model=MarketSymbolsResponse)
+def get_market_symbols_catalog(limit: int = 1500) -> MarketSymbolsResponse:
+    provider, symbols = get_market_symbols(limit=limit)
+    return MarketSymbolsResponse(
+        provider=provider,
+        run_at_utc=datetime.now(timezone.utc).replace(microsecond=0).isoformat(),
+        symbols=[MarketSymbolResponse(**asdict(row)) for row in symbols],
     )
 
 
