@@ -1118,6 +1118,7 @@ function addStock(){
   renderDash();renderSettings();
   populateAssetSelector();
   updateAssetHeader(ticker);
+  rebuildRiskNetworkData();
   // show added feedback
   const btn=document.querySelector('.add-btn');
   const orig=btn.textContent;btn.textContent='✓ ADDED';btn.style.background='var(--g)';
@@ -1131,6 +1132,7 @@ function removeStock(i){
   renderDash();renderSettings();
   populateAssetSelector();
   updateAssetHeader(selectedAssetSymbol);
+  rebuildRiskNetworkData();
 }
 
 // ════════════════
@@ -1201,6 +1203,7 @@ function uploadSelectedFile(evt){
         renderSettings();
         populateAssetSelector();
         updateAssetHeader(selectedAssetSymbol);
+        rebuildRiskNetworkData();
       }
       input.value='';
     })
@@ -2025,6 +2028,256 @@ function selectAssetFromDropdown(){
   updateAssetHeader(select.value);
 }
 
+function _sectorIdFromLabel(label){
+  const txt=String(label||'').toLowerCase();
+  if(txt.includes('semi')||txt.includes('compute')||txt.includes('physical'))return 'semi';
+  if(txt.includes('platform')||txt.includes('cloud')||txt.includes('consumer'))return 'aip';
+  if(txt.includes('data')||txt.includes('enterprise'))return 'data';
+  return 'cyber';
+}
+
+function _sectorColor(sectorId){
+  if(sectorId==='semi')return '#0a6640';
+  if(sectorId==='aip')return '#a85e08';
+  if(sectorId==='data')return '#6d4d8f';
+  return '#1a3a6b';
+}
+
+function _hedgeCandidatesForSector(sectorId,symbol){
+  const bySector={
+    cyber:[
+      {tk:'HACK',nm:'ETFMG Prime Cyber ETF'},
+      {tk:'CIBR',nm:'First Trust Nasdaq Cybersecurity ETF'},
+      {tk:'BUG',nm:'Global X Cybersecurity ETF'}
+    ],
+    semi:[
+      {tk:'SOXS',nm:'Direxion Daily Semiconductor Bear 3X Shares'},
+      {tk:'SMN',nm:'ProShares UltraShort Semiconductors'},
+      {tk:'PSQ',nm:'ProShares Short QQQ'}
+    ],
+    aip:[
+      {tk:'PSQ',nm:'ProShares Short QQQ'},
+      {tk:'SQQQ',nm:'ProShares UltraPro Short QQQ'},
+      {tk:'SH',nm:'ProShares Short S&P500'}
+    ],
+    data:[
+      {tk:'SH',nm:'ProShares Short S&P500'},
+      {tk:'PSQ',nm:'ProShares Short QQQ'},
+      {tk:'IEF',nm:'iShares 7-10Y Treasury Bond ETF'}
+    ]
+  };
+  const rows=(bySector[sectorId]||bySector.cyber).filter((x)=>x.tk!==symbol);
+  return rows.slice(0,2);
+}
+
+function _riskPackForRow(row,sectorId){
+  const symbol=String(row&&row.symbol||'').toUpperCase();
+  const move=Number(row&&row.predicted_move_pct||0);
+  const corr=Math.abs(Number(row&&row.correlation_to_sector||0));
+  const usable=Math.max(0.1,Math.min(0.9,0.25+(corr*0.6)));
+  const connected=String(row&&row.connected_to||'').trim();
+  const hedges=_hedgeCandidatesForSector(sectorId,symbol).map((h,idx)=>({
+    tk:h.tk,
+    nm:h.nm,
+    co:(0.55+(corr*0.35)-idx*0.08).toFixed(2)+' inverse corr',
+    fx:'Reduces '+Math.round((20+(corr*40)-idx*7))+'% exposure',
+    ov:connected&&idx===0?('Partial overlap with '+connected):'None - clean',
+    rt:(usable-(idx*0.08)).toFixed(2).replace(/^0/,'')+'x position',
+    ql:(corr>=0.72?'HIGH':corr>=0.45?'MED':'LOW')
+  }));
+  const lev=[
+    {
+      lb:'Buy '+symbol+' call options',
+      tp:'Call options',
+      ct:'~$'+Math.max(350,Math.round(Math.abs(move)*120+380))+' premium',
+      up:'+'+Math.max(6,Math.round(Math.abs(move)*1.8+6))+'% if thesis plays out',
+      rk:'Premium decay in sideways tape',
+      cv:(Math.abs(move)>=2.2?'HIGH':'MED')+' confidence'
+    },
+    {
+      lb:'Add spot shares in tranches',
+      tp:'Equity add',
+      ct:'+$'+Math.max(5000,Math.round(Math.abs(move)*2100+4200)),
+      up:'+'+Math.max(4,Math.round(Math.abs(move)*1.2+4))+'% projected upside',
+      rk:'Higher concentration risk',
+      cv:(Math.abs(move)>=2.2?'MED-HIGH':'MED')+' confidence'
+    }
+  ];
+  return {
+    ev:(row&&row.rationale)||'Sector spillover + sentiment signal',
+    lc:Math.abs(move)>=1.8,
+    he:hedges.length?hedges[0].tk:null,
+    ho:hedges,
+    lo:lev
+  };
+}
+
+function _rowsForRiskNetwork(inputRows){
+  const fromUniverse=Array.isArray(inputRows)?inputRows:[];
+  if(fromUniverse.length){
+    return fromUniverse.map((r)=>({
+      symbol:String(r.symbol||'').toUpperCase(),
+      company_name:String(r.company_name||r.symbol||'').trim(),
+      sector:_sectorIdFromLabel(r.sector),
+      predicted_move_pct:Number(r.predicted_move_pct||0),
+      correlation_to_sector:Number(r.correlation_to_sector||0),
+      connected_to:r.connected_to||null,
+      rationale:r.rationale||'',
+      leverage_or_hedge:r.leverage_or_hedge||''
+    })).filter((r)=>r.symbol);
+  }
+  return (holdings||[]).map((h)=>({
+    symbol:String(h.ticker||'').toUpperCase(),
+    company_name:String(h.name||h.ticker||'').trim(),
+    sector:_sectorIdFromLabel(h.sector),
+    predicted_move_pct:parseFloat(String(h.change||'0').replace('%','').replace('+',''))||0,
+    correlation_to_sector:0.5,
+    connected_to:null,
+    rationale:'Holding-only mode: run analysis to enrich network recommendations.',
+    leverage_or_hedge:''
+  })).filter((r)=>r.symbol);
+}
+
+function rebuildRiskNetworkData(inputRows){
+  const rows=_rowsForRiskNetwork(inputRows);
+  if(!rows.length)return;
+
+  ND.length=0;
+  ED.length=0;
+
+  ND.push(
+    {id:'A_CYBER',lbl:'CYBER\nSECTOR',full:'Cybersecurity Sector',lv:'A',sector:'cyber',x:0,y:0,r:42,col:'#1a3a6b',bg:'rgba(26,58,107,0.11)',a:{alloc:'--',event:'Live sentiment mix',spill:'HIGH'}},
+    {id:'A_SEMI',lbl:'SEMI\nSECTOR',full:'Semiconductors Sector',lv:'A',sector:'semi',x:-290,y:205,r:34,col:'#0a6640',bg:'rgba(10,102,64,0.11)',a:{alloc:'--',event:'Compute demand / export risk',spill:'MED'}},
+    {id:'A_AIP',lbl:'AI PLT\nSECTOR',full:'AI Platforms Sector',lv:'A',sector:'aip',x:290,y:205,r:30,col:'#a85e08',bg:'rgba(168,94,8,0.11)',a:{alloc:'--',event:'Monetization + regulation',spill:'MED'}}
+  );
+
+  const sectorAnchor={
+    cyber:{x:0,y:0,id:'A_CYBER'},
+    semi:{x:-290,y:205,id:'A_SEMI'},
+    aip:{x:290,y:205,id:'A_AIP'},
+    data:{x:0,y:305,id:'A_AIP'}
+  };
+  const counts={cyber:0,semi:0,aip:0,data:0};
+  const capRows=rows.slice(0,40);
+
+  capRows.forEach((row,idx)=>{
+    const sid=row.sector in sectorAnchor?row.sector:'cyber';
+    const i=counts[sid]++;
+    const anchor=sectorAnchor[sid];
+    const angle=(i%8)*(Math.PI/4)+(idx*0.07);
+    const ring=145+Math.floor(i/8)*70;
+    const x=Math.round(anchor.x+Math.cos(angle)*ring);
+    const y=Math.round(anchor.y+Math.sin(angle)*ring);
+    const move=Number(row.predicted_move_pct||0);
+    const holding=holdings.find((h)=>h.ticker===row.symbol)||null;
+    const mkt=latestMarketPointMap[row.symbol]||null;
+    const price=mkt&&mkt.price?('$'+Number(mkt.price).toFixed(2)):'—';
+    const change=(move>=0?'+':'')+move.toFixed(1)+'%';
+    const nodeId='B_'+row.symbol;
+    const riskPack=_riskPackForRow(row,sid);
+    ND.push({
+      id:nodeId,
+      lbl:row.symbol,
+      full:row.company_name||row.symbol,
+      lv:'B',
+      sec:anchor.id,
+      x:x,
+      y:y,
+      r:Math.max(17,Math.min(28,17+Math.round(Math.abs(move)*1.8))),
+      col:_sectorColor(sid),
+      bg:'rgba(26,58,107,0.10)',
+      price:price,
+      chg:change,
+      up:move>=0,
+      val:'$'+Math.round(Number(holding&&holding.value||9000)).toLocaleString(),
+      b:riskPack
+    });
+    ED.push({
+      a:anchor.id,
+      b:nodeId,
+      w:Math.max(0.45,Math.min(1.0,Math.abs(Number(row.correlation_to_sector||0.5)))),
+      t:'AB',
+      tx:(row.rationale||'Sector exposure path for '+row.symbol).slice(0,180)
+    });
+
+    const firstHedge=riskPack.ho[0];
+    if(firstHedge){
+      const hedgeId='C_H_'+row.symbol;
+      ND.push({
+        id:hedgeId,
+        lbl:firstHedge.tk,
+        full:firstHedge.nm,
+        lv:'C',
+        sref:nodeId,
+        x:x+Math.round(Math.cos(angle+0.6)*92),
+        y:y+Math.round(Math.sin(angle+0.6)*92),
+        r:16,
+        col:'#bf3527',
+        bg:'rgba(191,53,39,0.10)',
+        hedge:true,
+        c:{
+          role:'Hedge Node',
+          follows:null,
+          use:firstHedge.ql==='HIGH'?'HIGH':firstHedge.ql==='MED'?'MEDIUM':'LOW',
+          ratio:firstHedge.rt,
+          fx:firstHedge.fx,
+          ov:firstHedge.ov,
+          ic:firstHedge.co,
+          sum:firstHedge.nm+' helps offset '+row.symbol+' risk.'
+        }
+      });
+      ED.push({a:nodeId,b:hedgeId,w:0.7,t:'BCh',tx:firstHedge.fx+' via '+firstHedge.tk});
+    }
+
+    if(row.connected_to){
+      const ctk=String(row.connected_to).toUpperCase().slice(0,6);
+      const spillId='C_S_'+row.symbol;
+      ND.push({
+        id:spillId,
+        lbl:ctk+'\nSPILL',
+        full:ctk+' spillover path',
+        lv:'C',
+        sref:nodeId,
+        x:x+Math.round(Math.cos(angle-0.55)*94),
+        y:y+Math.round(Math.sin(angle-0.55)*94),
+        r:15,
+        col:'#a85e08',
+        bg:'rgba(168,94,8,0.10)',
+        spill:true,
+        c:{
+          role:'Spillover Follower',
+          follows:row.symbol+' sentiment',
+          use:'MEDIUM',
+          ratio:'0.25x position',
+          fx:'Partial spillover dampener',
+          ov:'Monitor overlap',
+          ic:null,
+          sum:'Connected move path between '+row.symbol+' and '+ctk+'.'
+        }
+      });
+      ED.push({a:nodeId,b:spillId,w:0.45,t:'BCs',tx:'Spillover connection to '+ctk});
+    }
+  });
+
+  const totalVal=(holdings||[]).reduce((a,h)=>a+Number(h.value||0),0)||1;
+  const sectorVal={cyber:0,semi:0,aip:0,data:0};
+  (holdings||[]).forEach((h)=>{
+    const sid=_sectorIdFromLabel(h.sector);
+    sectorVal[sid]=(sectorVal[sid]||0)+Number(h.value||0);
+  });
+  ND.forEach((n)=>{
+    if(!n||n.lv!=='A')return;
+    const sid=n.sector||'cyber';
+    const pct=Math.max(1,Math.round(((sectorVal[sid]||0)/totalVal)*100));
+    n.a.alloc=pct+'%';
+    n.a.spill=pct>=35?'HIGH':pct>=18?'MED':'LOW';
+  });
+
+  if(selectedAssetSymbol&&capRows.some((r)=>r.symbol===selectedAssetSymbol)){
+    NSEL=ND.find((n)=>n.id==='B_'+selectedAssetSymbol)||null;
+  }
+}
+
 function syncUniverseToUi(data){
   if(!data||!Array.isArray(data.stocks))return;
   const marketIndex={};
@@ -2062,6 +2315,10 @@ function syncUniverseToUi(data){
   renderSettings();
   populateAssetSelector();
   updateAssetHeader(selectedAssetSymbol);
+  rebuildRiskNetworkData(data.stocks);
+  if(document.getElementById('p-risklev')&&document.getElementById('p-risklev').classList.contains('on')){
+    initNet2();
+  }
 
   const total=holdings.reduce((a,h)=>a+Number(h.value||0),0);
   const secAlloc={};
@@ -2123,6 +2380,13 @@ async function hydrateFromBackend(){
   const summary=tasks[3].status==='fulfilled'?tasks[3].value:null;
   const news=tasks[4].status==='fulfilled'?tasks[4].value:[];
   const universe=tasks[5].status==='fulfilled'?tasks[5].value:null;
+  latestMarketPointMap={};
+  if(market&&Array.isArray(market.symbols)){
+    market.symbols.forEach((p)=>{
+      const sym=String(p&&p.symbol||'').toUpperCase();
+      if(sym)latestMarketPointMap[sym]=p;
+    });
+  }
   if(symbolsCatalog){
     buildSymbolCaches(symbolsCatalog);
     populateTickerDatalist();
@@ -2136,6 +2400,8 @@ async function hydrateFromBackend(){
     universeCache=universe;
     syncUniverseToUi(universe);
     renderAssetOverspill(universe.stocks);
+  } else {
+    rebuildRiskNetworkData();
   }
   const modeChip=document.querySelector('.tb-chip');
   if(modeChip&&provider){
@@ -2160,6 +2426,10 @@ async function refreshAssetOverspill(){
     });
     universeCache=data;
     renderAssetOverspill(Array.isArray(data.stocks)?data.stocks:[]);
+    rebuildRiskNetworkData(Array.isArray(data.stocks)?data.stocks:[]);
+    if(document.getElementById('p-risklev')&&document.getElementById('p-risklev').classList.contains('on')){
+      initNet2();
+    }
   }catch(err){
     if(status)status.textContent='Overspill refresh failed: '+err.message;
   }
@@ -2176,6 +2446,7 @@ window.onload=function(){
   renderSettings();
   populateAssetSelector();
   updateAssetHeader(selectedAssetSymbol);
+  rebuildRiskNetworkData();
   hydrateFromBackend();
 };
 
