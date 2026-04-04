@@ -1,375 +1,1816 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BladeTrader</title>
-  <style>
-    @import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=DM+Sans:wght@300;400;500;600&display=swap");
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --bg0: #0d0f12; --bg1: #141720; --bg2: #1c2030; --bg3: #232840;
-      --border: #2a3050; --border2: #3a4570;
-      --green: #00d084; --green2: #00a368; --green3: #003d26;
-      --amber: #f5a623; --red: #e84040; --blue: #4a9eff; --purple: #9b7cf8;
-      --text0: #e8ecf4; --text1: #9ba3c0; --text2: #5a6380;
-      --mono: "JetBrains Mono", monospace; --sans: "DM Sans", sans-serif;
-    }
-    body { background: var(--bg0); color: var(--text0); font-family: var(--sans); font-size: 13px; min-height: 100vh; }
-    .shell { display: flex; height: 100vh; min-height: 600px; }
-    .sidebar { width: 200px; min-width: 200px; background: var(--bg1); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
-    .logo { padding: 20px 18px 16px; border-bottom: 1px solid var(--border); }
-    .logo-mark { font-family: var(--mono); font-size: 15px; font-weight: 700; letter-spacing: -.5px; color: var(--text0); }
-    .logo-mark span { color: var(--green); }
-    .logo-sub { font-size: 9px; color: var(--green); letter-spacing: 2px; margin-top: 3px; display: flex; align-items: center; gap: 5px; }
-    .dot-live { width: 5px; height: 5px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .3; } }
-    .nav-section { padding: 14px 12px 6px; font-size: 9px; color: var(--text2); letter-spacing: 2px; }
-    .nav-item { padding: 7px 16px; border-radius: 6px; margin: 1px 8px; color: var(--text1); font-size: 12px; }
-    .nav-item.active { background: var(--bg2); color: var(--text0); border-left: 2px solid var(--green); padding-left: 14px; }
-    .badge { font-size: 8px; padding: 2px 6px; border-radius: 3px; margin-left: auto; font-family: var(--mono); letter-spacing: 1px; }
-    .badge.ai { background: #1a3a2a; color: var(--green); }
-    .badge.live { background: #2a1a1a; color: #e84040; }
-    .badge.setup { background: #2a2a1a; color: var(--amber); }
-    .sidebar-bottom { margin-top: auto; padding: 14px; border-top: 1px solid var(--border); }
-    .event-engine-label { font-size: 9px; color: var(--text2); letter-spacing: 2px; margin-bottom: 8px; }
-    .engine-status { font-size: 9px; color: var(--text2); margin-top: 6px; line-height: 1.4; }
-    .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-    .topbar { background: var(--bg1); border-bottom: 1px solid var(--border); padding: 0 24px; height: 44px; display: flex; align-items: center; gap: 16px; }
-    .topbar-title { font-size: 11px; color: var(--text2); letter-spacing: 2px; flex: 1; }
-    .live-pill { background: var(--green3); border: 1px solid var(--green2); color: var(--green); font-size: 9px; padding: 3px 10px; border-radius: 3px; letter-spacing: 2px; font-family: var(--mono); display: flex; align-items: center; gap: 5px; }
-    .topbar-time { font-family: var(--mono); font-size: 11px; color: var(--text2); }
-    .signal-strip { background: var(--bg1); border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; align-items: center; gap: 24px; }
-    .ticker { font-family: var(--mono); font-size: 26px; font-weight: 700; color: var(--text0); letter-spacing: -1px; }
-    .company { font-size: 13px; color: var(--text1); margin-top: 2px; }
-    .price { font-family: var(--mono); font-size: 24px; font-weight: 500; color: var(--text0); }
-    .change { font-family: var(--mono); font-size: 14px; display: flex; align-items: center; gap: 3px; }
-    .divider { width: 1px; height: 36px; background: var(--border); }
-    .signal-label { font-size: 9px; color: var(--text2); letter-spacing: 2px; }
-    .signal-value { font-family: var(--mono); font-size: 14px; font-weight: 700; color: var(--green); }
-    .conviction-bar { width: 80px; height: 3px; background: var(--border); border-radius: 2px; margin-top: 4px; }
-    .conviction-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--green2), var(--green)); }
-    .controls-right { margin-left: auto; display: flex; gap: 6px; align-items: center; }
-    .ctrl-btn { background: var(--bg2); border: 1px solid var(--border); color: var(--text1); font-size: 10px; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-family: var(--mono); }
-    .ctrl-btn.active { background: var(--bg3); border-color: var(--green2); color: var(--green); }
-    .ctrl-select { background: var(--bg2); border: 1px solid var(--border); color: var(--text1); font-size: 10px; padding: 5px 8px; border-radius: 4px; font-family: var(--mono); }
-    .content { flex: 1; display: flex; overflow: hidden; }
-    .left-pane { flex: .7; display: flex; flex-direction: column; overflow-y: auto; padding: 20px; gap: 16px; border-right: 1px solid var(--border); }
-    .right-pane { flex: .3; min-width: 260px; display: flex; flex-direction: column; overflow-y: auto; padding: 16px; gap: 12px; }
-    .card { background: var(--bg1); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
-    .card-title { font-size: 9px; color: var(--text2); letter-spacing: 2px; margin-bottom: 10px; }
-    .chart-wrap { position: relative; width: 100%; height: 210px; }
-    .event-feed { display: flex; flex-direction: column; gap: 0; }
-    .event-row { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
-    .event-time { font-family: var(--mono); font-size: 10px; color: var(--text2); min-width: 40px; margin-top: 1px; }
-    .event-icon { width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; font-family: var(--mono); }
-    .ev-a { background: #1a2a40; color: var(--blue); }
-    .ev-b { background: #1a2a1a; color: var(--green); }
-    .event-title { font-size: 12px; color: var(--text0); font-weight: 500; }
-    .event-impact { font-family: var(--mono); font-size: 11px; color: var(--green); margin-top: 1px; }
-    .why-card { background: #0d1a2a; border: 1px solid #1a3a6a; border-radius: 8px; padding: 14px; }
-    .why-label { font-size: 9px; color: var(--blue); letter-spacing: 2px; margin-bottom: 8px; }
-    .why-text { font-size: 11px; color: #9bb8e0; line-height: 1.7; }
-    .r-card { background: var(--bg1); border: 1px solid var(--border); border-radius: 8px; padding: 14px; }
-    .r-card-title { font-size: 9px; color: var(--text2); letter-spacing: 2px; margin-bottom: 10px; }
-    .big-signal { font-family: var(--mono); font-size: 22px; font-weight: 700; color: var(--green); margin-bottom: 4px; }
-    .list { display: grid; gap: 8px; max-height: 220px; overflow-y: auto; }
-    .item { border: 1px solid var(--border); border-radius: 8px; padding: 10px; background: var(--bg2); font-size: 11px; line-height: 1.4; }
-    .muted { color: var(--text1); }
-    .up { color: var(--green); } .down { color: var(--red); }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SentinelAI</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Bebas+Neue&family=Crimson+Pro:ital,opsz,wght@0,6..76,300;0,6..76,400;1,6..76,300&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased}
+:root{
+  --ink:#0b0d12;--paper:#f1efe9;--surface:#ffffff;--s2:#f7f5f0;--s3:#eeebe4;
+  --border:#e2dfd7;--border2:#ccc9c0;
+  --g:#0a6640;--gl:rgba(10,102,64,0.08);--gb:rgba(10,102,64,0.18);
+  --r:#bf3527;--rl:rgba(191,53,39,0.08);
+  --b:#1a3a6b;--bl:rgba(26,58,107,0.08);
+  --y:#a85e08;--yl:rgba(168,94,8,0.08);
+  --p:#4a1f80;--pl:rgba(74,31,128,0.08);
+  --muted:#8a8880;--dim:#d4d0c8;
+  --sh:0 1px 3px rgba(0,0,0,0.07),0 4px 14px rgba(0,0,0,0.05);
+}
+body{background:var(--paper);color:var(--ink);font-family:'DM Mono',monospace;height:100vh;overflow:hidden;display:flex;flex-direction:column}
+
+/* ── SCREENS ── */
+.screen{display:none;flex:1;flex-direction:column;overflow:hidden}
+.screen.active{display:flex}
+
+/* ═══════════════════════════════
+   LANDING PAGE
+═══════════════════════════════ */
+#s-land{background:var(--ink);align-items:stretch;flex-direction:row;overflow:hidden}
+.land-left{flex:1;display:flex;flex-direction:column;justify-content:center;padding:60px 64px;position:relative;overflow:hidden}
+.land-left::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 20% 80%,rgba(10,102,64,0.35) 0%,transparent 65%),radial-gradient(ellipse 50% 40% at 80% 20%,rgba(26,58,107,0.2) 0%,transparent 55%)}
+.land-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.025) 1px,transparent 1px);background-size:52px 52px}
+.land-content{position:relative;z-index:2}
+.land-eyebrow{font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:rgba(10,230,160,0.5);margin-bottom:20px}
+.land-logo{font-family:'Bebas Neue',sans-serif;font-size:72px;letter-spacing:3px;color:#fff;line-height:0.95;margin-bottom:24px}
+.land-logo em{color:#1dd98a;font-style:normal}
+.land-tagline{font-family:'Crimson Pro',serif;font-size:18px;font-weight:300;line-height:1.7;color:rgba(255,255,255,0.45);max-width:360px;margin-bottom:40px}
+.land-features{display:flex;flex-direction:column;gap:14px}
+.lf{display:flex;align-items:flex-start;gap:12px}
+.lf-dot{width:5px;height:5px;border-radius:50%;background:#1dd98a;flex-shrink:0;margin-top:6px}
+.lf-text{font-size:10px;line-height:1.8;color:rgba(255,255,255,0.3);letter-spacing:0.04em}
+.lf-text strong{color:rgba(255,255,255,0.6);font-weight:400}
+
+.land-right{width:420px;background:rgba(255,255,255,0.03);border-left:1px solid rgba(255,255,255,0.06);display:flex;flex-direction:column;justify-content:center;padding:48px 40px;position:relative}
+.land-right::before{content:'';position:absolute;top:0;right:0;bottom:0;left:0;background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(10,102,64,0.08),transparent)}
+.lr-content{position:relative;z-index:2}
+.lr-h{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:1px;color:#fff;margin-bottom:6px}
+.lr-sub{font-size:10px;color:rgba(255,255,255,0.3);line-height:1.8;letter-spacing:0.04em;margin-bottom:36px}
+.land-btn{display:block;width:100%;padding:15px 20px;border-radius:8px;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.12em;cursor:pointer;transition:all 0.18s;text-align:center;border:none;margin-bottom:10px}
+.lb-primary{background:#1dd98a;color:var(--ink)}.lb-primary:hover{background:#22eea0;transform:translateY(-1px)}
+.lb-ghost{background:transparent;color:rgba(255,255,255,0.35);border:1px solid rgba(255,255,255,0.1)}.lb-ghost:hover{color:#fff;border-color:rgba(255,255,255,0.3)}
+.lr-note{font-size:9px;color:rgba(255,255,255,0.18);text-align:center;margin-top:20px;line-height:1.7;letter-spacing:0.04em}
+.auth-tabs{display:flex;gap:6px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);padding:4px;border-radius:8px;margin-bottom:14px}
+.auth-tab{flex:1;padding:8px 10px;border-radius:6px;border:none;background:transparent;color:rgba(255,255,255,0.35);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.08em;cursor:pointer;transition:all 0.15s}
+.auth-tab.on{background:rgba(29,217,138,0.14);color:#1dd98a}
+.auth-view{display:none}
+.auth-view.on{display:block}
+.auth-field{margin-bottom:10px}
+.auth-label{display:block;font-size:8px;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-bottom:4px}
+.auth-input{width:100%;padding:10px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);color:#fff;font-family:'DM Mono',monospace;font-size:10px;outline:none}
+.auth-input:focus{border-color:rgba(29,217,138,0.45)}
+.auth-row{display:flex;justify-content:space-between;align-items:center;margin:8px 0 12px}
+.auth-check{display:flex;align-items:center;gap:6px;font-size:9px;color:rgba(255,255,255,0.42)}
+.auth-link{font-size:9px;color:#1dd98a;cursor:pointer}
+.auth-link:hover{text-decoration:underline}
+.auth-helper{font-size:9px;color:rgba(255,255,255,0.35);line-height:1.6;margin-top:10px}
+.auth-status{font-size:9px;color:#1dd98a;min-height:14px;letter-spacing:0.04em;margin-top:8px}
+.auth-inline{display:flex;gap:8px}
+
+/* ═══════════════════════════════
+   APP SHELL
+═══════════════════════════════ */
+#s-app{display:none;flex-direction:row}
+#s-app.active{display:flex}
+.sidebar{width:206px;background:var(--ink);display:flex;flex-direction:column;flex-shrink:0}
+.sb-logo{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,0.05)}
+.sb-logotype{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1.5px;color:#fff}
+.sb-logotype em{color:#1dd98a;font-style:normal}
+.sb-live{display:flex;align-items:center;gap:5px;font-size:8px;letter-spacing:0.1em;color:rgba(255,255,255,0.2);margin-top:3px}
+.sb-ld{width:5px;height:5px;border-radius:50%;background:#1dd98a;animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.25}}
+.sb-nav{flex:1;padding:8px 0;overflow-y:auto}
+.sb-sec{font-size:8px;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.15);padding:14px 18px 5px}
+.sb-item{display:flex;align-items:center;gap:10px;padding:9px 18px;font-size:10px;letter-spacing:0.04em;color:rgba(255,255,255,0.28);cursor:pointer;transition:all 0.12s;position:relative;border-radius:0}
+.sb-item:hover{color:rgba(255,255,255,0.65);background:rgba(255,255,255,0.03)}
+.sb-item.on{color:#fff;background:rgba(255,255,255,0.06)}
+.sb-item.on::before{content:'';position:absolute;left:0;top:5px;bottom:5px;width:2px;background:#1dd98a;border-radius:0 2px 2px 0}
+.sb-badge{margin-left:auto;font-size:7px;padding:1px 5px;border-radius:10px;background:rgba(29,217,138,0.15);color:#1dd98a;letter-spacing:0.06em}
+.sb-warn{margin-left:auto;font-size:7px;padding:1px 5px;border-radius:10px;background:rgba(168,94,8,0.2);color:var(--y);letter-spacing:0.06em}
+.sb-foot{padding:14px 18px;border-top:1px solid rgba(255,255,255,0.05)}
+.sb-eng{font-size:8px;color:rgba(255,255,255,0.18);letter-spacing:0.06em;margin-bottom:6px}
+.sdots{display:flex;gap:4px}
+.sd{width:6px;height:6px;border-radius:50%}
+.sd-g{background:#1dd98a;animation:blink 1.8s infinite}
+.sd-b{background:#3d7eff;animation:blink 2.4s infinite 0.5s}
+.sd-d{background:rgba(255,255,255,0.08)}
+.sb-ct{font-size:8px;color:rgba(255,255,255,0.12);margin-top:5px}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--paper)}
+.topbar{height:48px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:16px;flex-shrink:0}
+.tb-t{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;flex:1}
+.tb-meta{display:flex;align-items:center;gap:14px;font-size:9px;color:var(--muted);letter-spacing:0.06em}
+.tb-chip{display:flex;align-items:center;gap:4px;font-size:8px;padding:3px 8px;border-radius:20px;background:rgba(10,102,64,0.08);color:var(--g);border:1px solid rgba(10,102,64,0.15);letter-spacing:0.08em}
+.tb-chip::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--g);animation:blink 1.5s infinite}
+
+/* PANELS */
+.panel{display:none;flex:1;overflow:hidden;flex-direction:column}
+.panel.on{display:flex}
+.ps{flex:1;overflow-y:auto;padding:20px}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--dim);border-radius:3px}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;box-shadow:var(--sh)}
+.ch{padding:11px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.ct{font-size:8px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted)}
+.cb{padding:14px}
+
+/* GRIDS */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px}
+.g12{display:grid;grid-template-columns:1fr 2fr;gap:12px}
+.g21{display:grid;grid-template-columns:2fr 1fr;gap:12px}
+
+/* STATS */
+.srow{display:flex;gap:10px;margin-bottom:14px}
+.stat{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 14px;box-shadow:var(--sh)}
+.sl{font-size:8px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.sv{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:0.5px;line-height:1}
+.ss{font-size:8px;color:var(--muted);margin-top:3px}
+.up{color:var(--g)}.dn{color:var(--r)}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;font-size:10px}
+.tbl th{font-size:8px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);padding:0 8px 9px 0;text-align:left;font-weight:400}
+.tbl td{padding:8px 8px 8px 0;border-top:1px solid var(--border);vertical-align:middle}
+.tbl tr:hover td{background:var(--s2);cursor:default}
+.tkr{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:0.5px}
+
+/* TAGS */
+.tag{font-size:7px;padding:2px 6px;border-radius:3px;letter-spacing:0.08em;font-weight:500;white-space:nowrap}
+.tg{background:rgba(10,102,64,0.08);color:var(--g)}
+.tr{background:rgba(191,53,39,0.08);color:var(--r)}
+.tb{background:rgba(26,58,107,0.08);color:var(--b)}
+.ty{background:rgba(168,94,8,0.08);color:var(--y)}
+.tp{background:rgba(74,31,128,0.08);color:var(--p)}
+
+/* NEWS */
+.ni{padding:11px 0;border-bottom:1px solid var(--border)}
+.ni:last-child{border-bottom:none}
+.ni-meta{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.ni-src{font-size:8px;letter-spacing:0.1em;text-transform:uppercase;color:var(--b)}
+.ni-t{font-size:8px;color:var(--muted);margin-left:auto}
+.ni-h{font-family:'Crimson Pro',serif;font-size:13px;font-weight:300;line-height:1.5;margin-bottom:5px}
+.ni-tags{display:flex;gap:4px;flex-wrap:wrap}
+
+/* SECTOR BARS */
+.sbr{display:flex;align-items:center;gap:10px;padding:5px 0}
+.sbr-n{font-size:9px;flex:1;letter-spacing:0.03em}
+.sbr-t{flex:1;height:5px;background:var(--dim);border-radius:3px;overflow:hidden}
+.sbr-f{height:100%;border-radius:3px;transition:width 0.6s ease}
+.sbr-p{font-size:9px;color:var(--muted);width:28px;text-align:right;flex-shrink:0}
+.sbr-r{font-size:8px;width:32px;text-align:right;flex-shrink:0;font-weight:500}
+
+/* PIE */
+.pie-s{cursor:pointer;transition:opacity 0.15s}
+.pie-s:hover{opacity:0.8}
+.pie-s.dimmed{opacity:0.25}
+.pie-s.sel{opacity:1}
+
+/* AI BANNER */
+.ai-ban{background:var(--ink);border-radius:10px;padding:15px 18px;margin-bottom:14px;position:relative;overflow:hidden}
+.ai-ban::before{content:'';position:absolute;top:0;right:0;width:180px;height:100%;background:radial-gradient(ellipse at right,rgba(29,217,138,0.12),transparent);pointer-events:none}
+.ai-ban-l{font-size:7px;letter-spacing:0.14em;text-transform:uppercase;color:#1dd98a;margin-bottom:5px}
+.ai-ban-t{font-family:'Crimson Pro',serif;font-size:13px;font-weight:300;line-height:1.7;color:rgba(255,255,255,0.8)}
+
+/* ACTION BAR */
+.abar{padding:10px 20px;background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0}
+.abtn{padding:7px 18px;border-radius:6px;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.08em;cursor:pointer;border:none;transition:all 0.13s}
+.abp{background:var(--ink);color:#fff}.abp:hover{background:#1a2030}
+.abg{background:transparent;color:var(--muted);border:1px solid var(--border)}.abg:hover{color:var(--ink);border-color:var(--border2)}
+.ab-i{font-size:9px;color:var(--muted);margin-left:auto;letter-spacing:0.03em}
+
+/* NETWORK */
+.net-wrap{flex:1;position:relative;overflow:hidden;background:var(--s2)}
+#net-c{width:100%;height:100%;display:block}
+.net-tt{position:absolute;background:var(--ink);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px 14px;pointer-events:none;z-index:50;display:none;max-width:240px;box-shadow:0 8px 32px rgba(0,0,0,0.25)}
+.nt-tk{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:1px;color:#fff;margin-bottom:1px}
+.nt-nm{font-size:9px;color:rgba(255,255,255,0.35);margin-bottom:7px}
+.nt-row{display:flex;justify-content:space-between;font-size:9px;padding:2px 0;border-top:1px solid rgba(255,255,255,0.05);margin-top:3px}
+.nt-l{color:rgba(255,255,255,0.28)}.nt-v{color:#fff}
+.nt-news{font-family:'Crimson Pro',serif;font-size:11px;font-style:italic;color:rgba(255,255,255,0.45);margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.06);line-height:1.5}
+.edge-tt{position:absolute;background:var(--ink);border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:7px 10px;font-family:'Crimson Pro',serif;font-style:italic;font-size:10px;color:rgba(255,255,255,0.5);pointer-events:none;display:none;z-index:49;max-width:200px;line-height:1.4}
+.net-ctrl{position:absolute;top:14px;right:14px;display:flex;flex-direction:column;gap:8px;z-index:40}
+.nctrl{padding:9px 14px;border-radius:7px;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.08em;cursor:pointer;transition:all 0.15s;border:1px solid;display:flex;align-items:center;gap:6px}
+.nc-l{background:rgba(10,102,64,0.08);border-color:rgba(10,102,64,0.25);color:var(--g)}.nc-l:hover{background:rgba(10,102,64,0.15);border-color:var(--g)}
+.nc-h{background:rgba(191,53,39,0.06);border-color:rgba(191,53,39,0.22);color:var(--r)}.nc-h:hover{background:rgba(191,53,39,0.12);border-color:var(--r)}
+.net-sel{position:absolute;bottom:14px;right:14px;background:var(--ink);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:10px 14px;font-size:9px;color:rgba(255,255,255,0.35);z-index:40;min-width:190px}
+.nsel-tk{font-family:'Bebas Neue',sans-serif;font-size:16px;color:#fff;margin-bottom:1px}
+.net-leg{position:absolute;bottom:14px;left:14px;display:flex;flex-direction:column;gap:5px}
+.nl-r{display:flex;align-items:center;gap:6px;font-size:8px;color:var(--muted)}
+.nl-line{width:22px;height:1px}
+.nl-solid{background:rgba(10,102,64,0.5)}
+.nl-dash{border-top:1px dashed var(--r);background:transparent;opacity:0.6}
+
+/* MODALS */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,0.45);backdrop-filter:blur(3px);z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.18s}
+.ov.open{opacity:1;pointer-events:all}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:14px;width:400px;padding:26px;box-shadow:0 20px 60px rgba(0,0,0,0.15)}
+.modal-t{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;margin-bottom:4px}
+.modal-sub{font-size:10px;color:var(--muted);line-height:1.7;margin-bottom:18px;letter-spacing:0.03em}
+.ho{display:flex;align-items:center;gap:12px;padding:11px;border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:all 0.12s;margin-bottom:8px;background:var(--s2)}
+.ho:hover{border-color:var(--r);background:rgba(191,53,39,0.04)}
+.ho-tk{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--r);width:44px;flex-shrink:0}
+.ho-n{font-size:10px;margin-bottom:2px}
+.ho-w{font-size:9px;color:var(--muted);line-height:1.5}
+.ho-c{font-size:8px;color:var(--r);margin-top:2px}
+.mcc{width:100%;padding:10px;background:transparent;border:1px solid var(--border);border-radius:6px;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.08em;color:var(--muted);cursor:pointer;margin-top:6px;transition:all 0.12s}
+.mcc:hover{color:var(--ink);border-color:var(--border2)}
+.wbox{background:rgba(168,94,8,0.06);border:1px solid rgba(168,94,8,0.18);border-radius:8px;padding:14px;margin-bottom:14px}
+.wt{font-size:10px;font-weight:500;color:var(--y);margin-bottom:5px}
+.wb{font-size:9px;color:var(--muted);line-height:1.7}
+.rsrc{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:14px}
+.rsr{display:flex;justify-content:space-between;font-size:10px;padding:4px 0;border-bottom:1px solid var(--border)}
+.rsr:last-child{border-bottom:none}
+.rsl{color:var(--muted)}.rsv{font-weight:500}
+
+/* ══════════════════════════
+   SETTINGS PANEL
+══════════════════════════ */
+.settings-grid{display:grid;grid-template-columns:220px 1fr;gap:0;flex:1;overflow:hidden}
+.set-nav{background:var(--s2);border-right:1px solid var(--border);padding:16px 0;overflow-y:auto}
+.set-nav-item{padding:9px 18px;font-size:10px;letter-spacing:0.04em;color:var(--muted);cursor:pointer;transition:all 0.12s;position:relative}
+.set-nav-item:hover{color:var(--ink);background:var(--surface)}
+.set-nav-item.on{color:var(--ink);background:var(--surface);font-weight:500}
+.set-nav-item.on::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--g);border-radius:0 2px 2px 0}
+.set-nav-sec{font-size:8px;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);padding:14px 18px 5px;opacity:0.5}
+.set-body{flex:1;overflow-y:auto;padding:24px}
+.set-section{display:none}
+.set-section.on{display:block}
+.set-h{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;margin-bottom:4px}
+.set-sub{font-size:10px;color:var(--muted);line-height:1.7;letter-spacing:0.03em;margin-bottom:24px}
+
+/* BROKER CONNECT (settings) */
+.broker-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.bcard{border:1px solid var(--border);border-radius:10px;padding:16px;cursor:pointer;transition:all 0.15s;background:var(--surface)}
+.bcard:hover{border-color:var(--border2);box-shadow:var(--sh)}
+.bcard.connected{border-color:rgba(10,102,64,0.3);background:rgba(10,102,64,0.03)}
+.bcard-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.bcard-name{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:0.5px}
+.bcard-status{font-size:8px;padding:2px 7px;border-radius:10px}
+.bs-conn{background:rgba(10,102,64,0.1);color:var(--g)}
+.bs-none{background:var(--s2);color:var(--muted)}
+.bcard-desc{font-size:9px;color:var(--muted);line-height:1.6}
+.bcard-btn{margin-top:10px;width:100%;padding:8px;border-radius:6px;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.08em;cursor:pointer;transition:all 0.13s;border:1px solid var(--border);background:transparent;color:var(--muted)}
+.bcard-btn:hover{color:var(--ink);border-color:var(--border2)}
+.bcard.connected .bcard-btn{border-color:rgba(191,53,39,0.2);color:var(--r);background:rgba(191,53,39,0.04)}
+.bcard.connected .bcard-btn:hover{background:rgba(191,53,39,0.08)}
+
+/* CSV UPLOAD */
+.csv-zone{border:1.5px dashed var(--border2);border-radius:10px;padding:28px;text-align:center;cursor:pointer;transition:all 0.15s;margin-bottom:20px}
+.csv-zone:hover{border-color:var(--g);background:rgba(10,102,64,0.02)}
+.csv-icon{font-size:28px;margin-bottom:10px;opacity:0.4}
+.csv-t{font-size:11px;letter-spacing:0.04em;margin-bottom:4px}
+.csv-s{font-size:9px;color:var(--muted)}
+
+/* MANUAL ADD */
+.madd-form{background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:20px}
+.madd-row{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:end;margin-bottom:12px}
+.madd-row:last-child{margin-bottom:0}
+.finput-wrap{display:flex;flex-direction:column;gap:5px}
+.finput-label{font-size:8px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted)}
+.finput{padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-family:'DM Mono',monospace;font-size:10px;background:var(--surface);color:var(--ink);outline:none;width:100%;transition:border 0.12s}
+.finput:focus{border-color:var(--border2)}
+.finput::placeholder{color:var(--dim)}
+.fselect{padding:8px 10px;border:1px solid var(--border);border-radius:6px;font-family:'DM Mono',monospace;font-size:10px;background:var(--surface);color:var(--ink);outline:none;width:100%;transition:border 0.12s;appearance:none;cursor:pointer}
+.add-btn{padding:9px 16px;background:var(--ink);color:#fff;border:none;border-radius:6px;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.1em;cursor:pointer;transition:all 0.13s;white-space:nowrap}
+.add-btn:hover{background:#1a2030}
+
+/* HOLDINGS LIST IN SETTINGS */
+.hlist{display:flex;flex-direction:column;gap:8px}
+.hrow{display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px}
+.hrow-tk{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:0.5px;width:54px;flex-shrink:0}
+.hrow-info{flex:1}
+.hrow-name{font-size:10px;margin-bottom:1px}
+.hrow-meta{font-size:9px;color:var(--muted)}
+.hrow-del{padding:5px 10px;background:transparent;border:1px solid var(--border);border-radius:5px;font-family:'DM Mono',monospace;font-size:8px;letter-spacing:0.08em;cursor:pointer;color:var(--muted);transition:all 0.12s}
+.hrow-del:hover{border-color:var(--r);color:var(--r);background:rgba(191,53,39,0.04)}
+.source-badge{font-size:7px;padding:1px 5px;border-radius:3px;margin-left:6px}
+.src-m{background:rgba(74,31,128,0.08);color:var(--p)}
+.src-b{background:rgba(26,58,107,0.08);color:var(--b)}
+.src-c{background:rgba(10,102,64,0.08);color:var(--g)}
+.empty-state{text-align:center;padding:32px;color:var(--muted);font-size:10px;line-height:1.8}
+.empty-icon{font-size:32px;opacity:0.3;margin-bottom:10px}
+.divider-label{font-size:8px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);padding:12px 0 8px;border-top:1px solid var(--border);margin-top:16px}
+
+/* ANALYZE CTA */
+.analyze-cta{background:var(--ink);border-radius:10px;padding:20px;display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:20px}
+.acta-left{}
+.acta-t{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:0.5px;color:#fff;margin-bottom:3px}
+.acta-s{font-size:9px;color:rgba(255,255,255,0.3);line-height:1.6}
+.acta-btn{padding:11px 22px;background:#1dd98a;color:var(--ink);border:none;border-radius:7px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.1em;cursor:pointer;transition:all 0.15s;white-space:nowrap}
+.acta-btn:hover{background:#22eea0;transform:translateY(-1px)}
+.acta-btn:disabled{background:var(--dim);color:var(--muted);cursor:not-allowed;transform:none}
+
+/* CHATBOT WIDGET */
+.chatbot-fab{position:fixed;right:16px;bottom:16px;width:50px;height:50px;border-radius:50%;border:none;background:var(--ink);color:#fff;cursor:pointer;box-shadow:0 10px 28px rgba(0,0,0,0.25);z-index:300;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.06em}
+.chatbot-fab:hover{background:#182033}
+.chatbot-widget{position:fixed;right:16px;bottom:16px;width:320px;height:420px;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 18px 48px rgba(0,0,0,0.22);display:flex;flex-direction:column;z-index:310;overflow:hidden}
+.chatbot-widget.minimized{display:none}
+.chatbot-head{height:42px;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 12px;font-size:9px;letter-spacing:0.08em}
+.chatbot-title{display:flex;align-items:center;gap:8px}
+.chatbot-dot{width:6px;height:6px;border-radius:50%;background:#1dd98a;animation:blink 1.6s infinite}
+.chatbot-actions{display:flex;gap:6px}
+.chatbot-actions button{width:22px;height:22px;border-radius:4px;border:1px solid rgba(255,255,255,0.14);background:transparent;color:#fff;cursor:pointer;font-family:'DM Mono',monospace;font-size:12px;line-height:1}
+.chatbot-actions button:hover{background:rgba(255,255,255,0.1)}
+.chatbot-body{flex:1;background:var(--s2);padding:10px;overflow-y:auto}
+.chat-msg{margin-bottom:8px;max-width:88%;padding:8px 9px;border-radius:8px;font-size:10px;line-height:1.6}
+.chat-msg.user{margin-left:auto;background:#e5f8ee;border:1px solid #c5e9d6}
+.chat-msg.bot{margin-right:auto;background:#fff;border:1px solid var(--border)}
+.chatbot-input{border-top:1px solid var(--border);padding:9px;background:var(--surface);display:flex;gap:6px}
+.chatbot-input input{flex:1;border:1px solid var(--border);border-radius:7px;padding:8px;font-family:'DM Mono',monospace;font-size:10px;outline:none}
+.chatbot-input button{border:none;border-radius:7px;padding:8px 10px;background:var(--ink);color:#fff;font-family:'DM Mono',monospace;font-size:9px;cursor:pointer}
+.chatbot-input button:hover{background:#182033}
+</style>
 </head>
 <body>
-  <div class="shell">
-    <div class="sidebar">
-      <div class="logo">
-        <div class="logo-mark">BLADE<span>TRADER</span></div>
-        <div class="logo-sub"><span class="dot-live"></span>LIVE ENGINE</div>
+
+<!-- ═══════════════════════════════
+     LANDING PAGE
+═══════════════════════════════ -->
+<div class="screen active" id="s-land">
+  <div class="land-left">
+    <div class="land-grid"></div>
+    <div class="land-content">
+      <div class="land-eyebrow">Waterfall event intelligence · AI portfolio analysis</div>
+      <div class="land-logo">BLADE<em>TRADER</em></div>
+      <div class="land-tagline">Trade with event intelligence built for modern AI markets. Monitor sentiment, spillover risk, and actionable post-earnings direction from one dashboard.</div>
+      <div class="land-features">
+        <div class="lf"><div class="lf-dot"></div><div class="lf-text"><strong>Waterfall event engine</strong> — news events correlate to candlestick and tick data across your holdings</div></div>
+        <div class="lf"><div class="lf-dot"></div><div class="lf-text"><strong>Inherited risk scoring</strong> — your position size determines your personal exposure, not just the sector</div></div>
+        <div class="lf"><div class="lf-dot"></div><div class="lf-text"><strong>Leverage and hedge network</strong> — visualize how to amplify your thesis or protect against cascade risk</div></div>
       </div>
-      <div class="nav-section">PORTFOLIO</div>
-      <div class="nav-item active">Asset Manager</div>
-      <div class="nav-section">ANALYSIS</div>
-      <div class="nav-item">Risk + Leverage <span class="badge ai">AI</span></div>
-      <div class="nav-section">FEED</div>
-      <div class="nav-item">Live News <span class="badge live">LIVE</span></div>
-      <div class="nav-section">ACCOUNT</div>
-      <div class="nav-item">Settings <span class="badge setup">SETUP</span></div>
-      <div class="sidebar-bottom">
-        <div class="event-engine-label">EVENT ENGINE</div>
-        <div class="engine-status" id="engine-status">Loading validation status...</div>
+    </div>
+  </div>
+  <div class="land-right">
+    <div class="lr-content">
+      <div class="lr-h">Account Login</div>
+      <div class="lr-sub">Sign in to your BladeTrader account or create one to sync holdings, secure access with 2-step auth, and recover passwords when needed.</div>
+      <div class="auth-tabs">
+        <button class="auth-tab on" id="auth-tab-signin" onclick="switchAuthView('signin')">SIGN IN</button>
+        <button class="auth-tab" id="auth-tab-create" onclick="switchAuthView('create')">CREATE ACCOUNT</button>
+      </div>
+
+      <div class="auth-view on" id="auth-signin">
+        <div class="auth-field">
+          <label class="auth-label" for="signin-email">Email</label>
+          <input class="auth-input" id="signin-email" type="email" placeholder="you@bladetrader.ai" />
+        </div>
+        <div class="auth-field">
+          <label class="auth-label" for="signin-password">Password</label>
+          <input class="auth-input" id="signin-password" type="password" placeholder="Enter password" />
+        </div>
+        <div class="auth-row">
+          <label class="auth-check"><input type="checkbox" id="remember-me" checked />Remember me</label>
+          <span class="auth-link" onclick="switchAuthView('recover')">Forgot password?</span>
+        </div>
+        <button class="land-btn lb-primary" onclick="mockAuthAction('signin')">SIGN IN →</button>
+        <button class="land-btn lb-ghost" onclick="enterApp()">ENTER DEMO PORTFOLIO</button>
+      </div>
+
+      <div class="auth-view" id="auth-create">
+        <div class="auth-field">
+          <label class="auth-label" for="create-name">Full name</label>
+          <input class="auth-input" id="create-name" type="text" placeholder="Jane Doe" />
+        </div>
+        <div class="auth-inline">
+          <div class="auth-field" style="flex:1">
+            <label class="auth-label" for="create-email">Email</label>
+            <input class="auth-input" id="create-email" type="email" placeholder="you@bladetrader.ai" />
+          </div>
+          <div class="auth-field" style="flex:1">
+            <label class="auth-label" for="create-password">Password</label>
+            <input class="auth-input" id="create-password" type="password" placeholder="Min 8 characters" />
+          </div>
+        </div>
+        <div class="auth-field">
+          <label class="auth-label" for="create-confirm">Confirm password</label>
+          <input class="auth-input" id="create-confirm" type="password" placeholder="Re-enter password" />
+        </div>
+        <div class="auth-row">
+          <label class="auth-check"><input type="checkbox" id="enable-2fa" checked />Enable 2-step auth</label>
+          <span class="auth-link" onclick="switchAuthView('signin')">Have an account?</span>
+        </div>
+        <button class="land-btn lb-primary" onclick="mockAuthAction('create')">CREATE ACCOUNT →</button>
+      </div>
+
+      <div class="auth-view" id="auth-recover">
+        <div class="auth-field">
+          <label class="auth-label" for="recover-email">Recovery email</label>
+          <input class="auth-input" id="recover-email" type="email" placeholder="Enter account email" />
+        </div>
+        <button class="land-btn lb-primary" onclick="mockAuthAction('recover')">SEND RESET LINK</button>
+        <button class="land-btn lb-ghost" onclick="switchAuthView('signin')">BACK TO LOGIN</button>
+      </div>
+
+      <div class="auth-view" id="auth-2step">
+        <div class="auth-field">
+          <label class="auth-label" for="otp-code">2-step verification code</label>
+          <input class="auth-input" id="otp-code" type="text" maxlength="6" placeholder="123456" />
+        </div>
+        <div class="auth-row">
+          <span class="auth-helper">Use the 6-digit code from your authenticator app.</span>
+          <span class="auth-link" onclick="switchAuthView('recover')">Use backup</span>
+        </div>
+        <button class="land-btn lb-primary" onclick="mockAuthAction('2step')">VERIFY CODE</button>
+        <button class="land-btn lb-ghost" onclick="switchAuthView('signin')">CANCEL</button>
+      </div>
+
+      <div class="auth-status" id="auth-status"></div>
+      <div class="lr-note">Regular login flow wireframe: sign in, create account, password recovery, and optional 2-step verification.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════
+     APP
+═══════════════════════════════ -->
+<div class="screen" id="s-app">
+  <div class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logotype">SENTINEL<em>AI</em></div>
+      <div class="sb-live"><div class="sb-ld"></div>LIVE ENGINE</div>
+    </div>
+    <div class="sb-nav">
+      <div class="sb-sec">Portfolio</div>
+      <div class="sb-item on" onclick="goPanel('dashboard',this)">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="1" y="1" width="4.5" height="4.5" rx="1"/><rect x="7.5" y="1" width="4.5" height="4.5" rx="1"/><rect x="1" y="7.5" width="4.5" height="4.5" rx="1"/><rect x="7.5" y="7.5" width="4.5" height="4.5" rx="1"/></svg>
+        Dashboard
+      </div>
+      <div class="sb-item" onclick="goPanel('asset',this)">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M2 9l3-3 2 2 4-5"/></svg>
+        Asset Manager
+      </div>
+      <div class="sb-sec">Analysis</div>
+      <div class="sb-item" onclick="goPanel('risklev',this)">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="3.5" cy="6.5" r="2"/><circle cx="9.5" cy="2.5" r="2"/><circle cx="9.5" cy="10.5" r="2"/><line x1="5.5" y1="5.5" x2="7.8" y2="3.5"/><line x1="5.5" y1="7.5" x2="7.8" y2="9.5"/></svg>
+        Risk + Leverage
+        <span class="sb-badge">AI</span>
+      </div>
+      <div class="sb-sec">Feed</div>
+      <div class="sb-item" onclick="goPanel('news',this)">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="1" y="2" width="11" height="9" rx="1"/><line x1="3.5" y1="5.5" x2="9.5" y2="5.5"/><line x1="3.5" y1="8" x2="7" y2="8"/></svg>
+        Live News
+        <span class="sb-badge">LIVE</span>
+      </div>
+      <div class="sb-sec">Account</div>
+      <div class="sb-item" onclick="goPanel('settings',this)" id="sb-settings">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="6.5" cy="6.5" r="2"/><path d="M6.5 1v1.5M6.5 10v1.5M1 6.5h1.5M10 6.5h1.5M2.6 2.6l1 1M9.4 9.4l1 1M9.4 2.6l-1 1M3.6 9.4l-1 1"/></svg>
+        Settings
+        <span class="sb-warn" id="settings-warn">SETUP</span>
+      </div>
+    </div>
+    <div class="sb-foot">
+      <div class="sb-eng">EVENT ENGINE</div>
+      <div class="sdots"><div class="sd sd-g"></div><div class="sd sd-g"></div><div class="sd sd-b"></div><div class="sd sd-d"></div></div>
+      <div class="sb-ct" id="sb-ct">312 events correlated</div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="tb-t" id="tb-t">PORTFOLIO DASHBOARD</div>
+      <div class="tb-meta">
+        <span class="tb-chip">LIVE</span>
+        <span id="clock">--:--:--</span>
+        <span>Apr 4 · 2026</span>
       </div>
     </div>
 
-    <div class="main">
-      <div class="topbar">
-        <div class="topbar-title">ASSET MANAGER</div>
-        <div class="live-pill"><span class="dot-live" style="width:4px;height:4px"></span><span id="mode-pill">LIVE</span></div>
-        <div class="topbar-time" id="clock"></div>
-      </div>
-
-      <div class="signal-strip">
-        <div>
-          <div class="ticker" id="hero-symbol">NVDA</div>
-          <div class="company" id="hero-company">NVIDIA</div>
+    <!-- ══ DASHBOARD ══ -->
+    <div class="panel on" id="p-dashboard">
+      <div class="ps">
+        <div class="srow">
+          <div class="stat"><div class="sl">Portfolio value</div><div class="sv">$284,412</div><div class="ss up">▲ +2.14% today</div></div>
+          <div class="stat"><div class="sl">AI exposure</div><div class="sv" style="color:var(--b)">68%</div><div class="ss">of total portfolio</div></div>
+          <div class="stat"><div class="sl">Inherited risk</div><div class="sv" style="color:var(--y)">MED</div><div class="ss">See Risk tab →</div></div>
+          <div class="stat"><div class="sl">News triggers</div><div class="sv" style="color:var(--r)">14</div><div class="ss">active today</div></div>
         </div>
-        <div>
-          <div class="price" id="hero-price">$-</div>
-          <div class="change" id="hero-change">waiting...</div>
-        </div>
-        <div class="divider"></div>
-        <div>
-          <div class="signal-label">SIGNAL</div>
-          <div class="signal-value" id="hero-signal">LONG</div>
-        </div>
-        <div>
-          <div class="signal-label">CONVICTION</div>
-          <div class="signal-value"><span id="hero-conv">0</span><span style="font-size:10px;color:var(--text2)">/100</span></div>
-          <div class="conviction-bar"><div class="conviction-fill" id="hero-conv-fill" style="width:0%"></div></div>
-        </div>
-        <div class="controls-right">
-          <select id="symbol-select" class="ctrl-select"></select>
-          <button class="ctrl-btn" onclick="runIngest()">INGEST</button>
-          <button class="ctrl-btn" onclick="runAllStocks()">RUN ALL</button>
-          <button class="ctrl-btn active" onclick="refreshAll()">REFRESH</button>
-        </div>
-      </div>
-
-      <div class="content">
-        <div class="left-pane">
+        <div class="g21" style="gap:12px">
           <div class="card">
-            <div class="card-title">PRICE — CASE 4 FOCUS</div>
-            <div class="chart-wrap"><canvas id="mainChart"></canvas></div>
+            <div class="ch"><span class="ct">Holdings — <span id="holding-count">9</span> positions</span><span class="tag tb">AI TAGGED</span></div>
+            <div class="cb" style="padding:0 14px">
+              <table class="tbl" id="dash-holdings">
+                <thead><tr><th>Ticker</th><th>Company</th><th>Value</th><th>AI Sector</th><th>Today</th><th>Source</th></tr></thead>
+                <tbody id="dash-tbody"></tbody>
+              </table>
+            </div>
           </div>
-          <div class="card">
-            <div class="card-title">EVENT TIMELINE — EARNINGS VALIDATION</div>
-            <div class="event-feed" id="events-wrap"></div>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div class="card">
+              <div class="ch"><span class="ct">Sector allocation</span></div>
+              <div class="cb">
+                <div class="sbr"><div class="sbr-n">Cybersecurity</div><div class="sbr-t"><div class="sbr-f" style="width:38%;background:var(--b)"></div></div><div class="sbr-p">38%</div><div class="sbr-r" style="color:var(--r)">HIGH</div></div>
+                <div class="sbr"><div class="sbr-n">Semiconductors</div><div class="sbr-t"><div class="sbr-f" style="width:21%;background:var(--g)"></div></div><div class="sbr-p">21%</div><div class="sbr-r" style="color:var(--y)">MED</div></div>
+                <div class="sbr"><div class="sbr-n">AI Platforms</div><div class="sbr-t"><div class="sbr-f" style="width:18%;background:var(--y)"></div></div><div class="sbr-p">18%</div><div class="sbr-r" style="color:var(--y)">MED</div></div>
+                <div class="sbr"><div class="sbr-n">Data Infra</div><div class="sbr-t"><div class="sbr-f" style="width:14%;background:var(--p)"></div></div><div class="sbr-p">14%</div><div class="sbr-r" style="color:var(--g)">LOW</div></div>
+                <div class="sbr"><div class="sbr-n">Other</div><div class="sbr-t"><div class="sbr-f" style="width:9%;background:var(--muted)"></div></div><div class="sbr-p">9%</div><div class="sbr-r" style="color:var(--g)">LOW</div></div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="ch"><span class="ct">Top trigger</span><span class="tag ty">ACTIVE</span></div>
+              <div class="cb">
+                <div class="ni" style="border:none;padding:0">
+                  <div class="ni-meta"><span class="ni-src">Bloomberg</span><span class="ni-t">4m</span></div>
+                  <div class="ni-h">EU AI Act enforcement begins — cybersecurity vendors face new compliance requirements</div>
+                  <div class="ni-tags"><span class="tag tr">CRWD</span><span class="tag tr">ZS</span><span class="tag ty">Regulation</span></div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="right-pane">
-          <div class="why-card">
-            <div class="why-label">WHY THIS MATTERS NOW</div>
-            <div class="why-text" id="why-text">Waiting for sector analysis...</div>
+      </div>
+      <div class="abar">
+        <button class="abtn abp" onclick="goPanel('risklev',document.querySelectorAll('.sb-item')[2])">View Risk + Leverage →</button>
+        <button class="abtn abg" onclick="goPanel('settings',document.getElementById('sb-settings'))">+ Add Holdings</button>
+        <span class="ab-i">Last synced 2 min ago</span>
+      </div>
+    </div>
+
+    <!-- ══ ASSET MANAGER ══ -->
+    <div class="panel" id="p-asset">
+      <div class="ps">
+        <div style="margin-bottom:16px">
+          <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:3px">
+            <span style="font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:1px">CRWD</span>
+            <span style="font-size:13px;color:var(--muted)">CrowdStrike Holdings</span>
           </div>
-          <div class="r-card">
-            <div class="r-card-title">AI SENTIMENT / CONFIDENCE</div>
-            <div class="big-signal" id="sent-score">-</div>
-            <div class="muted" id="sent-sub">Run all-stocks analysis for live metrics.</div>
+          <div style="display:flex;align-items:baseline;gap:12px">
+            <span style="font-family:'Bebas Neue',sans-serif;font-size:30px">$348.20</span>
+            <span class="up">▲ +3.42%</span>
+            <span style="font-size:10px;color:var(--muted)">· $42,110 holding</span>
           </div>
-          <div class="r-card">
-            <div class="r-card-title">TOP CASE-4 MOVERS (5-7D)</div>
-            <div class="list" id="movers-list"></div>
+        </div>
+        <div class="card" style="margin-bottom:12px">
+          <div class="ch"><span class="ct">Price — waterfall events marked</span></div>
+          <div class="cb">
+            <svg width="100%" height="110" viewBox="0 0 560 110">
+              <defs><linearGradient id="ag" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0a6640" stop-opacity="0.1"/><stop offset="100%" stop-color="#0a6640" stop-opacity="0"/></linearGradient></defs>
+              <line x1="0" y1="28" x2="560" y2="28" stroke="var(--border)" stroke-width="1"/>
+              <line x1="0" y1="56" x2="560" y2="56" stroke="var(--border)" stroke-width="1"/>
+              <line x1="0" y1="84" x2="560" y2="84" stroke="var(--border)" stroke-width="1"/>
+              <path d="M20,84 L65,78 L105,82 L145,66 L185,58 L225,50 L245,62 L275,44 L315,38 L355,32 L385,28 L415,34 L445,22 L485,18 L525,12 L548,8 L548,100 L20,100Z" fill="url(#ag)"/>
+              <path d="M20,84 L65,78 L105,82 L145,66 L185,58 L225,50 L245,62 L275,44 L315,38 L355,32 L385,28 L415,34 L445,22 L485,18 L525,12 L548,8" fill="none" stroke="var(--g)" stroke-width="1.8" stroke-linejoin="round"/>
+              <circle cx="145" cy="66" r="4" fill="var(--y)" stroke="var(--surface)" stroke-width="1.5"/>
+              <line x1="145" y1="66" x2="145" y2="100" stroke="var(--y)" stroke-width="1" stroke-dasharray="3 2" opacity="0.5"/>
+              <text x="147" y="99" font-size="7" fill="var(--y)" font-family="DM Mono,monospace">EU news</text>
+              <circle cx="315" cy="38" r="4" fill="var(--g)" stroke="var(--surface)" stroke-width="1.5"/>
+              <line x1="315" y1="38" x2="315" y2="100" stroke="var(--g)" stroke-width="1" stroke-dasharray="3 2" opacity="0.5"/>
+              <text x="317" y="99" font-size="7" fill="var(--g)" font-family="DM Mono,monospace">Gov contract</text>
+              <circle cx="445" cy="22" r="4" fill="var(--b)" stroke="var(--surface)" stroke-width="1.5"/>
+              <line x1="445" y1="22" x2="445" y2="100" stroke="var(--b)" stroke-width="1" stroke-dasharray="3 2" opacity="0.5"/>
+              <text x="447" y="99" font-size="7" fill="var(--b)" font-family="DM Mono,monospace">Upgrade</text>
+            </svg>
           </div>
-          <div class="r-card">
-            <div class="r-card-title">SECTOR SUMMARY</div>
-            <div class="list" id="sectors-list"></div>
+        </div>
+        <div class="g3" style="margin-bottom:12px">
+          <div class="card"><div class="cb"><div class="sl">AI Sentiment</div><div class="sv up">87</div><div class="ss">4 signals · bullish</div></div></div>
+          <div class="card"><div class="cb"><div class="sl">Investor position</div><div class="sv" style="color:var(--b)">LONG</div><div class="ss">Institutional accumulation</div></div></div>
+          <div class="card"><div class="cb"><div class="sl">Spillover risk</div><div class="sv" style="color:var(--g)">LOW</div><div class="ss">Within sector only</div></div></div>
+        </div>
+        <div class="g3">
+          <div class="card"><div class="ch"><span class="ct">Causes</span></div><div class="cb" style="font-family:'Crimson Pro',serif;font-size:13px;font-weight:300;line-height:1.8;color:var(--muted)">EU AI Act enforcement drives compliance spend. Pentagon joint contract with PANW. Enterprise zero-trust adoption accelerating.</div></div>
+          <div class="card"><div class="ch"><span class="ct">News effect</span></div><div class="cb" style="font-size:10px;line-height:2"><span style="color:var(--muted)">EU regulation:</span> <span class="up">+4.2%</span><br><span style="color:var(--muted)">Gov contract:</span> <span class="up">+3.1%</span><br><span style="color:var(--muted)">Analyst upgrade:</span> <span class="up">+1.8%</span></div></div>
+          <div class="card"><div class="ch"><span class="ct">Asset relationship</span></div><div class="cb" style="font-size:10px;line-height:2"><span style="color:var(--muted)">EU news links:</span> PANW, ZS<br><span style="color:var(--muted)">Spillover to:</span> MSFT cloud<br><span style="color:var(--g);cursor:pointer" onclick="goPanel('leverage',null)">→ View network</span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ RISK + LEVERAGE (UNIFIED) ══ -->
+    <div class="panel" id="p-risklev">
+      <!-- AI THESIS BANNER -->
+      <div style="padding:10px 20px;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--surface)">
+        <div class="ai-ban" style="margin:0">
+          <div class="ai-ban-l">AI — position thesis</div>
+          <div class="ai-ban-t" id="rl-ban">You are positioned in <strong style="color:rgba(255,255,255,0.92)">Cybersecurity as an AI infrastructure play</strong> — a defensive growth thesis. 38% allocation carries significant inherited regulatory risk from EU AI Act enforcement. Click a sector to reveal details. Click a node to leverage or hedge.</div>
+        </div>
+      </div>
+      <!-- SPLIT LAYOUT: PIE LEFT | NETWORK RIGHT -->
+      <div style="display:flex;flex:1;overflow:hidden;min-height:0">
+        <!-- LEFT: Risk Map panel (fixed width) -->
+        <div style="width:230px;flex-shrink:0;border-right:1px solid var(--border);display:flex;flex-direction:column;background:var(--s2);overflow-y:auto">
+          <div style="padding:10px 14px 6px;font-size:8px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--border)">Risk Map · Click Sector</div>
+          <div style="padding:14px;display:flex;flex-direction:column;align-items:center;gap:10px">
+            <svg id="pie2" width="160" height="160" viewBox="0 0 200 200">
+              <path class="pie-s" id="ps2-cyber" d="M100,100 L100,8 A92,92 0 0,1 190,122 Z" fill="var(--b)" onclick="pickSec2('cyber')" style="cursor:pointer"/>
+              <path class="pie-s" id="ps2-semi" d="M100,100 L190,122 A92,92 0 0,1 68,191 Z" fill="var(--g)" onclick="pickSec2('semi')" style="cursor:pointer"/>
+              <path class="pie-s" id="ps2-aip" d="M100,100 L68,191 A92,92 0 0,1 11,60 Z" fill="var(--y)" onclick="pickSec2('aip')" style="cursor:pointer"/>
+              <path class="pie-s" id="ps2-data" d="M100,100 L11,60 A92,92 0 0,1 100,8 Z" fill="var(--p)" onclick="pickSec2('data')" style="cursor:pointer"/>
+              <circle cx="100" cy="100" r="46" fill="var(--surface)" stroke="var(--border)" stroke-width="1"/>
+              <text x="100" y="96" text-anchor="middle" font-family="'Bebas Neue',sans-serif" font-size="12" letter-spacing="0.5" fill="var(--ink)">RISK</text>
+              <text x="100" y="110" text-anchor="middle" font-family="'DM Mono',monospace" font-size="8" fill="var(--muted)">MAP</text>
+            </svg>
+            <div style="width:100%;display:flex;flex-direction:column;gap:6px">
+              <div style="display:flex;align-items:center;gap:7px;cursor:pointer;padding:4px 6px;border-radius:5px;transition:background 0.12s" onmouseover="this.style.background='var(--s3)'" onmouseout="this.style.background=''" onclick="pickSec2('cyber')"><div style="width:6px;height:6px;border-radius:2px;background:var(--b);flex-shrink:0"></div><span style="font-size:9px;flex:1">Cybersecurity</span><span style="font-size:9px;color:var(--muted)">38%</span><span style="font-size:7px;color:var(--r);width:28px;text-align:right">HIGH</span></div>
+              <div style="display:flex;align-items:center;gap:7px;cursor:pointer;padding:4px 6px;border-radius:5px;transition:background 0.12s" onmouseover="this.style.background='var(--s3)'" onmouseout="this.style.background=''" onclick="pickSec2('semi')"><div style="width:6px;height:6px;border-radius:2px;background:var(--g);flex-shrink:0"></div><span style="font-size:9px;flex:1">Semiconductors</span><span style="font-size:9px;color:var(--muted)">21%</span><span style="font-size:7px;color:var(--y);width:28px;text-align:right">MED</span></div>
+              <div style="display:flex;align-items:center;gap:7px;cursor:pointer;padding:4px 6px;border-radius:5px;transition:background 0.12s" onmouseover="this.style.background='var(--s3)'" onmouseout="this.style.background=''" onclick="pickSec2('aip')"><div style="width:6px;height:6px;border-radius:2px;background:var(--y);flex-shrink:0"></div><span style="font-size:9px;flex:1">AI Platforms</span><span style="font-size:9px;color:var(--muted)">18%</span><span style="font-size:7px;color:var(--y);width:28px;text-align:right">MED</span></div>
+              <div style="display:flex;align-items:center;gap:7px;cursor:pointer;padding:4px 6px;border-radius:5px;transition:background 0.12s" onmouseover="this.style.background='var(--s3)'" onmouseout="this.style.background=''" onclick="pickSec2('data')"><div style="width:6px;height:6px;border-radius:2px;background:var(--p);flex-shrink:0"></div><span style="font-size:9px;flex:1">Data Infra</span><span style="font-size:9px;color:var(--muted)">14%</span><span style="font-size:7px;color:var(--g);width:28px;text-align:right">LOW</span></div>
+            </div>
+            <!-- Risk stats (update on sector click) -->
+            <div style="width:100%;display:flex;flex-direction:column;gap:6px;margin-top:4px">
+              <div style="background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 10px">
+                <div style="font-size:7px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:3px">AI Effect</div>
+                <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px;color:var(--r)" id="rl-c1">HIGH</div>
+                <div style="font-size:8px;color:var(--muted)" id="rl-c1s">Sector very sensitive to AI news</div>
+              </div>
+              <div style="background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 10px">
+                <div style="font-size:7px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:3px">Pos. Impact</div>
+                <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px;color:var(--g)" id="rl-c2">+4.2%</div>
+                <div style="font-size:8px;color:var(--muted)" id="rl-c2s">38% allocation amplifies</div>
+              </div>
+              <div style="background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 10px">
+                <div style="font-size:7px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:3px">Cascade</div>
+                <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px;color:var(--y)" id="rl-c3">38%</div>
+                <div style="font-size:8px;color:var(--muted)" id="rl-c3s">Into semis + AI platforms</div>
+              </div>
+            </div>
           </div>
+        </div>
+        <!-- RIGHT: Free-pan/zoom network canvas -->
+        <div id="net-outer" style="flex:1;min-width:0;position:relative;overflow:hidden;background:var(--s2);display:flex;flex-direction:column">
+          <!-- HUD chips -->
+          <div style="position:absolute;top:10px;left:10px;z-index:20;display:flex;gap:6px;pointer-events:none">
+            <span style="font-size:7px;padding:3px 8px;border-radius:10px;background:rgba(26,58,107,0.14);color:var(--b);border:1px solid rgba(26,58,107,0.25)">A · SECTOR</span>
+            <span style="font-size:7px;padding:3px 8px;border-radius:10px;background:rgba(10,102,64,0.14);color:var(--g);border:1px solid rgba(10,102,64,0.25)">B · HOLDING</span>
+            <span style="font-size:7px;padding:3px 8px;border-radius:10px;background:rgba(191,53,39,0.14);color:var(--r);border:1px solid rgba(191,53,39,0.25)">C · SPILLOVER/HEDGE</span>
+          </div>
+          <!-- Zoom buttons -->
+          <div style="position:absolute;top:10px;right:10px;z-index:20;display:flex;flex-direction:column;gap:4px">
+            <button onclick="netZoomIn()" style="width:32px;height:32px;border-radius:7px;border:1px solid var(--border2);background:var(--surface);font-size:16px;font-weight:300;cursor:pointer;box-shadow:var(--sh);color:var(--ink)">+</button>
+            <button onclick="netZoomOut()" style="width:32px;height:32px;border-radius:7px;border:1px solid var(--border2);background:var(--surface);font-size:16px;font-weight:300;cursor:pointer;box-shadow:var(--sh);color:var(--ink)">−</button>
+            <button onclick="netReset()" title="Reset view" style="width:32px;height:32px;border-radius:7px;border:1px solid var(--border2);background:var(--surface);font-size:13px;cursor:pointer;box-shadow:var(--sh);color:var(--muted)">⊙</button>
+          </div>
+          <!-- Legend bottom-left -->
+          <div style="position:absolute;bottom:14px;left:14px;z-index:20;pointer-events:none;display:flex;flex-direction:column;gap:4px">
+            <div style="display:flex;align-items:center;gap:6px;font-size:8px;color:var(--muted)"><div style="width:20px;height:1.5px;background:rgba(26,58,107,0.5)"></div>A→B link</div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:8px;color:var(--muted)"><div style="width:20px;height:0;border-top:1.5px dashed rgba(168,94,8,0.6)"></div>B→C spillover</div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:8px;color:var(--muted)"><div style="width:20px;height:0;border-top:1.5px dashed rgba(191,53,39,0.6)"></div>Hedge link</div>
+            <div style="font-size:7px;color:var(--muted);margin-top:2px">Drag · Scroll · Click B-node</div>
+          </div>
+          <!-- THE CANVAS -->
+          <canvas id="net-c2" style="position:absolute;inset:0;width:100%;height:100%;cursor:grab"></canvas>
+          <!-- Hover tooltip -->
+          <div id="net-tt2" style="position:absolute;display:none;pointer-events:none;z-index:50;background:var(--ink);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px 14px;max-width:260px;box-shadow:0 8px 32px rgba(0,0,0,0.3)"></div>
+          <!-- Bottom drawer -->
+          <div id="net-drawer" style="position:absolute;left:0;right:0;bottom:0;z-index:40;background:var(--surface);border-top:2px solid var(--border);transform:translateY(100%);transition:transform 0.25s ease;box-shadow:0 -6px 24px rgba(0,0,0,0.08)">
+            <div style="display:flex;align-items:center;padding:9px 14px;border-bottom:1px solid var(--border);gap:10px">
+              <span style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px" id="dr-ticker">—</span>
+              <span style="font-size:10px;color:var(--muted)" id="dr-name"></span>
+              <span id="dr-chg" style="font-size:10px;font-weight:500;margin-left:4px"></span>
+              <span id="dr-val" style="font-size:9px;color:var(--muted);margin-left:auto"></span>
+              <button onclick="drawerClose()" style="padding:3px 10px;border-radius:5px;border:1px solid var(--border);background:transparent;font-family:'DM Mono',monospace;font-size:9px;cursor:pointer;color:var(--muted)">✕</button>
+            </div>
+            <div style="display:flex;height:188px;overflow:hidden">
+              <!-- Info col -->
+              <div style="width:190px;flex-shrink:0;border-right:1px solid var(--border);padding:10px 12px;overflow-y:auto;display:flex;flex-direction:column;gap:5px">
+                <div style="font-size:7px;letter-spacing:0.1em;color:var(--muted);text-transform:uppercase;margin-bottom:3px">Position</div>
+                <div style="display:flex;justify-content:space-between;font-size:9px"><span style="color:var(--muted)">Price</span><span id="dr-price" style="font-weight:500"></span></div>
+                <div style="display:flex;justify-content:space-between;font-size:9px"><span style="color:var(--muted)">Holding</span><span id="dr-hval"></span></div>
+                <div style="display:flex;justify-content:space-between;font-size:9px;align-items:flex-start;gap:6px"><span style="color:var(--muted);flex-shrink:0">Event</span><span id="dr-event" style="color:var(--y);text-align:right;font-size:8px;line-height:1.4"></span></div>
+                <div style="display:flex;justify-content:space-between;font-size:9px;margin-top:4px"><span style="color:var(--muted)">Lev. candidate</span><span id="dr-lc"></span></div>
+                <div style="display:flex;justify-content:space-between;font-size:9px"><span style="color:var(--muted)">Hedge exists</span><span id="dr-he"></span></div>
+              </div>
+              <!-- Tabs area -->
+              <div style="flex:1;display:flex;flex-direction:column;min-width:0">
+                <div style="display:flex;border-bottom:1px solid var(--border);flex-shrink:0">
+                  <button id="dr-th" onclick="drawerTab('h')" style="flex:1;padding:8px;border:none;background:var(--s2);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.06em;cursor:pointer;color:var(--ink);border-bottom:2px solid var(--ink)">↓ HEDGE POSITION</button>
+                  <button id="dr-tl" onclick="drawerTab('l')" style="flex:1;padding:8px;border:none;background:transparent;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:0.06em;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent">↑ LEVERAGE POSITION</button>
+                </div>
+                <div id="dr-ph" style="flex:1;overflow-y:auto;padding:8px 10px;display:flex;flex-direction:column;gap:6px"></div>
+                <div id="dr-pl" style="flex:1;overflow-y:auto;padding:8px 10px;display:none;flex-direction:column;gap:6px"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ NEWS ══ -->
+    <div class="panel" id="p-news">
+      <div class="ps">
+        <div class="srow">
+          <div class="stat"><div class="sl">Collected</div><div class="sv" style="color:var(--b)">247</div><div class="ss">articles today</div></div>
+          <div class="stat"><div class="sl">Passed filter</div><div class="sv up">89</div><div class="ss">relevant to holdings</div></div>
+          <div class="stat"><div class="sl">Triggers fired</div><div class="sv" style="color:var(--y)">14</div><div class="ss">active events</div></div>
+        </div>
+        <div class="card">
+          <div class="ch"><span class="ct">Live feed</span><span class="tag tg">UPDATING</span></div>
+          <div class="cb" style="padding-top:4px">
+            <div class="ni"><div class="ni-meta"><span class="ni-src">Bloomberg</span><span class="ni-t">2m</span></div><div class="ni-h">EU AI Act enforcement begins — cybersecurity vendors face new compliance requirements</div><div class="ni-tags"><span class="tag tr">CRWD</span><span class="tag tr">ZS</span><span class="tag ty">Regulation</span></div></div>
+            <div class="ni"><div class="ni-meta"><span class="ni-src">Reuters</span><span class="ni-t">8m</span></div><div class="ni-h">NVIDIA announces next-gen AI chip with 3× inference throughput, beating analyst estimates</div><div class="ni-tags"><span class="tag tg">NVDA</span><span class="tag tg">AMD</span><span class="tag tg">Bullish</span></div></div>
+            <div class="ni"><div class="ni-meta"><span class="ni-src">WSJ</span><span class="ni-t">14m</span></div><div class="ni-h">Pentagon awards $4.2B AI cybersecurity contract to CrowdStrike and Palo Alto Networks</div><div class="ni-tags"><span class="tag tg">CRWD</span><span class="tag tg">PANW</span><span class="tag tb">Gov</span></div></div>
+            <div class="ni"><div class="ni-meta"><span class="ni-src">FT</span><span class="ni-t">21m</span></div><div class="ni-h">China semiconductor export restrictions tightened — AMD and NVIDIA face Asia Pacific headwinds</div><div class="ni-tags"><span class="tag tr">AMD</span><span class="tag tr">NVDA</span><span class="tag ty">Geopolitical</span></div></div>
+            <div class="ni"><div class="ni-meta"><span class="ni-src">CNBC</span><span class="ni-t">35m</span></div><div class="ni-h">Microsoft Azure AI revenue beats Q1 by 22%, driving broad cloud security adoption</div><div class="ni-tags"><span class="tag tg">MSFT</span><span class="tag tg">Earnings</span></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SETTINGS ══ -->
+    <div class="panel" id="p-settings">
+      <div class="settings-grid">
+        <div class="set-nav">
+          <div class="set-nav-sec">Portfolio</div>
+          <div class="set-nav-item on" onclick="pickSetNav('portfolio',this)">My Holdings</div>
+          <div class="set-nav-item" onclick="pickSetNav('connect',this)">Connect Brokerage</div>
+          <div class="set-nav-item" onclick="pickSetNav('import',this)">Import CSV</div>
+          <div class="set-nav-sec">Preferences</div>
+          <div class="set-nav-item" onclick="pickSetNav('alerts',this)">Alert Settings</div>
+          <div class="set-nav-item" onclick="pickSetNav('engine',this)">Engine Config</div>
+        </div>
+        <div class="set-body">
+
+          <!-- HOLDINGS -->
+          <div class="set-section on" id="ss-portfolio">
+            <div class="set-h">MY HOLDINGS</div>
+            <div class="set-sub">Add stocks manually or import from your brokerage. The AI will classify each holding into an AI sector and compute your inherited risk score.</div>
+
+            <!-- MANUAL ADD FORM -->
+            <div class="madd-form">
+              <div style="font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px">Add stock manually</div>
+              <div class="madd-row">
+                <div class="finput-wrap"><div class="finput-label">Ticker</div><input class="finput" id="add-ticker" placeholder="AAPL" maxlength="6" style="text-transform:uppercase"/></div>
+                <div class="finput-wrap"><div class="finput-label">Company name</div><input class="finput" id="add-name" placeholder="Apple Inc."/></div>
+                <div class="finput-wrap"><div class="finput-label">Value ($)</div><input class="finput" id="add-value" placeholder="10000" type="number"/></div>
+                <button class="add-btn" onclick="addStock()">+ ADD</button>
+              </div>
+              <div class="madd-row" style="grid-template-columns:1fr 1fr;margin-bottom:0">
+                <div class="finput-wrap"><div class="finput-label">AI Sector</div>
+                  <select class="fselect" id="add-sector">
+                    <option value="Cybersecurity">Cybersecurity</option>
+                    <option value="Semiconductors">Semiconductors</option>
+                    <option value="AI Platforms">AI Platforms</option>
+                    <option value="Data Infrastructure">Data Infrastructure</option>
+                    <option value="Robotics">Robotics</option>
+                    <option value="Cloud Computing">Cloud Computing</option>
+                    <option value="Other AI">Other AI</option>
+                  </select>
+                </div>
+                <div class="finput-wrap"><div class="finput-label">Avg cost basis ($)</div><input class="finput" id="add-cost" placeholder="Optional" type="number"/></div>
+              </div>
+            </div>
+
+            <!-- HOLDINGS LIST -->
+            <div style="font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Current holdings (<span id="h-count">9</span>)</div>
+            <div class="hlist" id="holdings-list"></div>
+
+            <!-- ANALYZE CTA -->
+            <div class="analyze-cta">
+              <div class="acta-left">
+                <div class="acta-t">READY TO ANALYZE</div>
+                <div class="acta-s">AI will classify all holdings, run the waterfall engine,<br>and compute your inherited risk scores.</div>
+              </div>
+              <button class="acta-btn" id="analyze-btn" onclick="runAnalysis()">ANALYZE PORTFOLIO →</button>
+            </div>
+          </div>
+
+          <!-- CONNECT BROKERAGE -->
+          <div class="set-section" id="ss-connect">
+            <div class="set-h">CONNECT BROKERAGE</div>
+            <div class="set-sub">Link your brokerage account to automatically sync your holdings. Your credentials are never stored — we use read-only OAuth connections.</div>
+            <div class="broker-grid">
+              <div class="bcard" id="bc-fidelity"><div class="bcard-top"><div class="bcard-name">Fidelity</div><div class="bcard-status bs-none">Not connected</div></div><div class="bcard-desc">Full portfolio sync, real-time positions, cost basis</div><button class="bcard-btn" onclick="toggleBroker('fidelity')">CONNECT →</button></div>
+              <div class="bcard" id="bc-schwab"><div class="bcard-top"><div class="bcard-name">Schwab</div><div class="bcard-status bs-none">Not connected</div></div><div class="bcard-desc">Holdings, dividends, options positions</div><button class="bcard-btn" onclick="toggleBroker('schwab')">CONNECT →</button></div>
+              <div class="bcard connected" id="bc-td"><div class="bcard-top"><div class="bcard-name">TD Ameritrade</div><div class="bcard-status bs-conn">● Connected</div></div><div class="bcard-desc">Synced 2 min ago · 9 positions imported</div><button class="bcard-btn" onclick="toggleBroker('td')">DISCONNECT</button></div>
+              <div class="bcard" id="bc-robinhood"><div class="bcard-top"><div class="bcard-name">Robinhood</div><div class="bcard-status bs-none">Not connected</div></div><div class="bcard-desc">Stocks, crypto, options, fractional shares</div><button class="bcard-btn" onclick="toggleBroker('robinhood')">CONNECT →</button></div>
+              <div class="bcard" id="bc-ibkr"><div class="bcard-top"><div class="bcard-name">IBKR</div><div class="bcard-status bs-none">Not connected</div></div><div class="bcard-desc">Advanced portfolio data, margin, global markets</div><button class="bcard-btn" onclick="toggleBroker('ibkr')">CONNECT →</button></div>
+              <div class="bcard" id="bc-etrade"><div class="bcard-top"><div class="bcard-name">E*TRADE</div><div class="bcard-status bs-none">Not connected</div></div><div class="bcard-desc">Stocks, bonds, mutual funds, IRAs</div><button class="bcard-btn" onclick="toggleBroker('etrade')">CONNECT →</button></div>
+            </div>
+          </div>
+
+          <!-- IMPORT CSV -->
+          <div class="set-section" id="ss-import">
+            <div class="set-h">IMPORT CSV</div>
+            <div class="set-sub">Upload a brokerage export file. SentinelAI supports CSV formats from Schwab, Fidelity, IBKR, and TD Ameritrade.</div>
+            <div class="csv-zone" onclick="fakeUpload()">
+              <div class="csv-icon">📂</div>
+              <div class="csv-t">Drop your CSV here or click to browse</div>
+              <div class="csv-s">Supports Schwab, Fidelity, IBKR, TD formats · Max 10MB</div>
+            </div>
+            <div class="card">
+              <div class="ch"><span class="ct">Supported formats</span></div>
+              <div class="cb">
+                <table class="tbl">
+                  <thead><tr><th>Brokerage</th><th>Export location</th><th>Required columns</th></tr></thead>
+                  <tbody>
+                    <tr><td>Schwab</td><td style="font-size:9px;color:var(--muted)">Accounts → Positions → Export</td><td style="font-size:9px;color:var(--muted)">Symbol, Quantity, Market Value</td></tr>
+                    <tr><td>Fidelity</td><td style="font-size:9px;color:var(--muted)">Portfolio → Download positions</td><td style="font-size:9px;color:var(--muted)">Ticker, Shares, Current Value</td></tr>
+                    <tr><td>IBKR</td><td style="font-size:9px;color:var(--muted)">Reports → Flex Query</td><td style="font-size:9px;color:var(--muted)">Symbol, Position, Value</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ALERTS -->
+          <div class="set-section" id="ss-alerts">
+            <div class="set-h">ALERT SETTINGS</div>
+            <div class="set-sub">Configure when SentinelAI notifies you about news events, risk threshold breaches, and waterfall cascade triggers.</div>
+            <div class="card"><div class="cb" style="font-family:'Crimson Pro',serif;font-size:14px;font-weight:300;color:var(--muted);text-align:center;padding:32px">Alert configuration coming soon.</div></div>
+          </div>
+
+          <!-- ENGINE -->
+          <div class="set-section" id="ss-engine">
+            <div class="set-h">ENGINE CONFIG</div>
+            <div class="set-sub">Tune the waterfall event engine — set your news sources, keyword filters, and correlation sensitivity.</div>
+            <div class="card"><div class="cb" style="font-family:'Crimson Pro',serif;font-size:14px;font-weight:300;color:var(--muted);text-align:center;padding:32px">Engine configuration coming soon.</div></div>
+          </div>
+
         </div>
       </div>
     </div>
   </div>
+</div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
-  <script>
-    let marketRows = [];
-    let allStocks = [];
-    let allSectorSummary = [];
-    let selectedSymbol = "NVDA";
-    let chart = null;
+<!-- HEDGE MODAL -->
+<div class="ov" id="hdg-ov">
+  <div class="modal">
+    <div class="modal-t">HEDGE POSITION</div>
+    <div class="modal-sub" id="hm-sub">AI identified counter-stocks that move inversely to your selected position.</div>
+    <div id="hm-opts">
+      <div class="ho" onclick="confirmHdg('HACK','ETFMG Prime Cyber Security ETF')"><div class="ho-tk">HACK</div><div><div class="ho-n">ETFMG Prime Cyber Security ETF</div><div class="ho-w">Inverse move on EU regulation events that hit CRWD and ZS simultaneously</div><div class="ho-c">0.82 inverse correlation</div></div></div>
+      <div class="ho" onclick="confirmHdg('CIBR','First Trust Nasdaq Cybersecurity ETF')"><div class="ho-tk">CIBR</div><div><div class="ho-n">First Trust Nasdaq Cybersecurity ETF</div><div class="ho-w">Balances regulatory exposure with lower volatility hedge profile</div><div class="ho-c">0.71 inverse correlation</div></div></div>
+      <div class="ho" onclick="confirmHdg('DRIV','Global X Autonomous & EV ETF')"><div class="ho-tk">DRIV</div><div><div class="ho-n">Global X Autonomous & EV ETF</div><div class="ho-w">Negative correlation to AI regulation news — sector diversification</div><div class="ho-c">0.58 inverse correlation</div></div></div>
+    </div>
+    <button class="mcc" onclick="closeOv('hdg-ov')">CANCEL</button>
+  </div>
+</div>
 
-    function nowClock() {
-      const now = new Date();
-      document.getElementById("clock").textContent =
-        now.toLocaleTimeString("en-US", { hour12: false }) + " · " +
-        now.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+<!-- DOUBLE HEDGE WARNING -->
+<div class="ov" id="warn-ov">
+  <div class="modal">
+    <div class="modal-t" style="color:var(--y)">⚠ CANNOT DOUBLE-HEDGE</div>
+    <div class="wbox"><div class="wt">This position is already hedged</div><div class="wb">Adding a second hedge increases your net risk. You would be paying options premium on both sides of the same position with no additional downside protection.</div></div>
+    <div class="rsrc">
+      <div class="rsr"><span class="rsl">Original position</span><span class="rsv" id="wo">CRWD (long)</span></div>
+      <div class="rsr"><span class="rsl">Existing hedge</span><span class="rsv" id="wh">HACK ETF</span></div>
+      <div class="rsr"><span class="rsl">Double hedge cost</span><span class="rsv" style="color:var(--r)">+$840/mo premium drag</span></div>
+      <div class="rsr"><span class="rsl">Net risk if doubled</span><span class="rsv" style="color:var(--r)">↑ INCREASES</span></div>
+    </div>
+    <button class="mcc" onclick="closeOv('warn-ov')">UNDERSTOOD — KEEP EXISTING HEDGE</button>
+  </div>
+</div>
+
+<!-- CHATBOT -->
+<button class="chatbot-fab" id="chatbot-fab" onclick="toggleChatbot(true)">CHAT</button>
+<div class="chatbot-widget minimized" id="chatbot-widget">
+  <div class="chatbot-head">
+    <div class="chatbot-title"><span class="chatbot-dot"></span>BLADETRADER ASSISTANT</div>
+    <div class="chatbot-actions">
+      <button title="Minimize" onclick="minimizeChatbot()">-</button>
+      <button title="Close" onclick="closeChatbot()">x</button>
+    </div>
+  </div>
+  <div class="chatbot-body" id="chatbot-body">
+    <div class="chat-msg bot">Hi, I am your assistant. Ask about portfolio setup, signals, or live feed details.</div>
+  </div>
+  <div class="chatbot-input">
+    <input id="chatbot-input" type="text" placeholder="Type a message..." onkeydown="if(event.key==='Enter'){sendChatMessage();}" />
+    <button onclick="sendChatMessage()">SEND</button>
+  </div>
+</div>
+
+<script>
+// ════════════════
+// DATA
+// ════════════════
+let holdings=[
+  {ticker:'CRWD',name:'CrowdStrike',value:42110,sector:'Cybersecurity',change:'+8.4%',up:true,source:'broker'},
+  {ticker:'NVDA',name:'NVIDIA',value:38200,sector:'Semiconductors',change:'+3.4%',up:true,source:'broker'},
+  {ticker:'PANW',name:'Palo Alto Networks',value:29800,sector:'Cybersecurity',change:'+5.2%',up:true,source:'broker'},
+  {ticker:'ZS',name:'Zscaler',value:22400,sector:'Cybersecurity',change:'-1.2%',up:false,source:'broker'},
+  {ticker:'AMD',name:'AMD',value:19600,sector:'Semiconductors',change:'+1.8%',up:true,source:'broker'},
+  {ticker:'META',name:'Meta Platforms',value:18900,sector:'AI Platforms',change:'+2.9%',up:true,source:'broker'},
+  {ticker:'S',name:'SentinelOne',value:14200,sector:'Cybersecurity',change:'-0.8%',up:false,source:'broker'},
+  {ticker:'FTNT',name:'Fortinet',value:11800,sector:'Cybersecurity',change:'+0.4%',up:true,source:'broker'},
+  {ticker:'MSFT',name:'Microsoft',value:10200,sector:'AI Platforms',change:'-0.8%',up:false,source:'broker'},
+];
+
+let chatSessionId=null;
+let authToken=localStorage.getItem('blade_auth_token')||'';
+let universeCache=null;
+
+const sectorData={
+  cyber:{reveal:'You are positioned in Cybersecurity as an AI infrastructure play — a defensive growth thesis. Your holdings reflect a bet that AI adoption accelerates enterprise zero-trust security spend. 38% allocation carries significant inherited regulatory risk from EU AI Act enforcement.',detail:'Holdings: CRWD · PANW · ZS · S · FTNT<br>Inherited risk: <strong>HIGH<\/strong> — EU regulation events cascade across all positions.<br>Waterfall: Cybersecurity → Semiconductors → AI Platforms → Data Infra.',col1:'HIGH',col1s:'Sector very sensitive to AI regulation news',col2:'+4.2%',col2s:'38% allocation amplifies impact',col3:'38%',col3s:'Cascades into semis and AI platforms',tagCls:'tr',risk:'HIGH'},
+  semi:{reveal:'You are positioned in Semiconductors as an AI compute infrastructure play. NVDA and AMD give you concentrated GPU pricing exposure and China export restriction risk.',detail:'Holdings: NVDA · AMD<br>Inherited risk: <strong>MEDIUM<\/strong> — export restrictions primary risk vector. TSMC supply shock cascades to both.',col1:'MED',col1s:'Sensitive to export restrictions and supply',col2:'+1.8%',col2s:'21% allocation — moderate amplification',col3:'21%',col3s:'Hits AI platforms and cloud training costs',tagCls:'ty',risk:'MEDIUM'},
+  aip:{reveal:'You are positioned in AI Platforms as a software monetization play. META and MSFT give you broad exposure to AI model deployment and advertising intelligence cycles.',detail:'Holdings: META · MSFT<br>Inherited risk: <strong>MEDIUM<\/strong> — antitrust and data sovereignty regulation risk.<br>Waterfall: AI Platforms → Cybersecurity → Data Infra.',col1:'MED',col1s:'Antitrust and privacy regulation sensitive',col2:'+2.9%',col2s:'18% allocation — moderate exposure',col3:'18%',col3s:'Compliance spend reaches cybersecurity',tagCls:'ty',risk:'MEDIUM'},
+  data:{reveal:'You are positioned in Data Infrastructure as a picks-and-shovels AI thesis. Lower volatility, lower regulation exposure, government contract stability provides a revenue floor.',detail:'Holdings: Snowflake · Palantir<br>Inherited risk: <strong>LOW<\/strong> — government contract stability. Minimal regulation exposure.',col1:'LOW',col1s:'Stable — government contract floor',col2:'+0.4%',col2s:'14% allocation — low inherited risk',col3:'9%',col3s:'Minimal cascade to other sectors',tagCls:'tg',risk:'LOW'},
+};
+
+// ════════════════
+// INIT
+// ════════════════
+setInterval(()=>{const el=document.getElementById('clock');if(el)el.textContent=new Date().toLocaleTimeString('en-US',{hour12:false})},1000);
+
+function switchAuthView(view){
+  ['signin','create','recover','2step'].forEach(id=>{
+    const el=document.getElementById('auth-'+id);
+    if(el)el.classList.toggle('on',id===view);
+  });
+  const signTab=document.getElementById('auth-tab-signin');
+  const createTab=document.getElementById('auth-tab-create');
+  if(signTab)signTab.classList.toggle('on',view==='signin');
+  if(createTab)createTab.classList.toggle('on',view==='create');
+  const status=document.getElementById('auth-status');
+  if(status)status.textContent='';
+}
+
+function mockAuthAction(type){
+  const status=document.getElementById('auth-status');
+  if(!status)return;
+  if(type==='recover'){
+    status.textContent='Password reset is disabled in demo build. Use account create/login below.';
+    return;
+  }
+  if(type==='2step'){
+    status.textContent='2-step simulated. Finalizing login...';
+    setTimeout(()=>enterApp(),300);
+    return;
+  }
+  const email=(document.getElementById(type==='signin'?'signin-email':'create-email')||{}).value||'';
+  const username=(String(email).split('@')[0]||'').trim().toLowerCase();
+  const password=((document.getElementById(type==='signin'?'signin-password':'create-password')||{}).value||'').trim();
+  if(!username||!password){
+    status.textContent='Enter email + password.';
+    return;
+  }
+  status.textContent=(type==='create'?'Creating':'Signing in')+' account...';
+  const body=type==='create'
+    ? {username,password,display_name:(document.getElementById('create-name')||{}).value||username}
+    : {username,password};
+  const path=type==='create'?'/api/auth/register':'/api/auth/login';
+  fetch(path,{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(body)
+  }).then(async(resp)=>{
+    const data=await resp.json();
+    if(!resp.ok){throw new Error(data.detail||'auth failed');}
+    authToken=data.token||'';
+    if(authToken)localStorage.setItem('blade_auth_token',authToken);
+    status.textContent=(type==='create'?'Account created. ':'Signed in. ')+'Verifying 2-step authentication...';
+    setTimeout(()=>switchAuthView('2step'),350);
+  }).catch((err)=>{
+    status.textContent='Auth error: '+err.message;
+  });
+}
+
+function toggleChatbot(forceOpen){
+  const widget=document.getElementById('chatbot-widget');
+  const fab=document.getElementById('chatbot-fab');
+  if(!widget||!fab)return;
+  const shouldOpen=forceOpen===true||widget.classList.contains('minimized');
+  widget.classList.toggle('minimized',!shouldOpen);
+  fab.style.display=shouldOpen?'none':'block';
+}
+
+function minimizeChatbot(){
+  const widget=document.getElementById('chatbot-widget');
+  const fab=document.getElementById('chatbot-fab');
+  if(widget)widget.classList.add('minimized');
+  if(fab)fab.style.display='block';
+}
+
+function closeChatbot(){
+  minimizeChatbot();
+}
+
+function sendChatMessage(){
+  const input=document.getElementById('chatbot-input');
+  const body=document.getElementById('chatbot-body');
+  if(!input||!body)return;
+  const text=(input.value||'').trim();
+  if(!text)return;
+  body.innerHTML+=`<div class="chat-msg user">${text}<\/div>`;
+  input.value='';
+  fetch('/api/chat',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({message:text,session_id:chatSessionId})
+  }).then(async(resp)=>{
+    const data=await resp.json();
+    if(!resp.ok){throw new Error(data.detail||'chat failed');}
+    chatSessionId=data.session_id||chatSessionId;
+    body.innerHTML+=`<div class="chat-msg bot">${data.reply||'No response.'}<\/div>`;
+    body.scrollTop=body.scrollHeight;
+  }).catch((err)=>{
+    body.innerHTML+=`<div class="chat-msg bot">Chat error: ${err.message}<\/div>`;
+    body.scrollTop=body.scrollHeight;
+  });
+}
+
+function enterApp(){
+  document.getElementById('s-land').classList.remove('active');
+  document.getElementById('s-app').classList.add('active');
+  renderDash();
+  renderSettings();
+  initNet();
+  hydrateFromBackend();
+}
+
+// ════════════════
+// NAV
+// ════════════════
+const panelTitles={dashboard:'PORTFOLIO DASHBOARD',asset:'ASSET MANAGER',risklev:'RISK + LEVERAGE',news:'LIVE NEWS FEED',settings:'SETTINGS'};
+function goPanel(id,el){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  document.getElementById('p-'+id).classList.add('on');
+  document.getElementById('tb-t').textContent=panelTitles[id]||id.toUpperCase();
+  if(el){document.querySelectorAll('.sb-item').forEach(n=>n.classList.remove('on'));el.classList.add('on');}
+  if(id==='risklev')initNet2();
+}
+
+// ════════════════
+// SETTINGS NAV
+// ════════════════
+function pickSetNav(id,el){
+  document.querySelectorAll('.set-nav-item').forEach(n=>n.classList.remove('on'));
+  document.querySelectorAll('.set-section').forEach(s=>s.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById('ss-'+id).classList.add('on');
+}
+
+// ════════════════
+// RENDER DASHBOARD TABLE
+// ════════════════
+const secTag={Cybersecurity:'tb',Semiconductors:'tg','AI Platforms':'ty','Data Infrastructure':'tp',Robotics:'tp','Cloud Computing':'tb','Other AI':'ty'};
+function renderDash(){
+  const tbody=document.getElementById('dash-tbody');
+  if(!tbody)return;
+  tbody.innerHTML=holdings.map(h=>`
+    <tr>
+      <td><span class="tkr">${h.ticker}<\/span><\/td>
+      <td style="color:var(--muted);font-size:10px">${h.name}<\/td>
+      <td style="font-size:10px">$${h.value.toLocaleString()}<\/td>
+      <td><span class="tag ${secTag[h.sector]||'tb'}">${h.sector}<\/span><\/td>
+      <td class="${h.up?'up':'dn'}" style="font-size:10px">${h.change}<\/td>
+      <td><span class="tag ${h.source==='manual'?'tp':h.source==='csv'?'tb':'tg'} source-badge">${h.source==='manual'?'MANUAL':h.source==='csv'?'CSV':'BROKER'}<\/span><\/td>
+    <\/tr>`).join('');
+  const hc=document.getElementById('holding-count');
+  if(hc)hc.textContent=holdings.length;
+}
+
+// ════════════════
+// RENDER SETTINGS
+// ════════════════
+function renderSettings(){
+  const list=document.getElementById('holdings-list');
+  const hc=document.getElementById('h-count');
+  if(hc)hc.textContent=holdings.length;
+  if(!list)return;
+  if(holdings.length===0){
+    list.innerHTML=`<div class="empty-state"><div class="empty-icon">📊<\/div>No holdings yet.<br>Add stocks manually above or connect your brokerage.<\/div>`;
+    return;
+  }
+  list.innerHTML=holdings.map((h,i)=>`
+    <div class="hrow">
+      <div class="hrow-tk">${h.ticker}<\/div>
+      <div class="hrow-info">
+        <div class="hrow-name">${h.name} <span class="tag ${secTag[h.sector]||'tb'}" style="font-size:7px">${h.sector}<\/span><\/div>
+        <div class="hrow-meta">$${h.value.toLocaleString()} · ${h.source==='manual'?'Added manually':h.source==='csv'?'Imported from CSV':'Synced from broker'}<\/div>
+      <\/div>
+      <button class="hrow-del" onclick="removeStock(${i})">REMOVE<\/button>
+    <\/div>`).join('');
+}
+
+// ════════════════
+// ADD / REMOVE STOCK
+// ════════════════
+function addStock(){
+  const ticker=(document.getElementById('add-ticker').value||'').toUpperCase().trim();
+  const name=document.getElementById('add-name').value.trim();
+  const value=parseFloat(document.getElementById('add-value').value)||0;
+  const sector=document.getElementById('add-sector').value;
+  if(!ticker){document.getElementById('add-ticker').focus();return;}
+  if(!name){document.getElementById('add-name').focus();return;}
+  if(!value){document.getElementById('add-value').focus();return;}
+  holdings.push({ticker,name,value,sector,change:'—',up:true,source:'manual'});
+  document.getElementById('add-ticker').value='';
+  document.getElementById('add-name').value='';
+  document.getElementById('add-value').value='';
+  renderDash();renderSettings();
+  // show added feedback
+  const btn=document.querySelector('.add-btn');
+  const orig=btn.textContent;btn.textContent='✓ ADDED';btn.style.background='var(--g)';
+  setTimeout(()=>{btn.textContent=orig;btn.style.background='';},1200);
+  // hide settings warn badge if we have stocks
+  if(holdings.length>0){const w=document.getElementById('settings-warn');if(w)w.style.display='none';}
+}
+
+function removeStock(i){
+  holdings.splice(i,1);
+  renderDash();renderSettings();
+}
+
+// ════════════════
+// BROKER TOGGLE (mock)
+// ════════════════
+const connectedBrokers=new Set(['td']);
+function toggleBroker(id){
+  const card=document.getElementById('bc-'+id);
+  if(connectedBrokers.has(id)){
+    connectedBrokers.delete(id);
+    card.classList.remove('connected');
+    card.querySelector('.bcard-status').className='bcard-status bs-none';
+    card.querySelector('.bcard-status').textContent='Not connected';
+    card.querySelector('.bcard-btn').textContent='CONNECT →';
+  } else {
+    connectedBrokers.add(id);
+    card.classList.add('connected');
+    card.querySelector('.bcard-status').className='bcard-status bs-conn';
+    card.querySelector('.bcard-status').textContent='● Connected';
+    card.querySelector('.bcard-btn').textContent='DISCONNECT';
+  }
+}
+
+function fakeUpload(){
+  const z=document.querySelector('.csv-zone');
+  z.style.borderColor='var(--g)';z.style.background='rgba(10,102,64,0.03)';
+  z.innerHTML='<div class="csv-icon">✓<\/div><div class="csv-t" style="color:var(--g)">portfolio_export.csv imported<\/div><div class="csv-s">12 positions detected · processing...<\/div>';
+  setTimeout(()=>{
+    holdings.push({ticker:'SNOW',name:'Snowflake',value:8400,sector:'Data Infrastructure',change:'+1.1%',up:true,source:'csv'});
+    renderDash();renderSettings();
+  },1200);
+}
+
+function runAnalysis(){
+  const btn=document.getElementById('analyze-btn');
+  btn.textContent='ANALYZING…';btn.disabled=true;
+  fetch('/api/agents/sector/analyze-all',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({horizon_days:5})
+  }).then(async(resp)=>{
+    const data=await resp.json();
+    if(!resp.ok){throw new Error(data.detail||'analysis failed');}
+    universeCache=data;
+    syncUniverseToUi(data);
+    btn.textContent='✓ ANALYSIS COMPLETE';
+    setTimeout(()=>{
+      goPanel('dashboard',document.querySelector('.sb-item'));
+      btn.textContent='ANALYZE PORTFOLIO →';btn.disabled=false;
+    },700);
+  }).catch((err)=>{
+    btn.textContent='ANALYZE PORTFOLIO →';
+    btn.disabled=false;
+    alert('Analysis failed: '+err.message);
+  });
+}
+
+// ════════════════
+// SECTOR PICK (unified)
+// ════════════════
+function pickSec2(id){
+  document.querySelectorAll('.pie-s').forEach(p=>{p.classList.add('dimmed');p.classList.remove('sel')});
+  const el=document.getElementById('ps2-'+id);if(el){el.classList.remove('dimmed');el.classList.add('sel');}
+  const d=sectorData[id];
+  document.getElementById('rl-c1').textContent=d.col1;document.getElementById('rl-c1s').textContent=d.col1s;
+  document.getElementById('rl-c2').textContent=d.col2;document.getElementById('rl-c2s').textContent=d.col2s;
+  document.getElementById('rl-c3').textContent=d.col3;document.getElementById('rl-c3s').textContent=d.col3s;
+  document.getElementById('rl-ban').innerHTML=`You are positioned in <strong style="color:rgba(255,255,255,0.92)">${{cyber:'Cybersecurity as an AI infrastructure play',semi:'Semiconductors as an AI compute play',aip:'AI Platforms as a software monetization play',data:'Data Infrastructure as a picks-and-shovels play'}[id]}<\/strong> — ${d.reveal.split('—')[1]||d.reveal}`;
+  // highlight the matching sector node on canvas
+  activeSecId=id;
+}
+let activeSecId=null;
+
+// ══════════════════════════════════════════════════════════
+// NODE & EDGE DATA  (world-space coordinates, center = 0,0)
+// ══════════════════════════════════════════════════════════
+const ND=[
+  // ── Level A: Sector hubs ──
+  {id:'A_CYBER',lbl:'CYBER\nSECTOR',full:'Cybersecurity Sector',lv:'A',sector:'cyber',
+   x:0,y:0,r:42,col:'#1a3a6b',bg:'rgba(26,58,107,0.11)',
+   a:{alloc:'38%',event:'EU AI Act enforcement',spill:'HIGH'}},
+  {id:'A_SEMI',lbl:'SEMI\nSECTOR',full:'Semiconductors Sector',lv:'A',sector:'semi',
+   x:-290,y:205,r:34,col:'#0a6640',bg:'rgba(10,102,64,0.11)',
+   a:{alloc:'21%',event:'China export restrictions',spill:'MED'}},
+  {id:'A_AIP',lbl:'AI PLT\nSECTOR',full:'AI Platforms Sector',lv:'A',sector:'aip',
+   x:290,y:205,r:30,col:'#a85e08',bg:'rgba(168,94,8,0.11)',
+   a:{alloc:'18%',event:'Antitrust & data sovereignty',spill:'MED'}},
+
+  // ── Level B: Direct holdings ──
+  {id:'B_CRWD',lbl:'CRWD',full:'CrowdStrike',lv:'B',sec:'A_CYBER',
+   x:-188,y:-102,r:28,col:'#1a3a6b',bg:'rgba(26,58,107,0.10)',
+   price:'$348.20',chg:'+8.4%',up:true,val:'$42,110',
+   b:{ev:'EU Act + Pentagon contract',lc:true,he:'HACK ETF',
+     ho:[{tk:'HACK',nm:'ETFMG Prime Cyber ETF',co:'0.82 inverse',fx:'REDUCES 28% EU exposure',ov:'None — clean',rt:'0.4× pos',ql:'HIGH'},
+         {tk:'CIBR',nm:'First Trust Nasdaq Cyber ETF',co:'0.71 inverse',fx:'REDUCES 18% exposure',ov:'Minor CRWD overlap',rt:'0.3× pos',ql:'MED'}],
+     lo:[{lb:'2× CRWD call options',tp:'Call options',ct:'+$1,840 premium',up:'+16.8% if CRWD +10%',rk:'Lose premium if flat',cv:'HIGH — EU Act + Pentagon'},
+         {lb:'Add 50 shares CRWD',tp:'Equity add',ct:'+$17,410',up:'+$3,482 per +10%',rk:'Concentration risk increases',cv:'Strong if thesis holds'}]}},
+
+  {id:'B_PANW',lbl:'PANW',full:'Palo Alto Networks',lv:'B',sec:'A_CYBER',
+   x:182,y:-108,r:25,col:'#1a3a6b',bg:'rgba(26,58,107,0.10)',
+   price:'$312.00',chg:'+5.2%',up:true,val:'$29,800',
+   b:{ev:'Pentagon joint contract',lc:true,he:null,
+     ho:[{tk:'CIBR',nm:'First Trust Nasdaq Cyber ETF',co:'0.68 inverse',fx:'REDUCES 18% gov risk',ov:'Overlaps CRWD — watch',rt:'0.35× pos',ql:'MED'}],
+     lo:[{lb:'2× PANW call options',tp:'Call options',ct:'+$1,200 premium',up:'+10.4% if PANW +10%',rk:'Premium loss if flat',cv:'MED — gov contract dependent'}]}},
+
+  {id:'B_ZS',lbl:'ZS',full:'Zscaler',lv:'B',sec:'A_CYBER',
+   x:-228,y:92,r:21,col:'#a85e08',bg:'rgba(168,94,8,0.10)',
+   price:'$188.00',chg:'-1.2%',up:false,val:'$22,400',
+   b:{ev:'Zero-day vulnerability',lc:false,he:null,
+     ho:[{tk:'DRIV',nm:'Global X Autonomous EV ETF',co:'0.58 inverse',fx:'Sector diversification offset',ov:'Low — different sector',rt:'0.25× pos',ql:'LOW'}],
+     lo:[{lb:'Hold — wait for recovery',tp:'No action',ct:'$0',up:'Recovery if zero-day patched',rk:'Continued downside risk',cv:'LOW — wait for clarity'}]}},
+
+  {id:'B_S',lbl:'S',full:'SentinelOne',lv:'B',sec:'A_CYBER',
+   x:0,y:168,r:19,col:'#1a3a6b',bg:'rgba(26,58,107,0.10)',
+   price:'$22.40',chg:'-0.8%',up:false,val:'$14,200',
+   b:{ev:'AI endpoint gov co-movement',lc:false,he:null,
+     ho:[{tk:'HACK',nm:'ETFMG Prime Cyber ETF',co:'0.61 inverse',fx:'Partial cyber hedge',ov:'Also covers CRWD — combined useful',rt:'0.2× pos',ql:'MED'}],
+     lo:[{lb:'Add on weakness',tp:'Equity add',ct:'+$4,480 for 200 shares',up:'Strong if CRWD gov wins expand',rk:'Small cap — high vol',cv:'LOW — secondary play'}]}},
+
+  {id:'B_FTNT',lbl:'FTNT',full:'Fortinet',lv:'B',sec:'A_CYBER',
+   x:222,y:88,r:21,col:'#1a3a6b',bg:'rgba(26,58,107,0.10)',
+   price:'$82.00',chg:'+0.4%',up:true,val:'$11,800',
+   b:{ev:'Hardware firewall — EU-insulated',lc:false,he:null,
+     ho:[{tk:'FTNT puts',nm:'FTNT put options',co:'Direct inverse',fx:'Protects hardware downside',ov:'None',rt:'0.3× pos',ql:'MED'}],
+     lo:[{lb:'Hold as natural diversifier',tp:'No new action',ct:'$0',up:'Natural hedge for software-heavy book',rk:'Low upside vs rest of portfolio',cv:'MED — hold as diversifier'}]}},
+
+  {id:'B_NVDA',lbl:'NVDA',full:'NVIDIA',lv:'B',sec:'A_SEMI',
+   x:-318,y:310,r:28,col:'#0a6640',bg:'rgba(10,102,64,0.10)',
+   price:'$875.00',chg:'+3.4%',up:true,val:'$38,200',
+   b:{ev:'Next-gen chip 3× throughput',lc:true,he:null,
+     ho:[{tk:'SOXS',nm:'Direxion Semi Bear 3×',co:'3× inverse',fx:'Strong downside protection',ov:'Broad semi — may overshoot',rt:'0.15× pos',ql:'HIGH'}],
+     lo:[{lb:'3× NVDA call options',tp:'Call options',ct:'+$3,200 premium',up:'+27% if NVDA +10%',rk:'High vol — earnings sensitive',cv:'HIGH — AI chip supercycle'}]}},
+
+  {id:'B_AMD',lbl:'AMD',full:'AMD',lv:'B',sec:'A_SEMI',
+   x:-240,y:315,r:19,col:'#a85e08',bg:'rgba(168,94,8,0.10)',
+   price:'$168.00',chg:'+1.8%',up:true,val:'$19,600',
+   b:{ev:'China export restriction headwind',lc:false,he:null,
+     ho:[{tk:'SOXS',nm:'Direxion Semi Bear 3×',co:'3× inverse',fx:'Hedge China restriction risk',ov:'Also hedges NVDA — combined',rt:'0.2× pos',ql:'MED'}],
+     lo:[{lb:'Hold — China risk priced in',tp:'No action',ct:'$0',up:'Recovery if restrictions ease',rk:'Further restrictions possible',cv:'LOW — geopolitical risk'}]}},
+
+  {id:'B_META',lbl:'META',full:'Meta Platforms',lv:'B',sec:'A_AIP',
+   x:322,y:310,r:23,col:'#a85e08',bg:'rgba(168,94,8,0.10)',
+   price:'$512.00',chg:'+2.9%',up:true,val:'$18,900',
+   b:{ev:'AI ad revenue Q1 beat',lc:true,he:null,
+     ho:[{tk:'META puts',nm:'META put options 1-month',co:'Direct inverse',fx:'Protects ad slowdown risk',ov:'None',rt:'0.25× pos',ql:'MED'}],
+     lo:[{lb:'2× META calls — earnings run',tp:'Call options',ct:'+$960 premium',up:'+11.6% if META +8%',rk:'Antitrust headline risk',cv:'MED-HIGH — AI monetization strong'}]}},
+
+  {id:'B_MSFT',lbl:'MSFT',full:'Microsoft',lv:'B',sec:'A_AIP',
+   x:244,y:300,r:21,col:'#a85e08',bg:'rgba(168,94,8,0.10)',
+   price:'$415.00',chg:'-0.8%',up:false,val:'$10,200',
+   b:{ev:'Azure AI revenue +22%',lc:false,he:null,
+     ho:[{tk:'QQQ puts',nm:'Invesco QQQ puts',co:'0.6 inverse',fx:'Broad tech hedge covers MSFT',ov:'Broad — covers META too',rt:'0.15× pos',ql:'LOW'}],
+     lo:[{lb:'Hold — Azure AI long-term',tp:'No action',ct:'$0',up:'Azure AI 22%+ growth continues',rk:'Antitrust + OpenAI dependency',cv:'MED — hold not add'}]}},
+
+  // ── Level C: Spillover / Hedge ──
+  {id:'C_HACK',lbl:'HACK',full:'ETFMG Prime Cyber ETF',lv:'C',sref:'B_CRWD',
+   x:-345,y:-168,r:19,col:'#bf3527',bg:'rgba(191,53,39,0.10)',hedge:true,
+   c:{role:'Hedge Node',follows:null,use:'HIGH',ratio:'0.4× CRWD',fx:'REDUCES 28% EU reg exposure',ov:'None — clean',ic:'0.82 vs CRWD',
+      sum:'Hedging CRWD with HACK cuts EU regulation exposure cleanly. Best hedge in the book.'}},
+
+  {id:'C_NSPILL',lbl:'NVDA\nSPILL',full:'NVIDIA Spillover from CRWD',lv:'C',sref:'B_CRWD',
+   x:-92,y:-215,r:17,col:'#a85e08',bg:'rgba(168,94,8,0.10)',spill:true,
+   c:{role:'Spillover Follower',follows:'CYBER events',use:'MEDIUM',ratio:'0.25× CRWD',fx:'REDUCES semi exp. partially',ov:'Partial — monitor',ic:null,
+      sum:'CRWD EU events spill to NVDA via AI demand chain. Hedging NVDA offsets semiconductor cascade.'}},
+
+  {id:'C_CIBR',lbl:'CIBR',full:'First Trust Nasdaq Cyber ETF',lv:'C',sref:'B_PANW',
+   x:325,y:-165,r:17,col:'#bf3527',bg:'rgba(191,53,39,0.10)',hedge:true,
+   c:{role:'Hedge Node',follows:null,use:'MEDIUM',ratio:'0.35× PANW',fx:'REDUCES 18% gov contract risk',ov:'Overlaps CRWD — monitor',ic:'0.71 vs PANW',
+      sum:'CIBR hedges PANW govt risk but also captures CRWD — monitor combined book effect.'}},
+
+  {id:'C_FSPILL',lbl:'FTNT\nSPILL',full:'Fortinet Spillover from ZS',lv:'C',sref:'B_ZS',
+   x:-375,y:155,r:15,col:'#a85e08',bg:'rgba(168,94,8,0.10)',spill:true,
+   c:{role:'Spillover Follower',follows:'ZS zero-day',use:'LOW',ratio:'0.15× ZS',fx:'Minimal reduction',ov:'Hardware vs software — minimal',ic:null,
+      sum:'FTNT hardware partially offsets ZS software vulnerability exposure. Low benefit, adds diversification.'}},
+];
+
+const ED=[
+  {a:'A_CYBER',b:'B_CRWD',w:1.0,t:'AB',tx:'EU AI Act → CRWD enterprise contract revenue spike'},
+  {a:'A_CYBER',b:'B_PANW',w:0.9,t:'AB',tx:'Pentagon joint award — PANW co-recipient with CRWD'},
+  {a:'A_CYBER',b:'B_ZS',  w:0.7,t:'AB',tx:'Zero-trust narrative — ZS and CRWD share the same enterprise buyer'},
+  {a:'A_CYBER',b:'B_S',   w:0.6,t:'AB',tx:'AI-native endpoint — gov contract co-movement with CRWD'},
+  {a:'A_CYBER',b:'B_FTNT',w:0.5,t:'AB',tx:'Hardware security — partial insulation from EU regulation'},
+  {a:'A_SEMI', b:'B_NVDA',w:1.0,t:'AB',tx:'NVDA GPU pricing power drives semiconductor sector sentiment'},
+  {a:'A_SEMI', b:'B_AMD', w:0.7,t:'AB',tx:'China export restriction hits AMD and NVDA simultaneously'},
+  {a:'A_AIP',  b:'B_META',w:0.9,t:'AB',tx:'Meta AI ad Q1 beat — AI platform monetization proof point'},
+  {a:'A_AIP',  b:'B_MSFT',w:0.8,t:'AB',tx:'Azure AI +22% — MSFT top AI platform infrastructure play'},
+  {a:'B_CRWD', b:'C_HACK', w:0.85,t:'BCh',tx:'HACK ETF 0.82 inverse vs CRWD — cleanest EU regulation hedge'},
+  {a:'B_CRWD', b:'C_NSPILL',w:0.5,t:'BCs',tx:'CRWD EU event spills to NVDA via AI infrastructure demand chain'},
+  {a:'B_PANW', b:'C_CIBR', w:0.7,t:'BCh',tx:'CIBR hedges PANW govt contract risk — partial CRWD overlap'},
+  {a:'B_ZS',   b:'C_FSPILL',w:0.4,t:'BCs',tx:'ZS zero-day creates minor spillover to FTNT hardware segment'},
+];
+
+// ══════════════════════════════════════════════════════════
+// CANVAS ENGINE
+// ══════════════════════════════════════════════════════════
+var NC,NCX,NW,NH,NPX,NPY,NZ,NDRAG,NDX0,NDY0,NPX0,NPY0;
+var NHOV=null,NSEL=null,NHOVE=null,NPULSE=0,NRAF=null;
+var NLEV=new Set(),NHDG=new Set();
+var DRAWER_OPEN=false,DRAWER_NODE=null;
+
+function gnd(id){return ND.find(function(n){return n.id===id;})||null;}
+
+function initNet2(){
+  NC=document.getElementById('net-c2');
+  if(!NC)return;
+  NCX=NC.getContext('2d');
+  // size the canvas to its CSS container
+  function netResize(){
+    var r=NC.parentElement.getBoundingClientRect();
+    NW=r.width; NH=r.height;
+    NC.width=NW; NC.height=NH;
+    // always center on first init
+    if(NPX===undefined){NPX=NW/2; NPY=NH/2;}
+  }
+  NPX=undefined; NPY=undefined; NZ=0.72;
+  netResize();
+  window.addEventListener('resize',netResize);
+
+  NC.onmousedown=function(e){
+    NDRAG=false;
+    NDX0=e.clientX; NDY0=e.clientY; NPX0=NPX; NPY0=NPY;
+    NC.style.cursor='grabbing';
+  };
+  NC.onmousemove=function(e){
+    var dx=e.clientX-NDX0, dy=e.clientY-NDY0;
+    if(e.buttons===1&&(Math.abs(dx)>4||Math.abs(dy)>4)){
+      NDRAG=true; NPX=NPX0+dx; NPY=NPY0+dy;
+      hideTT2(); return;
     }
-
-    function fmtPct(v) {
-      if (v === null || v === undefined || Number.isNaN(Number(v))) return "-";
-      const n = Number(v);
-      return (n >= 0 ? "+" : "") + n.toFixed(2) + "%";
+    if(!NDRAG){
+      var w=s2w(e.offsetX,e.offsetY);
+      var hn=hitN(w.x,w.y);
+      NHOV=hn; NHOVE=hn?null:hitE(w.x,w.y);
+      NC.style.cursor=(hn||NHOVE)?'pointer':'grab';
+      if(hn)showTT2(e.clientX,e.clientY,hn);
+      else if(NHOVE)showTT2edge(e.clientX,e.clientY,NHOVE);
+      else hideTT2();
     }
-
-    function fmtMoney(v) {
-      if (v === null || v === undefined || Number.isNaN(Number(v))) return "$-";
-      return "$" + Number(v).toFixed(2);
+  };
+  NC.onmouseup=function(e){
+    if(!NDRAG){
+      var w=s2w(e.offsetX,e.offsetY);
+      var n=hitN(w.x,w.y);
+      if(n)nodeClick(n);
     }
+    NDRAG=false; NC.style.cursor='grab';
+  };
+  NC.onmouseleave=function(){NDRAG=false;NHOV=null;NHOVE=null;hideTT2();NC.style.cursor='grab';};
+  NC.addEventListener('wheel',function(e){
+    e.preventDefault();
+    var f=e.deltaY<0?1.12:0.89;
+    var w=s2w(e.offsetX,e.offsetY);
+    NZ=Math.max(0.2,Math.min(4,NZ*f));
+    NPX=e.offsetX-w.x*NZ; NPY=e.offsetY-w.y*NZ;
+  },{passive:false});
 
-    async function fetchJSON(url, options) {
-      const resp = await fetch(url, options);
-      const data = await resp.json();
-      if (!resp.ok) throw new Error(data.detail || "Request failed");
-      return data;
+  if(NRAF)cancelAnimationFrame(NRAF);
+  netLoop();
+}
+
+function s2w(sx,sy){return{x:(sx-NPX)/NZ,y:(sy-NPY)/NZ};}
+function w2s(wx,wy){return{x:wx*NZ+NPX,y:wy*NZ+NPY};}
+
+function netZoomIn(){NZ=Math.min(4,NZ*1.18);NPX=NW/2-(NW/2-NPX)*1.18;NPY=NH/2-(NH/2-NPY)*1.18;}
+function netZoomOut(){NZ=Math.max(0.2,NZ*0.85);NPX=NW/2-(NW/2-NPX)*0.85;NPY=NH/2-(NH/2-NPY)*0.85;}
+function netReset(){NZ=0.72;NPX=NW/2;NPY=NH/2;}
+
+function hitN(wx,wy){
+  return ND.find(function(n){
+    var dx=wx-n.x,dy=wy-n.y;
+    return Math.sqrt(dx*dx+dy*dy)<=n.r+8;
+  })||null;
+}
+function hitE(wx,wy){
+  var thr=12/NZ;
+  return ED.find(function(e){
+    var a=gnd(e.a),b=gnd(e.b);
+    if(!a||!b)return false;
+    var l2=(b.x-a.x)*(b.x-a.x)+(b.y-a.y)*(b.y-a.y);
+    if(!l2)return false;
+    var t=((wx-a.x)*(b.x-a.x)+(wy-a.y)*(b.y-a.y))/l2;
+    t=Math.max(0,Math.min(1,t));
+    var px=a.x+t*(b.x-a.x),py=a.y+t*(b.y-a.y);
+    return Math.sqrt((wx-px)*(wx-px)+(wy-py)*(wy-py))<thr;
+  })||null;
+}
+
+function nodeClick(n){
+  NSEL=n;
+  if(n.lv==='B')drawerOpen(n);
+  else if(n.lv==='A'&&n.sector){pickSec2(n.sector);drawerClose();}
+  else drawerClose();
+}
+
+function netLoop(){
+  NPULSE=(NPULSE+0.022)%(Math.PI*2);
+  NCX.clearRect(0,0,NW,NH);
+  NCX.save();
+  NCX.translate(NPX,NPY);
+  NCX.scale(NZ,NZ);
+  drawNetBg();
+  drawNetEdges();
+  drawNetNodes();
+  NCX.restore();
+  NRAF=requestAnimationFrame(netLoop);
+}
+
+function drawNetBg(){
+  var g=60,inv=1/NZ;
+  var x0=Math.floor(-NPX/NZ/g)*g, y0=Math.floor(-NPY/NZ/g)*g;
+  var x1=x0+NW/NZ+g, y1=y0+NH/NZ+g;
+  NCX.strokeStyle='rgba(0,0,0,0.028)';NCX.lineWidth=inv;
+  for(var x=x0;x<x1;x+=g){NCX.beginPath();NCX.moveTo(x,y0);NCX.lineTo(x,y1);NCX.stroke();}
+  for(var y=y0;y<y1;y+=g){NCX.beginPath();NCX.moveTo(x0,y);NCX.lineTo(x1,y);NCX.stroke();}
+}
+
+function drawNetEdges(){
+  var inv=1/NZ;
+  ED.forEach(function(e){
+    var a=gnd(e.a),b=gnd(e.b);
+    if(!a||!b)return;
+    var hot=(NHOVE===e)||(NHOV&&(NHOV.id===e.a||NHOV.id===e.b))||(NSEL&&(NSEL.id===e.a||NSEL.id===e.b));
+    NCX.beginPath();NCX.moveTo(a.x,a.y);NCX.lineTo(b.x,b.y);
+    if(e.t==='BCh'){
+      NCX.strokeStyle=hot?'rgba(191,53,39,0.75)':'rgba(191,53,39,0.3)';
+      NCX.setLineDash([6*inv,3*inv]);
+    } else if(e.t==='BCs'){
+      NCX.strokeStyle=hot?'rgba(168,94,8,0.75)':'rgba(168,94,8,0.25)';
+      NCX.setLineDash([4*inv,4*inv]);
+    } else {
+      NCX.strokeStyle=hot?'rgba(26,58,107,0.7)':'rgba(26,58,107,0.22)';
+      NCX.setLineDash([]);
     }
-
-    function updateHero() {
-      const market = marketRows.find((r) => r.symbol === selectedSymbol) || marketRows[0];
-      if (!market) return;
-      const pred = allStocks.find((r) => r.symbol === market.symbol);
-      document.getElementById("hero-symbol").textContent = market.symbol;
-      document.getElementById("hero-company").textContent = pred ? pred.company_name : "Case-4 stock";
-      document.getElementById("hero-price").textContent = fmtMoney(market.price);
-      const ch = document.getElementById("hero-change");
-      const isUp = Number(market.change_percent || 0) >= 0;
-      ch.className = "change " + (isUp ? "up" : "down");
-      ch.textContent = fmtPct(market.change_percent);
-      const direction = pred ? pred.predicted_direction : "up";
-      document.getElementById("hero-signal").textContent = direction === "down" ? "SHORT" : "LONG";
-      const conv = pred ? Math.max(20, Math.min(95, Math.round(Math.abs(pred.predicted_move_pct) * 6 + 35))) : 0;
-      document.getElementById("hero-conv").textContent = conv;
-      document.getElementById("hero-conv-fill").style.width = conv + "%";
-      renderChart(market, pred);
-      renderWhy(pred, market);
+    NCX.lineWidth=(hot?2.5:e.w*2)*inv;
+    NCX.stroke();NCX.setLineDash([]);
+    // arrowhead on B->C
+    if(e.t==='BCh'||e.t==='BCs'){
+      var ang=Math.atan2(b.y-a.y,b.x-a.x);
+      var ex=b.x-Math.cos(ang)*(b.r+2),ey=b.y-Math.sin(ang)*(b.r+2);
+      NCX.beginPath();NCX.moveTo(ex,ey);
+      NCX.lineTo(ex-10*inv*Math.cos(ang-0.48),ey-10*inv*Math.sin(ang-0.48));
+      NCX.lineTo(ex-10*inv*Math.cos(ang+0.48),ey-10*inv*Math.sin(ang+0.48));
+      NCX.closePath();
+      NCX.fillStyle=e.t==='BCh'?'rgba(191,53,39,0.6)':'rgba(168,94,8,0.6)';NCX.fill();
     }
-
-    function renderChart(market, pred) {
-      const base = Number(market.price || 100);
-      const drift = Number(pred ? pred.predicted_move_pct : (market.change_percent || 0)) / 100 / 14;
-      const labels = [];
-      const points = [];
-      let px = base * 0.96;
-      for (let i = 0; i < 15; i++) {
-        labels.push("T" + i);
-        px = px * (1 + drift + (Math.sin(i * 1.1) * 0.004));
-        points.push(Number(px.toFixed(2)));
-      }
-      const ctx = document.getElementById("mainChart").getContext("2d");
-      if (chart) chart.destroy();
-      chart = new Chart(ctx, {
-        type: "line",
-        data: {
-          labels,
-          datasets: [{ data: points, borderColor: "#00d084", borderWidth: 2, pointRadius: 0, tension: 0.35 }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
-          scales: {
-            x: { grid: { color: "rgba(255,255,255,.04)" }, ticks: { color: "#5a6380", font: { size: 10 } } },
-            y: { grid: { color: "rgba(255,255,255,.04)" }, ticks: { color: "#5a6380", font: { size: 10 }, callback: (v) => "$" + v } }
-          }
-        }
-      });
+    if(hot&&e.t==='AB'){
+      var mx=(a.x+b.x)/2,my=(a.y+b.y)/2;
+      NCX.beginPath();NCX.arc(mx,my,4*inv,0,Math.PI*2);NCX.fillStyle='rgba(26,58,107,0.55)';NCX.fill();
     }
+  });
+}
 
-    function renderWhy(pred, market) {
-      const txt = pred
-        ? pred.rationale + " Linked symbols: " + ((market.impacted_symbols || []).join(", ") || "none") + "."
-        : "Run all-stock analysis to surface explainable drivers, spillover path, and confidence.";
-      document.getElementById("why-text").textContent = txt;
+function drawNetNodes(){
+  var inv=1/NZ;
+  ND.forEach(function(n){
+    var isH=(NHOV&&NHOV.id===n.id);
+    var isS=(NSEL&&NSEL.id===n.id);
+    var isL=NLEV.has(n.id);
+    var isHD=NHDG.has(n.id);
+    var r=n.r+(isH?4:0);
+
+    // leverage pulse ring
+    if(isL){
+      var pr=r+11+Math.sin(NPULSE)*3;
+      NCX.beginPath();NCX.arc(n.x,n.y,pr,0,Math.PI*2);
+      NCX.strokeStyle='rgba(10,102,64,'+(0.22+Math.sin(NPULSE)*0.1)+')';
+      NCX.lineWidth=2.5*inv;NCX.setLineDash([5*inv,3*inv]);NCX.stroke();NCX.setLineDash([]);
     }
-
-    function renderEvents(events) {
-      const wrap = document.getElementById("events-wrap");
-      if (!Array.isArray(events) || events.length === 0) {
-        wrap.innerHTML = "<div class='muted'>No validation events loaded.</div>";
-        return;
-      }
-      wrap.innerHTML = events.slice(0, 6).map((ev, i) => {
-        const iconClass = i % 2 === 0 ? "ev-a" : "ev-b";
-        return (
-          "<div class='event-row'>" +
-            "<div class='event-time'>" + String(ev.t_event_utc || "").slice(11, 16) + "</div>" +
-            "<div class='event-icon " + iconClass + "'>" + (ev.symbol || "-").slice(0, 2) + "</div>" +
-            "<div>" +
-              "<div class='event-title'>" + (ev.symbol || "-") + " post-earnings direction</div>" +
-              "<div class='event-impact'>Actual 5D " + fmtPct(ev.actual_5d_return_pct) +
-              " · Enhanced " + (ev.enhanced_pred_direction || "mixed") + "</div>" +
-            "</div>" +
-          "</div>"
-        );
-      }).join("");
+    // hedge ring
+    if(isHD){
+      NCX.beginPath();NCX.arc(n.x,n.y,r+7,0,Math.PI*2);
+      NCX.strokeStyle='rgba(191,53,39,0.4)';NCX.lineWidth=1.8*inv;NCX.setLineDash([3*inv,3*inv]);NCX.stroke();NCX.setLineDash([]);
     }
-
-    function renderAllStocks() {
-      const movers = document.getElementById("movers-list");
-      const sectors = document.getElementById("sectors-list");
-      if (!allStocks.length) {
-        movers.innerHTML = "<div class='muted'>Run ALL to compute predictions.</div>";
-        sectors.innerHTML = "<div class='muted'>No sector summary yet.</div>";
-        return;
-      }
-      movers.innerHTML = allStocks.slice(0, 8).map((row) => (
-        "<article class='item'>" +
-          "<div><strong>" + row.symbol + "</strong> · " + row.company_name + "</div>" +
-          "<div class='" + (row.predicted_direction === "down" ? "down" : "up") + "'>" +
-            row.predicted_direction.toUpperCase() + " " + fmtPct(row.predicted_move_pct) +
-          "</div>" +
-          "<div class='muted'>" + row.sector + " · corr " + row.correlation_to_sector + "</div>" +
-        "</article>"
-      )).join("");
-      sectors.innerHTML = allSectorSummary.map((s) => (
-        "<article class='item'>" +
-          "<div><strong>" + s.sector + "</strong></div>" +
-          "<div class='" + (Number(s.predicted_move_pct) < 0 ? "down" : "up") + "'>" + fmtPct(s.predicted_move_pct) + "</div>" +
-          "<div class='muted'>" + s.stock_count + " stocks</div>" +
-        "</article>"
-      )).join("");
+    // hover/select glow
+    if(isH||isS){
+      NCX.beginPath();NCX.arc(n.x,n.y,r+13,0,Math.PI*2);
+      NCX.fillStyle=n.hedge?'rgba(191,53,39,0.07)':n.lv==='A'?'rgba(26,58,107,0.09)':'rgba(26,58,107,0.07)';
+      NCX.fill();
     }
+    // body
+    NCX.beginPath();NCX.arc(n.x,n.y,r,0,Math.PI*2);NCX.fillStyle=n.bg;NCX.fill();
+    // border
+    var bc=(isS||isH)?n.col:n.lv==='A'?'rgba(26,58,107,0.35)':n.hedge?'rgba(191,53,39,0.35)':n.spill?'rgba(168,94,8,0.35)':'rgba(0,0,0,0.1)';
+    NCX.strokeStyle=bc;NCX.lineWidth=(isS?2.5:isH?2:1.2)*inv;NCX.stroke();
 
-    async function loadMarket() {
-      const data = await fetchJSON("/api/market/case4/stocks");
-      marketRows = Array.isArray(data.symbols) ? data.symbols : [];
-      const sel = document.getElementById("symbol-select");
-      sel.innerHTML = marketRows.map((r) => "<option>" + r.symbol + "</option>").join("");
-      if (marketRows.some((r) => r.symbol === selectedSymbol)) sel.value = selectedSymbol;
-      else if (marketRows.length) selectedSymbol = marketRows[0].symbol;
-      sel.onchange = () => { selectedSymbol = sel.value; updateHero(); };
-      updateHero();
+    // level badge circle
+    var lfc=n.lv==='A'?'#1a3a6b':n.lv==='B'?'#1a3a6b':n.hedge?'#bf3527':'#a85e08';
+    NCX.beginPath();NCX.arc(n.x+r-6*inv,n.y-r+6*inv,6*inv,0,Math.PI*2);
+    NCX.fillStyle=lfc;NCX.fill();
+    NCX.fillStyle='#fff';NCX.font='bold '+(5.5*inv)+'px DM Mono,monospace';
+    NCX.textAlign='center';NCX.textBaseline='middle';
+    NCX.fillText(n.lv,n.x+r-6*inv,n.y-r+6*inv);
+
+    // ticker label
+    var lines=n.lbl.split('\n');
+    NCX.fillStyle=n.col;
+    NCX.font=(n.lv==='A'?'500 10px':'500 8.5px')+' DM Mono,monospace';
+    NCX.textAlign='center';NCX.textBaseline='middle';
+    if(lines.length===2){NCX.fillText(lines[0],n.x,n.y-5.5*inv);NCX.fillText(lines[1],n.x,n.y+5.5*inv);}
+    else NCX.fillText(n.lbl,n.x,n.y);
+
+    // change % below
+    if(n.chg){
+      NCX.font='400 '+(7.5*inv)+'px DM Mono,monospace';
+      NCX.fillStyle=n.up?'rgba(10,102,64,0.7)':'rgba(191,53,39,0.7)';
+      NCX.fillText(n.chg,n.x,n.y+r+12*inv);
     }
-
-    async function loadSummaryAndEvents() {
-      const [summary, events, provider] = await Promise.all([
-        fetchJSON("/api/dashboard/summary"),
-        fetchJSON("/api/dashboard/events?limit=12"),
-        fetchJSON("/api/market/provider")
-      ]);
-      document.getElementById("engine-status").textContent =
-        (summary.earnings_events_evaluated || 0) + " events validated · baseline " +
-        fmtPct((summary.baseline_accuracy || 0) * 100);
-      document.getElementById("mode-pill").textContent = provider.is_live_ready ? "LIVE EODHD" : "SETUP";
-      renderEvents(events);
+    // C-node type label
+    if(n.lv==='C'){
+      NCX.font='400 '+(7*inv)+'px DM Mono,monospace';
+      NCX.fillStyle=n.hedge?'rgba(191,53,39,0.6)':'rgba(168,94,8,0.6)';
+      NCX.fillText(n.hedge?'HEDGE':'SPILLOVER',n.x,n.y+r+22*inv);
     }
+  });
+}
 
-    async function runIngest() {
-      try {
-        await fetchJSON("/api/agents/news-intake/run", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ max_queries: 8, max_per_query: 10, hours_back: 24 * 7 })
-        });
-      } catch (err) {
-        console.error(err);
-      }
-      await refreshAll();
+// ── TOOLTIP ────────────────────────────────
+function showTT2(cx,cy,n){
+  var t=document.getElementById('net-tt2');
+  var h='';
+  if(n.lv==='A'){
+    var d=n.a;
+    var sc=d.spill==='HIGH'?'#ff6b6b':d.spill==='MED'?'#f5c96a':'#1dd98a';
+    h='<div style="font-size:7px;letter-spacing:.12em;color:rgba(61,122,255,.8);margin-bottom:4px">LEVEL A · SECTOR<\/div>'+
+      '<div style="font-family:Bebas Neue,sans-serif;font-size:19px;color:#fff;margin-bottom:4px">'+n.full+'<\/div>'+
+      '<div style="height:1px;background:rgba(255,255,255,.07);margin-bottom:6px"><\/div>'+
+      '<div style="display:flex;justify-content:space-between;font-size:9px;padding:2px 0"><span style="color:rgba(255,255,255,.35)">Portfolio alloc<\/span><span style="color:#fff">'+d.alloc+'<\/span><\/div>'+
+      '<div style="display:flex;justify-content:space-between;font-size:9px;padding:2px 0"><span style="color:rgba(255,255,255,.35)">Active event<\/span><span style="color:#f5c96a;font-size:8px">'+d.event+'<\/span><\/div>'+
+      '<div style="display:flex;justify-content:space-between;font-size:9px;padding:2px 0"><span style="color:rgba(255,255,255,.35)">Spillover risk<\/span><span style="color:'+sc+'">'+d.spill+'<\/span><\/div>'+
+      '<div style="margin-top:8px;font-style:italic;font-size:11px;color:rgba(255,255,255,.38)">Click to highlight on risk map<\/div>';
+  } else if(n.lv==='B'){
+    var d=n.b;
+    h='<div style="font-size:7px;letter-spacing:.12em;color:rgba(29,217,138,.75);margin-bottom:4px">LEVEL B · DIRECT HOLDING<\/div>'+
+      '<div style="font-family:Bebas Neue,sans-serif;font-size:22px;color:#fff">'+n.id.replace('B_','')+'<\/div>'+
+      '<div style="font-size:9px;color:rgba(255,255,255,.35);margin-bottom:5px">'+n.full+'<\/div>'+
+      '<div style="height:1px;background:rgba(255,255,255,.07);margin-bottom:6px"><\/div>'+
+      '<div style="display:flex;justify-content:space-between;font-size:9px;padding:2px 0"><span style="color:rgba(255,255,255,.35)">Price<\/span><span style="color:#fff">'+n.price+'<\/span><\/div>'+
+      '<div style="display:flex;justify-content:space-between;font-size:9px;padding:2px 0"><span style="color:rgba(255,255,255,.35)">Today<\/span><span style="color:'+(n.up?'#1dd98a':'#ff6b6b')+'">'+n.chg+'<\/span><\/div>'+
+      '<div style="display:flex;justify-content:space-between;font-size:9px;padding:2px 0"><span style="color:rgba(255,255,255,.35)">Holding<\/span><span style="color:#fff">'+n.val+'<\/span><\/div>'+
+      '<div style="display:flex;justify-content:space-between;font-size:9px;padding:2px 0"><span style="color:rgba(255,255,255,.35)">Lev candidate<\/span><span style="color:'+(d.lc?'#1dd98a':'rgba(255,255,255,.35)')+'">'+( d.lc?'YES ↑':'NO')+'<\/span><\/div>'+
+      '<div style="margin-top:8px;font-style:italic;font-size:11px;color:rgba(255,255,255,.38)">Click to open hedge & leverage panel ↓<\/div>';
+  } else if(n.lv==='C'){
+    var d=n.c;
+    var hc=n.hedge?'rgba(255,107,107,.85)':'rgba(245,201,106,.85)';
+    var uc=d.use==='HIGH'?'#1dd98a':d.use==='MEDIUM'?'#f5c96a':'rgba(255,255,255,.4)';
+    h='<div style="font-size:7px;letter-spacing:.12em;color:'+hc+';margin-bottom:4px">LEVEL C · '+(n.hedge?'HEDGE NODE':'SPILLOVER NODE')+'<\/div>'+
+      '<div style="font-family:Bebas Neue,sans-serif;font-size:17px;color:#fff">'+n.id.replace(/^C_/,'')+'<\/div>'+
+      '<div style="font-size:9px;color:rgba(255,255,255,.35);margin-bottom:5px">'+n.full+'<\/div>'+
+      '<div style="height:1px;background:rgba(255,255,255,.07);margin-bottom:6px"><\/div>'+
+      '<div style="display:flex;justify-content:space-between;font-size:9px;padding:2px 0"><span style="color:rgba(255,255,255,.35)">Role<\/span><span style="color:'+hc+'">'+d.role+'<\/span><\/div>'+
+      (d.follows?'<div style="display:flex;justify-content:space-between;font-size:9px;padding:2px 0"><span style="color:rgba(255,255,255,.35)">Follows<\/span><span style="color:#fff">'+d.follows+'<\/span><\/div>':'')+
+      '<div style="display:flex;justify-content:space-between;font-size:9px;padding:2px 0"><span style="color:rgba(255,255,255,.35)">Usefulness<\/span><span style="color:'+uc+'">'+d.use+'<\/span><\/div>'+
+      '<div style="display:flex;justify-content:space-between;font-size:9px;padding:2px 0"><span style="color:rgba(255,255,255,.35)">Hedge ratio<\/span><span style="color:#fff">'+d.ratio+'<\/span><\/div>'+
+      (d.ic?'<div style="display:flex;justify-content:space-between;font-size:9px;padding:2px 0"><span style="color:rgba(255,255,255,.35)">Inverse corr<\/span><span style="color:#1dd98a">'+d.ic+'<\/span><\/div>':'')+
+      '<div style="display:flex;justify-content:space-between;font-size:9px;padding:2px 0"><span style="color:rgba(255,255,255,.35)">Effect<\/span><span style="color:#1dd98a;font-size:8px">'+d.fx+'<\/span><\/div>'+
+      '<div style="display:flex;justify-content:space-between;font-size:9px;padding:2px 0"><span style="color:rgba(255,255,255,.35)">Overlap<\/span><span style="color:'+(d.ov.indexOf('None')>=0?'#1dd98a':'#f5c96a')+';font-size:8px">'+d.ov+'<\/span><\/div>'+
+      '<div style="margin-top:7px;border-top:1px solid rgba(255,255,255,.07);padding-top:7px;font-style:italic;font-size:11px;color:rgba(255,255,255,.45);line-height:1.5">'+d.sum+'<\/div>';
+  }
+  t.innerHTML=h;t.style.display='block';
+  var wr=NC.getBoundingClientRect();
+  var lx=cx-wr.left+18,ly=cy-wr.top-10;
+  if(lx+270>wr.width-8)lx=cx-wr.left-285;
+  if(ly<8)ly=8;
+  t.style.left=lx+'px';t.style.top=ly+'px';
+}
+function showTT2edge(cx,cy,e){
+  var t=document.getElementById('net-tt2');
+  t.innerHTML='<div style="font-style:italic;font-size:11px;color:rgba(255,255,255,.55);line-height:1.5">'+e.tx+'<\/div>';
+  t.style.display='block';
+  var wr=NC.getBoundingClientRect();
+  var lx=cx-wr.left+14,ly=cy-wr.top-50;
+  if(lx+220>wr.width-8)lx=cx-wr.left-234;
+  t.style.left=lx+'px';t.style.top=ly+'px';
+}
+function hideTT2(){var t=document.getElementById('net-tt2');if(t)t.style.display='none';}
+
+// ── BOTTOM DRAWER ──────────────────────────
+function drawerOpen(n){
+  DRAWER_NODE=n; DRAWER_OPEN=true;
+  var d=n.b;
+  var tk=n.id.replace('B_','');
+  document.getElementById('dr-ticker').textContent=tk;
+  document.getElementById('dr-name').textContent=n.full;
+  var ce=document.getElementById('dr-chg');
+  ce.textContent=n.chg; ce.style.color=n.up?'var(--g)':'var(--r)';
+  document.getElementById('dr-val').textContent=n.val+' holding';
+  document.getElementById('dr-price').textContent=n.price;
+  document.getElementById('dr-hval').textContent=n.val;
+  document.getElementById('dr-event').textContent=d.ev;
+  var lce=document.getElementById('dr-lc');
+  lce.textContent=d.lc?'YES ↑':'NO'; lce.style.color=d.lc?'var(--g)':'var(--muted)';
+  var hee=document.getElementById('dr-he');
+  hee.textContent=d.he||'None'; hee.style.color=d.he?'var(--g)':'var(--muted)';
+
+  // Hedge options
+  var hp=document.getElementById('dr-ph');
+  hp.innerHTML='<div style="font-size:8px;color:var(--muted);margin-bottom:4px;line-height:1.5">AI identified <strong>'+d.ho.length+'<\/strong> hedge instrument'+(d.ho.length>1?'s':'')+' for <strong>'+tk+'<\/strong>. Click to apply.<\/div>'+
+    d.ho.map(function(h,i){
+      return '<div onclick="applyHedge('+i+')" id="dr-ho-'+i+'" style="display:flex;gap:8px;padding:8px 10px;border-radius:7px;border:1px solid var(--border);cursor:pointer;transition:all .12s;margin-bottom:4px" onmouseover="this.style.borderColor=\'var(--border2)\'" onmouseout="this.style.borderColor=\'var(--border)\'">'+
+        '<div style="flex-shrink:0;width:48px"><div style="font-family:Bebas Neue,sans-serif;font-size:17px;letter-spacing:.5px;color:var(--r)">'+h.tk+'<\/div><div style="font-size:7px;color:var(--muted)">'+h.ql+' use<\/div><\/div>'+
+        '<div style="flex:1;min-width:0"><div style="font-size:9px;font-weight:500;margin-bottom:2px">'+h.nm+'<\/div>'+
+        '<div style="font-size:8px;color:var(--muted)">'+h.co+' &nbsp;·&nbsp; '+h.fx+'<\/div>'+
+        '<div style="font-size:8px;color:'+(h.ov.indexOf('None')>=0?'var(--g)':'var(--y)')+'">'+h.ov+'<\/div><\/div>'+
+        '<div style="flex-shrink:0;font-size:8px;color:var(--muted);padding-top:2px">'+h.rt+'<\/div><\/div>';
+    }).join('');
+
+  // Leverage options
+  var lp=document.getElementById('dr-pl');
+  lp.innerHTML='<div style="font-size:8px;color:var(--muted);margin-bottom:4px;line-height:1.5">AI identified <strong>'+d.lo.length+'<\/strong> way'+(d.lo.length>1?'s':'')+' to amplify <strong>'+tk+'<\/strong>. Click to apply.<\/div>'+
+    d.lo.map(function(l,i){
+      return '<div onclick="applyLev('+i+')" id="dr-lo-'+i+'" style="display:flex;gap:8px;padding:8px 10px;border-radius:7px;border:1px solid var(--border);cursor:pointer;transition:all .12s;margin-bottom:4px" onmouseover="this.style.borderColor=\'var(--border2)\'" onmouseout="this.style.borderColor=\'var(--border)\'">'+
+        '<div style="flex-shrink:0;width:56px"><div style="font-size:8px;color:var(--g);font-weight:500;line-height:1.3">'+l.tp+'<\/div><\/div>'+
+        '<div style="flex:1;min-width:0"><div style="font-size:9px;font-weight:500;margin-bottom:2px">'+l.lb+'<\/div>'+
+        '<div style="font-size:8px;color:var(--muted)">Cost: '+l.ct+' &nbsp;·&nbsp; <span style="color:var(--g)">'+l.up+'<\/span><\/div>'+
+        '<div style="font-size:8px;color:var(--r)">Risk: '+l.rk+'<\/div><\/div>'+
+        '<div style="flex-shrink:0;font-size:7px;color:var(--muted);text-align:right;max-width:62px;line-height:1.4;padding-top:2px">'+l.cv+'<\/div><\/div>';
+    }).join('');
+
+  drawerTab('h');
+  document.getElementById('net-drawer').style.transform='translateY(0)';
+}
+
+function drawerClose(){
+  DRAWER_OPEN=false;
+  document.getElementById('net-drawer').style.transform='translateY(100%)';
+}
+
+function drawerTab(t){
+  var ph=document.getElementById('dr-ph'),pl=document.getElementById('dr-pl');
+  var th=document.getElementById('dr-th'),tl=document.getElementById('dr-tl');
+  if(t==='h'){
+    ph.style.display='flex';pl.style.display='none';
+    th.style.background='var(--s2)';th.style.color='var(--ink)';th.style.borderBottomColor='var(--ink)';
+    tl.style.background='transparent';tl.style.color='var(--muted)';tl.style.borderBottomColor='transparent';
+  } else {
+    pl.style.display='flex';ph.style.display='none';
+    tl.style.background='var(--s2)';tl.style.color='var(--ink)';tl.style.borderBottomColor='var(--ink)';
+    th.style.background='transparent';th.style.color='var(--muted)';th.style.borderBottomColor='transparent';
+  }
+}
+
+function applyHedge(i){
+  if(!DRAWER_NODE)return;
+  NHDG.add(DRAWER_NODE.id);
+  var el=document.getElementById('dr-ho-'+i);
+  if(el){el.style.borderColor='var(--r)';el.style.background='rgba(191,53,39,0.04)';}
+  var th=document.getElementById('dr-th');
+  var ot=th.textContent;th.textContent='✓ HEDGE APPLIED';th.style.color='var(--r)';
+  setTimeout(function(){th.textContent=ot;th.style.color='var(--ink)';},1400);
+}
+function applyLev(i){
+  if(!DRAWER_NODE)return;
+  NLEV.add(DRAWER_NODE.id);
+  var el=document.getElementById('dr-lo-'+i);
+  if(el){el.style.borderColor='var(--g)';el.style.background='rgba(10,102,64,0.04)';}
+  var tl=document.getElementById('dr-tl');
+  var ot=tl.textContent;tl.textContent='✓ LEVERAGE APPLIED';tl.style.color='var(--g)';
+  setTimeout(function(){tl.textContent=ot;tl.style.color='var(--muted)';},1400);
+}
+
+// stubs
+function doLev2(){if(DRAWER_NODE){drawerOpen(DRAWER_NODE);drawerTab('l');}}
+function doHdg2(){if(DRAWER_NODE){drawerOpen(DRAWER_NODE);drawerTab('h');}}
+function doLev(){doLev2();}
+function doHdg(){doHdg2();}
+function confirmHdg(){}
+function initNet(){}
+function closeOv(id){document.getElementById(id).classList.remove('open');}
+
+function apiGet(path,opts){
+  return fetch(path,opts).then(async(resp)=>{
+    const data=await resp.json();
+    if(!resp.ok){throw new Error(data.detail||('request failed: '+path));}
+    return data;
+  });
+}
+
+function toUiSector(raw){
+  const txt=String(raw||'').toLowerCase();
+  if(txt.includes('compute')||txt.includes('physical'))return 'Semiconductors';
+  if(txt.includes('cloud')||txt.includes('platform')||txt.includes('consumer'))return 'AI Platforms';
+  if(txt.includes('data')||txt.includes('enterprise'))return 'Data Infrastructure';
+  return 'Other AI';
+}
+
+function percent(n,total){
+  if(!total)return 0;
+  return Math.max(1,Math.round((n/total)*100));
+}
+
+function syncUniverseToUi(data){
+  if(!data||!Array.isArray(data.stocks))return;
+  const marketIndex={};
+  holdings=holdings||[];
+  holdings.forEach((h)=>{marketIndex[h.ticker]=h;});
+  const stocks=data.stocks.slice(0,14);
+  holdings=stocks.map((s)=>{
+    const prev=marketIndex[s.symbol];
+    const value=prev&&prev.value?prev.value:Math.max(5000,Math.round(Math.abs(Number(s.predicted_move_pct||0))*3000+9000));
+    const move=Number(s.predicted_move_pct||0);
+    return {
+      ticker:s.symbol,
+      name:s.company_name,
+      value:value,
+      sector:toUiSector(s.sector),
+      change:(move>=0?'+':'')+move.toFixed(1)+'%',
+      up:move>=0,
+      source:'broker'
+    };
+  });
+
+  if(typeof ND!=='undefined'&&Array.isArray(ND)){
+    ND.forEach((node)=>{
+      if(!node||!node.id||node.id.indexOf('B_')!==0)return;
+      const symbol=node.id.replace('B_','');
+      const row=holdings.find((h)=>h.ticker===symbol);
+      if(!row)return;
+      node.full=row.name;
+      node.val='$'+Math.round(row.value).toLocaleString();
+      node.chg=row.change;
+      node.up=!!row.up;
+    });
+  }
+  renderDash();
+  renderSettings();
+
+  const total=holdings.reduce((a,h)=>a+Number(h.value||0),0);
+  const secAlloc={};
+  holdings.forEach((h)=>{secAlloc[h.sector]=(secAlloc[h.sector]||0)+Number(h.value||0);});
+
+  const stats=document.querySelectorAll('#p-dashboard .srow .stat .sv');
+  if(stats.length>=4){
+    stats[0].textContent='$'+Math.round(total).toLocaleString();
+    const aiExposure=Math.min(99,Math.round((total/(total+50000))*100));
+    stats[1].textContent=aiExposure+'%';
+    stats[2].textContent=(Number(data.confidence||0)>=75?'LOW':Number(data.confidence||0)>=55?'MED':'HIGH');
+    stats[3].textContent=String(Math.max(1,Math.round((data.confidence||0)/7)));
+  }
+
+  const bars=document.querySelectorAll('#p-dashboard .sbr');
+  const order=['Cybersecurity','Semiconductors','AI Platforms','Data Infrastructure','Other AI'];
+  bars.forEach((bar,i)=>{
+    const sec=order[i]||order[order.length-1];
+    const pct=percent(secAlloc[sec]||0,total);
+    const fill=bar.querySelector('.sbr-f');
+    const pEl=bar.querySelector('.sbr-p');
+    const rEl=bar.querySelector('.sbr-r');
+    if(fill)fill.style.width=pct+'%';
+    if(pEl)pEl.textContent=pct+'%';
+    if(rEl){
+      const risk=pct>=35?'HIGH':pct>=18?'MED':'LOW';
+      rEl.textContent=risk;
+      rEl.style.color=risk==='HIGH'?'var(--r)':risk==='MED'?'var(--y)':'var(--g)';
     }
+  });
 
-    async function runAllStocks() {
-      try {
-        const data = await fetchJSON("/api/agents/sector/analyze-all", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ horizon_days: 5 })
-        });
-        allStocks = Array.isArray(data.stocks) ? data.stocks : [];
-        allSectorSummary = Array.isArray(data.sectors) ? data.sectors : [];
-        document.getElementById("sent-score").textContent = String(data.confidence ?? "-");
-        document.getElementById("sent-sub").textContent = "Universe pass at " + (data.generated_at_utc || "").replace("T", " ").slice(0, 19) + "Z";
-      } catch (err) {
-        console.error(err);
-      }
-      renderAllStocks();
-      updateHero();
+  const sectorMoves={cyber:0,semi:0,aip:0,data:0};
+  (data.sectors||[]).forEach((s)=>{
+    const k=toUiSector(s.sector);
+    const v=Number(s.predicted_move_pct||0);
+    if(k==='Semiconductors')sectorMoves.semi=v;
+    else if(k==='AI Platforms')sectorMoves.aip=v;
+    else if(k==='Data Infrastructure')sectorMoves.data=v;
+    else sectorMoves.cyber=v;
+  });
+  sectorData.cyber.col2=(sectorMoves.cyber>=0?'+':'')+sectorMoves.cyber.toFixed(1)+'%';
+  sectorData.semi.col2=(sectorMoves.semi>=0?'+':'')+sectorMoves.semi.toFixed(1)+'%';
+  sectorData.aip.col2=(sectorMoves.aip>=0?'+':'')+sectorMoves.aip.toFixed(1)+'%';
+  sectorData.data.col2=(sectorMoves.data>=0?'+':'')+sectorMoves.data.toFixed(1)+'%';
+}
+
+async function hydrateFromBackend(){
+  try{
+    const [provider,market,summary,news,universe]=await Promise.all([
+      apiGet('/api/market/provider'),
+      apiGet('/api/market/case4/stocks'),
+      apiGet('/api/dashboard/summary'),
+      apiGet('/api/agents/news-intake/documents?limit=5'),
+      apiGet('/api/agents/sector/analyze-all',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({horizon_days:5})}),
+    ]);
+    universeCache=universe;
+    syncUniverseToUi(universe);
+    const modeChip=document.querySelector('.tb-chip');
+    if(modeChip)modeChip.textContent=provider.is_live_ready?'LIVE EODHD MODE':'SETUP MODE';
+    const aiBanner=document.getElementById('rl-ban');
+    if(aiBanner){
+      aiBanner.innerHTML='Case-4 run includes <strong style="color:rgba(255,255,255,0.92)">'+(summary.stock_universe_size||14)+
+        ' tracked stocks</strong> with five-day post-earnings direction prediction and spillover-aware rationale.';
     }
-
-    async function refreshAll() {
-      await Promise.all([loadMarket(), loadSummaryAndEvents()]);
-      await runAllStocks();
+    const newsCb=document.querySelector('#p-news .card .cb');
+    if(newsCb&&Array.isArray(news)){
+      newsCb.innerHTML=news.slice(0,5).map((d)=>{
+        const src=(d.source||'source').toUpperCase();
+        const t=String(d.published_at||'').slice(11,16)||'--:--';
+        const title=d.title||'Untitled';
+        const tags=(d.keyword_hits||[]).slice(0,3).map((k)=>'<span class="tag tb">'+k+'</span>').join('');
+        return '<div class="ni"><div class="ni-meta"><span class="ni-src">'+src+'</span><span class="ni-t">'+t+
+          '</span></div><div class="ni-h">'+title+'</div><div class="ni-tags">'+tags+'</div></div>';
+      }).join('');
     }
+  }catch(err){
+    console.error(err);
+  }
+}
 
-    nowClock();
-    setInterval(nowClock, 1000);
-    refreshAll();
-  </script>
+// init on load
+window.onload=function(){renderDash();renderSettings();hydrateFromBackend();};
+
+</script>
 </body>
 </html>
