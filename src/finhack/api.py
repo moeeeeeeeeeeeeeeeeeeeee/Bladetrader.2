@@ -8,6 +8,7 @@ Run from repo root:
 from __future__ import annotations
 
 from dataclasses import asdict
+import json
 from pathlib import Path
 from typing import Any
 
@@ -150,6 +151,46 @@ class ExposureAnalyzeResponse(BaseModel):
     top_drivers: list[ExposureDriverResponse]
 
 
+class DashboardSummaryResponse(BaseModel):
+    run_at_utc: str | None
+    offline_only: bool
+    snapshot_path: str | None
+    stock_universe_size: int
+    earnings_events_evaluated: int
+    baseline_accuracy: float | None
+    enhanced_accuracy: float | None
+    uplift_vs_baseline_pp: float | None
+    enhanced_feature_coverage: float | None
+    spillover_feature_coverage_within_enhanced: float | None
+
+
+class DashboardEventPreview(BaseModel):
+    symbol: str
+    t_event_utc: str
+    actual_5d_return_pct: float
+    actual_sign: int
+    baseline_pred_sign: int
+    enhanced_pred_sign: int
+    enhanced_pred_direction: str
+    enhanced_confidence: float
+
+
+CASE4_PATH = Path("data") / "case4_earnings_validation.json"
+
+
+def _load_case4_summary_data() -> dict[str, Any]:
+    if not CASE4_PATH.exists():
+        raise HTTPException(status_code=404, detail="case4_earnings_validation.json not found")
+    try:
+        raw = CASE4_PATH.read_text(encoding="utf-8")
+        payload = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise HTTPException(status_code=500, detail=f"Invalid case4 summary JSON: {exc}") from exc
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=500, detail="Invalid case4 summary payload")
+    return payload
+
+
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
@@ -158,6 +199,53 @@ def health() -> dict[str, str]:
 @app.get("/")
 def web_root() -> FileResponse:
     return FileResponse(WEB_DIR / "index.html")
+
+
+@app.get("/api/dashboard/summary", response_model=DashboardSummaryResponse)
+def get_dashboard_summary() -> DashboardSummaryResponse:
+    payload = _load_case4_summary_data()
+    baseline = payload.get("baseline") if isinstance(payload.get("baseline"), dict) else {}
+    enhanced = payload.get("enhanced") if isinstance(payload.get("enhanced"), dict) else {}
+    return DashboardSummaryResponse(
+        run_at_utc=payload.get("run_at_utc"),
+        offline_only=bool(payload.get("offline_only", False)),
+        snapshot_path=payload.get("snapshot_path"),
+        stock_universe_size=int(payload.get("stock_universe_size", 0)),
+        earnings_events_evaluated=int(payload.get("earnings_events_evaluated", 0)),
+        baseline_accuracy=baseline.get("accuracy"),
+        enhanced_accuracy=enhanced.get("accuracy"),
+        uplift_vs_baseline_pp=payload.get("uplift_vs_baseline_pp"),
+        enhanced_feature_coverage=payload.get("enhanced_feature_coverage"),
+        spillover_feature_coverage_within_enhanced=payload.get(
+            "spillover_feature_coverage_within_enhanced"
+        ),
+    )
+
+
+@app.get("/api/dashboard/events", response_model=list[DashboardEventPreview])
+def get_dashboard_events(limit: int = 8) -> list[DashboardEventPreview]:
+    safe_limit = max(1, min(limit, 30))
+    payload = _load_case4_summary_data()
+    events = payload.get("events", [])
+    if not isinstance(events, list):
+        return []
+    previews: list[DashboardEventPreview] = []
+    for event in events[:safe_limit]:
+        if not isinstance(event, dict):
+            continue
+        previews.append(
+            DashboardEventPreview(
+                symbol=str(event.get("symbol", "")),
+                t_event_utc=str(event.get("t_event_utc", "")),
+                actual_5d_return_pct=float(event.get("actual_5d_return_pct", 0.0)),
+                actual_sign=int(event.get("actual_sign", 0)),
+                baseline_pred_sign=int(event.get("baseline_pred_sign", 0)),
+                enhanced_pred_sign=int(event.get("enhanced_pred_sign", 0)),
+                enhanced_pred_direction=str(event.get("enhanced_pred_direction", "mixed")),
+                enhanced_confidence=float(event.get("enhanced_confidence", 0.0)),
+            )
+        )
+    return previews
 
 
 @app.post("/api/chat", response_model=ChatResponse)

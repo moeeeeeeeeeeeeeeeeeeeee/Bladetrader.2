@@ -33,6 +33,10 @@
     .main { padding:18px; display:grid; gap:14px; grid-template-columns:1.4fr 1fr; }
     .card { background:#fff; border:1px solid var(--line); border-radius:12px; padding:14px; }
     .muted { color:var(--muted); font-size:13px; }
+    .stats { padding:0 18px 6px; display:grid; grid-template-columns:repeat(4, 1fr); gap:10px; }
+    .stat { background:#fff; border:1px solid var(--line); border-radius:10px; padding:10px; }
+    .stat .k { color:var(--muted); font-size:12px; margin-bottom:4px; }
+    .stat .v { font-size:20px; font-weight:700; }
     .list { display:grid; gap:10px; max-height:360px; overflow:auto; }
     .news-item { border:1px solid var(--line); border-radius:10px; padding:10px; }
     .news-item a { color:#124ea5; text-decoration:none; }
@@ -98,6 +102,12 @@
       <strong>BladeTrader Dashboard</strong>
       <span class="muted" id="clock"></span>
     </header>
+    <section class="stats">
+      <article class="stat"><div class="k">Events Evaluated</div><div class="v" id="sum-events">-</div></article>
+      <article class="stat"><div class="k">Universe Size</div><div class="v" id="sum-universe">-</div></article>
+      <article class="stat"><div class="k">Baseline Accuracy</div><div class="v" id="sum-baseline">-</div></article>
+      <article class="stat"><div class="k">Enhanced Coverage</div><div class="v" id="sum-coverage">-</div></article>
+    </section>
     <main class="main">
       <section class="card">
         <h3 style="margin:0 0 8px">News Feed</h3>
@@ -126,6 +136,8 @@
           <div><strong>Exposure Score:</strong> <span id="exp-score">-</span></div>
           <div><strong>Spillover Mentions:</strong> <span id="exp-spill">-</span></div>
         </div>
+        <h4 style="margin:14px 0 8px">Recent Earnings Events</h4>
+        <div id="events-list" class="list" style="max-height:220px"></div>
       </section>
     </main>
   </div>
@@ -168,6 +180,8 @@
     function enterDemo() {
       document.getElementById("auth-screen").classList.remove("on");
       document.getElementById("app-screen").classList.add("on");
+      loadDashboardSummary();
+      loadDashboardEvents();
       loadNews();
     }
 
@@ -231,6 +245,60 @@
         });
       } catch (err) {
         list.innerHTML = "<div class='muted'>Unable to load news documents.</div>";
+      }
+    }
+
+    function toPct(val, digits = 1) {
+      if (val === null || val === undefined || Number.isNaN(Number(val))) return "-";
+      return (Number(val) * 100).toFixed(digits) + "%";
+    }
+
+    async function loadDashboardSummary() {
+      try {
+        const resp = await fetch("/api/dashboard/summary");
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.detail || "Summary unavailable");
+        document.getElementById("sum-events").textContent = data.earnings_events_evaluated ?? "-";
+        document.getElementById("sum-universe").textContent = data.stock_universe_size ?? "-";
+        document.getElementById("sum-baseline").textContent = toPct(data.baseline_accuracy);
+        document.getElementById("sum-coverage").textContent = toPct(data.enhanced_feature_coverage);
+      } catch (err) {
+        document.getElementById("sum-events").textContent = "err";
+        document.getElementById("sum-universe").textContent = "err";
+        document.getElementById("sum-baseline").textContent = "err";
+        document.getElementById("sum-coverage").textContent = "err";
+      }
+    }
+
+    function signLabel(sign) {
+      if (sign === 1) return "Bullish";
+      if (sign === -1) return "Bearish";
+      return "Mixed";
+    }
+
+    async function loadDashboardEvents() {
+      const list = document.getElementById("events-list");
+      list.innerHTML = "<div class='muted'>Loading events...</div>";
+      try {
+        const resp = await fetch("/api/dashboard/events?limit=8");
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.detail || "Events unavailable");
+        if (!Array.isArray(data) || data.length === 0) {
+          list.innerHTML = "<div class='muted'>No event rows found.</div>";
+          return;
+        }
+        list.innerHTML = "";
+        data.forEach((ev) => {
+          const row = document.createElement("article");
+          row.className = "news-item";
+          row.innerHTML =
+            "<div><strong>" + (ev.symbol || "-") + "</strong> · " + (ev.t_event_utc || "").slice(0, 10) + "</div>" +
+            "<div class='muted' style='margin-top:4px'>Actual 5D: " + (ev.actual_5d_return_pct ?? "-") + "%</div>" +
+            "<div class='muted'>Baseline: " + signLabel(ev.baseline_pred_sign) + " · Enhanced: " + (ev.enhanced_pred_direction || "mixed") + "</div>";
+          list.appendChild(row);
+        });
+      } catch (err) {
+        list.innerHTML = "<div class='muted'>Unable to load event preview.</div>";
       }
     }
 
