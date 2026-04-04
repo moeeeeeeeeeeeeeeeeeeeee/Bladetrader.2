@@ -29,7 +29,7 @@ from pydantic import BaseModel, Field
 from finhack.agents.news_intake_agent import NewsIntakeAgent
 from finhack.agents.sector_intelligence_agent import CompanyImpact, SectorIntelligenceAgent
 from finhack.config import load_settings
-from finhack.data.company_graph import CASE4_SYMBOLS, SECTOR_BUCKETS
+from finhack.data.company_graph import CASE4_SYMBOLS, SECTOR_BUCKETS, SYMBOL_TO_COMPANY
 from finhack.market_data import get_case4_market_points
 from finhack.session_chatbot import (
     answer_user_question,
@@ -255,6 +255,30 @@ class SectorAnalyzeResponse(BaseModel):
 class SectorCatalogResponse(BaseModel):
     sectors: list[str]
     tracked_symbols: list[str]
+
+
+class SectorAnalyzeAllRequest(BaseModel):
+    horizon_days: int = Field(default=5, ge=5, le=7)
+
+
+class SectorAnalyzeAllStockResponse(BaseModel):
+    symbol: str
+    company_name: str
+    sector: str
+    predicted_direction: str
+    predicted_move_pct: float
+    correlation_to_sector: float
+    leverage_or_hedge: str
+    connected_to: str | None
+    rationale: str
+
+
+class SectorAnalyzeAllResponse(BaseModel):
+    horizon_days: int
+    confidence: float
+    generated_at_utc: str
+    sectors: list[dict[str, Any]]
+    stocks: list[SectorAnalyzeAllStockResponse]
 
 
 CASE4_PATH = Path("data") / "case4_earnings_validation.json"
@@ -591,6 +615,40 @@ def analyze_sector(body: SectorAnalyzeRequest) -> SectorAnalyzeResponse:
         top_owned=[_as_company(c) for c in result.top_owned],
         movers_not_owned=[_as_company(c) for c in result.movers_not_owned],
         generated_at_utc=result.generated_at_utc,
+    )
+
+
+@app.post("/api/agents/sector/analyze-all", response_model=SectorAnalyzeAllResponse)
+def analyze_all_case4_stocks(body: SectorAnalyzeAllRequest) -> SectorAnalyzeAllResponse:
+    try:
+        agent = SectorIntelligenceAgent()
+        result = agent.predict_case4_universe(horizon_days=body.horizon_days)
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+    stocks: list[SectorAnalyzeAllStockResponse] = []
+    for row in result.stocks:
+        comp = SYMBOL_TO_COMPANY.get(row.symbol)
+        stocks.append(
+            SectorAnalyzeAllStockResponse(
+                symbol=row.symbol,
+                company_name=row.company_name,
+                sector=comp.sector_bucket if comp else "Unknown",
+                predicted_direction=row.predicted_direction,
+                predicted_move_pct=row.predicted_move_pct,
+                correlation_to_sector=row.correlation_to_sector,
+                leverage_or_hedge=row.leverage_or_hedge,
+                connected_to=row.connected_to,
+                rationale=row.rationale,
+            )
+        )
+
+    return SectorAnalyzeAllResponse(
+        horizon_days=result.horizon_days,
+        confidence=result.confidence,
+        generated_at_utc=result.generated_at_utc,
+        sectors=result.sector_summary,
+        stocks=stocks,
     )
 
 

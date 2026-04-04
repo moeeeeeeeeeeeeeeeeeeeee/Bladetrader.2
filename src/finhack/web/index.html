@@ -8,136 +8,103 @@
     @import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=DM+Sans:wght@300;400;500;600&display=swap");
     * { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --bg0: #0d0f12;
-      --bg1: #141720;
-      --bg2: #1c2030;
-      --bg3: #232840;
-      --border: #2a3050;
-      --border2: #3a4570;
-      --green: #00d084;
-      --green2: #00a368;
-      --amber: #f5a623;
-      --red: #e84040;
-      --blue: #4a9eff;
-      --text0: #e8ecf4;
-      --text1: #9ba3c0;
-      --text2: #5a6380;
-      --mono: "JetBrains Mono", monospace;
-      --sans: "DM Sans", sans-serif;
+      --bg0: #0d0f12; --bg1: #141720; --bg2: #1c2030; --bg3: #232840;
+      --border: #2a3050; --border2: #3a4570;
+      --green: #00d084; --green2: #00a368; --green3: #003d26;
+      --amber: #f5a623; --red: #e84040; --blue: #4a9eff; --purple: #9b7cf8;
+      --text0: #e8ecf4; --text1: #9ba3c0; --text2: #5a6380;
+      --mono: "JetBrains Mono", monospace; --sans: "DM Sans", sans-serif;
     }
     body { background: var(--bg0); color: var(--text0); font-family: var(--sans); font-size: 13px; min-height: 100vh; }
-    .shell { display: flex; min-height: 100vh; }
-    .sidebar { width: 210px; background: var(--bg1); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
-    .logo { padding: 20px 18px 14px; border-bottom: 1px solid var(--border); }
-    .logo-mark { font-family: var(--mono); font-size: 15px; font-weight: 700; }
+    .shell { display: flex; height: 100vh; min-height: 600px; }
+    .sidebar { width: 200px; min-width: 200px; background: var(--bg1); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+    .logo { padding: 20px 18px 16px; border-bottom: 1px solid var(--border); }
+    .logo-mark { font-family: var(--mono); font-size: 15px; font-weight: 700; letter-spacing: -.5px; color: var(--text0); }
     .logo-mark span { color: var(--green); }
-    .logo-sub { margin-top: 6px; font-size: 9px; letter-spacing: 2px; color: var(--green); display: flex; align-items: center; gap: 6px; }
-    .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--green); }
-    .nav-sec { padding: 14px 12px 6px; font-size: 9px; color: var(--text2); letter-spacing: 2px; text-transform: uppercase; }
-    .nav-item { padding: 8px 16px; margin: 1px 8px; border-radius: 6px; color: var(--text1); cursor: pointer; font-size: 12px; }
-    .nav-item:hover { background: var(--bg2); color: var(--text0); }
-    .nav-item.on { background: var(--bg2); color: var(--text0); border-left: 2px solid var(--green); padding-left: 14px; }
-    .sidebar-bottom { margin-top: auto; padding: 14px; border-top: 1px solid var(--border); font-size: 10px; color: var(--text2); }
+    .logo-sub { font-size: 9px; color: var(--green); letter-spacing: 2px; margin-top: 3px; display: flex; align-items: center; gap: 5px; }
+    .dot-live { width: 5px; height: 5px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .3; } }
+    .nav-section { padding: 14px 12px 6px; font-size: 9px; color: var(--text2); letter-spacing: 2px; }
+    .nav-item { padding: 7px 16px; border-radius: 6px; margin: 1px 8px; color: var(--text1); font-size: 12px; }
+    .nav-item.active { background: var(--bg2); color: var(--text0); border-left: 2px solid var(--green); padding-left: 14px; }
+    .badge { font-size: 8px; padding: 2px 6px; border-radius: 3px; margin-left: auto; font-family: var(--mono); letter-spacing: 1px; }
+    .badge.ai { background: #1a3a2a; color: var(--green); }
+    .badge.live { background: #2a1a1a; color: #e84040; }
+    .badge.setup { background: #2a2a1a; color: var(--amber); }
+    .sidebar-bottom { margin-top: auto; padding: 14px; border-top: 1px solid var(--border); }
+    .event-engine-label { font-size: 9px; color: var(--text2); letter-spacing: 2px; margin-bottom: 8px; }
+    .engine-status { font-size: 9px; color: var(--text2); margin-top: 6px; line-height: 1.4; }
     .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-    .topbar { height: 44px; background: var(--bg1); border-bottom: 1px solid var(--border); padding: 0 18px; display: flex; align-items: center; gap: 10px; }
-    .top-title { flex: 1; letter-spacing: 2px; font-size: 11px; color: var(--text2); }
-    .pill { font-family: var(--mono); font-size: 9px; padding: 3px 10px; border-radius: 4px; border: 1px solid; letter-spacing: 1px; }
-    .pill.live { background: #0f2f22; border-color: #1d6d4f; color: var(--green); }
-    .pill.warn { background: #33230f; border-color: #6f4a13; color: var(--amber); }
-    .clock { font-family: var(--mono); font-size: 11px; color: var(--text2); }
-    .signal-strip { background: var(--bg1); border-bottom: 1px solid var(--border); padding: 14px 18px; display: flex; align-items: center; gap: 16px; }
-    .demo-banner { background: #0f172a; border-bottom: 1px solid var(--border); padding: 10px 18px; display: flex; align-items: center; gap: 10px; }
-    .demo-title { font-family: var(--mono); font-size: 11px; color: #c7d2fe; letter-spacing: 1px; }
-    .chip { border: 1px solid var(--border2); border-radius: 999px; padding: 3px 10px; font-size: 10px; font-family: var(--mono); color: var(--text1); }
-    .chip.ok { color: var(--green); border-color: #1d6d4f; background: #0f2f22; }
-    .chip.warn { color: var(--amber); border-color: #6f4a13; background: #33230f; }
-    .chip.bad { color: var(--red); border-color: #6d1d1d; background: #2f0f0f; }
-    .ticker { font-family: var(--mono); font-size: 24px; font-weight: 700; letter-spacing: -1px; }
-    .company { color: var(--text1); }
-    .price { font-family: var(--mono); font-size: 22px; }
-    .chg-up { color: var(--green); font-family: var(--mono); }
-    .chg-dn { color: var(--red); font-family: var(--mono); }
-    .spacer { flex: 1; }
-    .panel-wrap { flex: 1; overflow: hidden; display: flex; }
-    .panel { display: none; flex: 1; overflow: auto; padding: 16px; }
-    .panel.on { display: block; }
-    .grid { display: grid; gap: 12px; }
-    .grid.two { grid-template-columns: 1.5fr 1fr; }
-    .grid.cards4 { grid-template-columns: repeat(4, 1fr); }
-    .grid.cards3 { grid-template-columns: repeat(3, 1fr); }
-    .card { background: var(--bg1); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
-    .card h3 { font-size: 10px; letter-spacing: 2px; color: var(--text2); margin-bottom: 10px; text-transform: uppercase; }
-    .stat-v { font-family: var(--mono); font-size: 24px; font-weight: 700; }
-    .muted { color: var(--text1); font-size: 12px; }
-    .table { width: 100%; border-collapse: collapse; }
-    .table th { text-align: left; font-size: 10px; color: var(--text2); padding: 0 0 8px; border-bottom: 1px solid var(--border); }
-    .table td { padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
-    .list { display: grid; gap: 8px; max-height: 360px; overflow: auto; }
-    .item { border: 1px solid var(--border); border-radius: 8px; padding: 10px; background: var(--bg2); }
-    .item a { color: #8fb6ff; text-decoration: none; }
-    .pill-mini { font-size: 10px; border: 1px solid var(--border2); border-radius: 999px; padding: 2px 8px; font-family: var(--mono); }
-    .riskbar { height: 6px; background: var(--border); border-radius: 6px; overflow: hidden; margin-top: 4px; }
-    .riskfill { height: 100%; background: linear-gradient(90deg, var(--green2), var(--amber), var(--red)); }
-    .row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
-    input, select {
-      background: var(--bg2); color: var(--text0); border: 1px solid var(--border);
-      border-radius: 7px; padding: 8px 10px; font-family: var(--mono); font-size: 12px;
-    }
-    button {
-      background: var(--bg3); color: var(--text0); border: 1px solid var(--border2);
-      border-radius: 7px; padding: 8px 12px; cursor: pointer; font-family: var(--mono); font-size: 11px;
-    }
-    button.primary { background: #0f2f22; border-color: #1d6d4f; color: var(--green); }
-    .chat-fab { position: fixed; right: 16px; bottom: 16px; width: 52px; height: 52px; border-radius: 50%; border: none; background: #0f172a; color: #fff; cursor: pointer; }
-    .chat { position: fixed; right: 16px; bottom: 16px; width: 330px; height: 430px; background: var(--bg1); border: 1px solid var(--border); border-radius: 12px; display: flex; flex-direction: column; }
-    .chat.min { display: none; }
-    .chat-h { height: 42px; background: #0f172a; color: #fff; display: flex; justify-content: space-between; align-items: center; padding: 0 10px; font-size: 11px; letter-spacing: 1px; }
-    .chat-h button { width: 22px; height: 22px; border-radius: 4px; border: 1px solid rgba(255,255,255,.2); background: transparent; color: #fff; }
-    .chat-b { flex: 1; padding: 10px; overflow: auto; background: var(--bg2); }
-    .msg { margin-bottom: 8px; max-width: 88%; padding: 8px 9px; border-radius: 8px; font-size: 12px; line-height: 1.4; }
-    .msg.user { margin-left: auto; background: #0f2f22; border: 1px solid #1d6d4f; color: #c5ffe4; }
-    .msg.bot { margin-right: auto; background: var(--bg1); border: 1px solid var(--border); }
-    .chat-i { border-top: 1px solid var(--border); padding: 8px; display: flex; gap: 6px; }
-    .chat-i input { flex: 1; }
-    .up { color: var(--green); }
-    .down { color: var(--red); }
+    .topbar { background: var(--bg1); border-bottom: 1px solid var(--border); padding: 0 24px; height: 44px; display: flex; align-items: center; gap: 16px; }
+    .topbar-title { font-size: 11px; color: var(--text2); letter-spacing: 2px; flex: 1; }
+    .live-pill { background: var(--green3); border: 1px solid var(--green2); color: var(--green); font-size: 9px; padding: 3px 10px; border-radius: 3px; letter-spacing: 2px; font-family: var(--mono); display: flex; align-items: center; gap: 5px; }
+    .topbar-time { font-family: var(--mono); font-size: 11px; color: var(--text2); }
+    .signal-strip { background: var(--bg1); border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; align-items: center; gap: 24px; }
+    .ticker { font-family: var(--mono); font-size: 26px; font-weight: 700; color: var(--text0); letter-spacing: -1px; }
+    .company { font-size: 13px; color: var(--text1); margin-top: 2px; }
+    .price { font-family: var(--mono); font-size: 24px; font-weight: 500; color: var(--text0); }
+    .change { font-family: var(--mono); font-size: 14px; display: flex; align-items: center; gap: 3px; }
+    .divider { width: 1px; height: 36px; background: var(--border); }
+    .signal-label { font-size: 9px; color: var(--text2); letter-spacing: 2px; }
+    .signal-value { font-family: var(--mono); font-size: 14px; font-weight: 700; color: var(--green); }
+    .conviction-bar { width: 80px; height: 3px; background: var(--border); border-radius: 2px; margin-top: 4px; }
+    .conviction-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--green2), var(--green)); }
+    .controls-right { margin-left: auto; display: flex; gap: 6px; align-items: center; }
+    .ctrl-btn { background: var(--bg2); border: 1px solid var(--border); color: var(--text1); font-size: 10px; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-family: var(--mono); }
+    .ctrl-btn.active { background: var(--bg3); border-color: var(--green2); color: var(--green); }
+    .ctrl-select { background: var(--bg2); border: 1px solid var(--border); color: var(--text1); font-size: 10px; padding: 5px 8px; border-radius: 4px; font-family: var(--mono); }
+    .content { flex: 1; display: flex; overflow: hidden; }
+    .left-pane { flex: .7; display: flex; flex-direction: column; overflow-y: auto; padding: 20px; gap: 16px; border-right: 1px solid var(--border); }
+    .right-pane { flex: .3; min-width: 260px; display: flex; flex-direction: column; overflow-y: auto; padding: 16px; gap: 12px; }
+    .card { background: var(--bg1); border: 1px solid var(--border); border-radius: 8px; padding: 16px; }
+    .card-title { font-size: 9px; color: var(--text2); letter-spacing: 2px; margin-bottom: 10px; }
+    .chart-wrap { position: relative; width: 100%; height: 210px; }
+    .event-feed { display: flex; flex-direction: column; gap: 0; }
+    .event-row { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+    .event-time { font-family: var(--mono); font-size: 10px; color: var(--text2); min-width: 40px; margin-top: 1px; }
+    .event-icon { width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; font-family: var(--mono); }
+    .ev-a { background: #1a2a40; color: var(--blue); }
+    .ev-b { background: #1a2a1a; color: var(--green); }
+    .event-title { font-size: 12px; color: var(--text0); font-weight: 500; }
+    .event-impact { font-family: var(--mono); font-size: 11px; color: var(--green); margin-top: 1px; }
+    .why-card { background: #0d1a2a; border: 1px solid #1a3a6a; border-radius: 8px; padding: 14px; }
+    .why-label { font-size: 9px; color: var(--blue); letter-spacing: 2px; margin-bottom: 8px; }
+    .why-text { font-size: 11px; color: #9bb8e0; line-height: 1.7; }
+    .r-card { background: var(--bg1); border: 1px solid var(--border); border-radius: 8px; padding: 14px; }
+    .r-card-title { font-size: 9px; color: var(--text2); letter-spacing: 2px; margin-bottom: 10px; }
+    .big-signal { font-family: var(--mono); font-size: 22px; font-weight: 700; color: var(--green); margin-bottom: 4px; }
+    .list { display: grid; gap: 8px; max-height: 220px; overflow-y: auto; }
+    .item { border: 1px solid var(--border); border-radius: 8px; padding: 10px; background: var(--bg2); font-size: 11px; line-height: 1.4; }
+    .muted { color: var(--text1); }
+    .up { color: var(--green); } .down { color: var(--red); }
   </style>
 </head>
 <body>
   <div class="shell">
-    <aside class="sidebar">
+    <div class="sidebar">
       <div class="logo">
         <div class="logo-mark">BLADE<span>TRADER</span></div>
-        <div class="logo-sub"><span class="dot"></span>LIVE ENGINE</div>
+        <div class="logo-sub"><span class="dot-live"></span>LIVE ENGINE</div>
       </div>
-      <div class="nav-sec">Portfolio</div>
-      <div class="nav-item on" data-panel="dashboard">Dashboard</div>
-      <div class="nav-item" data-panel="asset">Asset Manager</div>
-      <div class="nav-sec">Analysis</div>
-      <div class="nav-item" data-panel="risk">Risk + Leverage</div>
-      <div class="nav-item" data-panel="sector">Sector Intel</div>
-      <div class="nav-sec">Feed</div>
-      <div class="nav-item" data-panel="news">Live News</div>
-      <div class="nav-sec">Account</div>
-      <div class="nav-item" data-panel="account">User</div>
-      <div class="nav-item" data-panel="settings">Settings</div>
-      <div class="sidebar-bottom" id="engine-foot">Loading event engine status...</div>
-    </aside>
+      <div class="nav-section">PORTFOLIO</div>
+      <div class="nav-item active">Asset Manager</div>
+      <div class="nav-section">ANALYSIS</div>
+      <div class="nav-item">Risk + Leverage <span class="badge ai">AI</span></div>
+      <div class="nav-section">FEED</div>
+      <div class="nav-item">Live News <span class="badge live">LIVE</span></div>
+      <div class="nav-section">ACCOUNT</div>
+      <div class="nav-item">Settings <span class="badge setup">SETUP</span></div>
+      <div class="sidebar-bottom">
+        <div class="event-engine-label">EVENT ENGINE</div>
+        <div class="engine-status" id="engine-status">Loading validation status...</div>
+      </div>
+    </div>
 
-    <main class="main">
+    <div class="main">
       <div class="topbar">
-        <div class="top-title" id="top-title">PORTFOLIO DASHBOARD</div>
-        <span class="pill live" id="mode-pill">MODE: LIVE</span>
-        <span class="clock" id="clock"></span>
-      </div>
-
-      <div class="demo-banner">
-        <div class="demo-title">DEMO STATUS</div>
-        <span class="chip" id="chip-api">API: ...</span>
-        <span class="chip" id="chip-data">Data: ...</span>
-        <span class="chip" id="chip-market">Market: ...</span>
-        <span class="chip" id="chip-auth">Auth: ...</span>
-        <span class="chip" id="chip-sector">Sector: ...</span>
+        <div class="topbar-title">ASSET MANAGER</div>
+        <div class="live-pill"><span class="dot-live" style="width:4px;height:4px"></span><span id="mode-pill">LIVE</span></div>
+        <div class="topbar-time" id="clock"></div>
       </div>
 
       <div class="signal-strip">
@@ -147,649 +114,262 @@
         </div>
         <div>
           <div class="price" id="hero-price">$-</div>
-          <div id="hero-change" class="muted">Waiting for market data...</div>
+          <div class="change" id="hero-change">waiting...</div>
         </div>
-        <div class="spacer"></div>
-        <button onclick="runDemoSequence()">Run Demo Sequence</button>
-        <button class="primary" onclick="refreshAll()">Refresh</button>
+        <div class="divider"></div>
+        <div>
+          <div class="signal-label">SIGNAL</div>
+          <div class="signal-value" id="hero-signal">LONG</div>
+        </div>
+        <div>
+          <div class="signal-label">CONVICTION</div>
+          <div class="signal-value"><span id="hero-conv">0</span><span style="font-size:10px;color:var(--text2)">/100</span></div>
+          <div class="conviction-bar"><div class="conviction-fill" id="hero-conv-fill" style="width:0%"></div></div>
+        </div>
+        <div class="controls-right">
+          <select id="symbol-select" class="ctrl-select"></select>
+          <button class="ctrl-btn" onclick="runIngest()">INGEST</button>
+          <button class="ctrl-btn" onclick="runAllStocks()">RUN ALL</button>
+          <button class="ctrl-btn active" onclick="refreshAll()">REFRESH</button>
+        </div>
       </div>
 
-      <div class="panel-wrap">
-        <section class="panel on" id="panel-dashboard">
-          <div class="grid cards4">
-            <article class="card"><h3>Earnings Events</h3><div class="stat-v" id="sum-events">-</div></article>
-            <article class="card"><h3>Universe Size</h3><div class="stat-v" id="sum-universe">-</div></article>
-            <article class="card"><h3>Baseline Accuracy</h3><div class="stat-v" id="sum-baseline">-</div></article>
-            <article class="card"><h3>Enhanced Accuracy</h3><div class="stat-v" id="sum-enhanced">-</div></article>
+      <div class="content">
+        <div class="left-pane">
+          <div class="card">
+            <div class="card-title">PRICE — CASE 4 FOCUS</div>
+            <div class="chart-wrap"><canvas id="mainChart"></canvas></div>
           </div>
-          <div class="grid two" style="margin-top:12px">
-            <article class="card">
-              <h3>Case 4 Stocks (14) + Spillover Paths</h3>
-              <table class="table">
-                <thead><tr><th>Symbol</th><th>Price</th><th>Daily</th><th>Affected By</th></tr></thead>
-                <tbody id="market-table"></tbody>
-              </table>
-            </article>
-            <article class="card">
-              <h3>Recent Earnings Validations</h3>
-              <div id="events-list" class="list"></div>
-            </article>
+          <div class="card">
+            <div class="card-title">EVENT TIMELINE — EARNINGS VALIDATION</div>
+            <div class="event-feed" id="events-wrap"></div>
           </div>
-        </section>
-
-        <section class="panel" id="panel-asset">
-          <div class="grid two">
-            <article class="card">
-              <h3>Asset Panel</h3>
-              <div class="row">
-                <select id="asset-symbol"></select>
-              </div>
-              <div class="muted" id="asset-status">Select a stock to update linked spillover and risk context.</div>
-            </article>
-            <article class="card">
-              <h3>Workflow</h3>
-              <div class="muted">1) Run intake in Live News. 2) Run Sector Intel. 3) Review risk + leverage links.</div>
-            </article>
+        </div>
+        <div class="right-pane">
+          <div class="why-card">
+            <div class="why-label">WHY THIS MATTERS NOW</div>
+            <div class="why-text" id="why-text">Waiting for sector analysis...</div>
           </div>
-        </section>
-
-        <section class="panel" id="panel-risk">
-          <div class="grid cards3">
-            <article class="card">
-              <h3>Selected Symbol</h3>
-              <div class="stat-v" id="risk-symbol">-</div>
-              <div class="muted" id="risk-dir">Direction: -</div>
-            </article>
-            <article class="card">
-              <h3>Signal Confidence</h3>
-              <div class="stat-v" id="risk-confidence">N/A</div>
-              <div class="riskbar"><div class="riskfill" id="risk-confidence-fill" style="width:0%"></div></div>
-            </article>
-            <article class="card">
-              <h3>Spillover Pressure</h3>
-              <div class="stat-v" id="risk-spill-count">-</div>
-              <div class="muted">Mapped linked stocks from Case 4 network</div>
-            </article>
+          <div class="r-card">
+            <div class="r-card-title">AI SENTIMENT / CONFIDENCE</div>
+            <div class="big-signal" id="sent-score">-</div>
+            <div class="muted" id="sent-sub">Run all-stocks analysis for live metrics.</div>
           </div>
-          <div class="grid two" style="margin-top:12px">
-            <article class="card">
-              <h3>Spillover Connections</h3>
-              <div id="risk-spill-list" class="list"></div>
-            </article>
-            <article class="card">
-              <h3>Risk Notes</h3>
-              <div id="risk-trigger-list" class="list"></div>
-            </article>
+          <div class="r-card">
+            <div class="r-card-title">TOP CASE-4 MOVERS (5-7D)</div>
+            <div class="list" id="movers-list"></div>
           </div>
-        </section>
-
-        <section class="panel" id="panel-news">
-          <div class="grid two">
-            <article class="card">
-              <h3>Ingest News Sources</h3>
-              <div class="row">
-                <button class="primary" onclick="runIngest()">Run Intake</button>
-                <button onclick="loadNews()">Reload Docs</button>
-              </div>
-              <div class="muted" id="news-status">Ready.</div>
-            </article>
-            <article class="card">
-              <h3>Stored Documents</h3>
-              <div id="news-list" class="list"></div>
-            </article>
+          <div class="r-card">
+            <div class="r-card-title">SECTOR SUMMARY</div>
+            <div class="list" id="sectors-list"></div>
           </div>
-        </section>
-
-        <section class="panel" id="panel-sector">
-          <div class="grid cards4">
-            <article class="card"><h3>Sector Move (5-7d)</h3><div class="stat-v" id="sector-move">-</div></article>
-            <article class="card"><h3>Confidence</h3><div class="stat-v" id="sector-conf">-</div></article>
-            <article class="card"><h3>Metric A</h3><div class="stat-v" id="sector-a">-</div></article>
-            <article class="card"><h3>Metric B</h3><div class="stat-v" id="sector-b">-</div></article>
-          </div>
-          <div class="grid two" style="margin-top:12px">
-            <article class="card">
-              <h3>Sector Predictor</h3>
-              <div class="row">
-                <select id="sector-select"></select>
-                <input id="owned-input" placeholder="Owned symbols (comma-separated)" value="NVDA,MSFT,AMZN" style="flex:1" />
-                <button class="primary" onclick="runSectorAnalysis()">Run</button>
-              </div>
-              <div class="muted" id="sector-status">Select a sector and run analysis.</div>
-            </article>
-            <article class="card">
-              <h3>Top 3 Relevant Owned</h3>
-              <div id="sector-owned-list" class="list"></div>
-            </article>
-          </div>
-          <div class="card" style="margin-top:12px">
-            <h3>Biggest Movers Not Owned</h3>
-            <div id="sector-movers-list" class="list"></div>
-          </div>
-        </section>
-
-        <section class="panel" id="panel-account">
-          <div class="grid two">
-            <article class="card">
-              <h3>Register / Login</h3>
-              <div class="row">
-                <input id="auth-username" placeholder="username" />
-                <input id="auth-password" type="password" placeholder="password" />
-              </div>
-              <div class="row">
-                <input id="auth-display" placeholder="display name (register only)" style="flex:1" />
-                <button onclick="registerUser()">Register</button>
-                <button class="primary" onclick="loginUser()">Login</button>
-              </div>
-              <div class="muted" id="auth-status">Not authenticated.</div>
-            </article>
-            <article class="card">
-              <h3>Current User</h3>
-              <div id="auth-me" class="muted">No session loaded.</div>
-            </article>
-          </div>
-        </section>
-
-        <section class="panel" id="panel-settings">
-          <div class="grid two">
-            <article class="card">
-              <h3>Market Data Provider</h3>
-              <div class="muted" id="provider-text">Loading provider...</div>
-              <div class="muted" id="provider-notes" style="margin-top:8px"></div>
-            </article>
-            <article class="card">
-              <h3>Hackathon Data Artifacts</h3>
-              <div class="muted">Saved in `data/case4_dataset_snapshot.jsonl`, `data/case4_dataset_summary.json`, and `data/case4_earnings_validation.json`.</div>
-            </article>
-          </div>
-        </section>
+        </div>
       </div>
-    </main>
-  </div>
-
-  <button id="chat-fab" class="chat-fab" onclick="toggleChat(true)">CHAT</button>
-  <div id="chat-widget" class="chat min">
-    <div class="chat-h">
-      <span>BLADETRADER ASSISTANT</span>
-      <span>
-        <button onclick="toggleChat(false)">-</button>
-        <button onclick="toggleChat(false)">x</button>
-      </span>
-    </div>
-    <div class="chat-b" id="chat-body">
-      <div class="msg bot">Ask about earnings direction, sentiment drivers, spillover, or data sources.</div>
-    </div>
-    <div class="chat-i">
-      <input id="chat-input" placeholder="Type message..." onkeydown="if(event.key==='Enter'){sendChat();}" />
-      <button onclick="sendChat()">Send</button>
     </div>
   </div>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
   <script>
-    let chatSessionId = null;
     let marketRows = [];
+    let allStocks = [];
+    let allSectorSummary = [];
     let selectedSymbol = "NVDA";
-    let lastSectorResult = null;
-    let authToken = localStorage.getItem("blade_auth_token") || "";
+    let chart = null;
 
-    function fmtPct(value) {
-      if (value === null || value === undefined || Number.isNaN(Number(value))) return "-";
-      return Number(value).toFixed(2) + "%";
-    }
-
-    function fmtMoney(value) {
-      if (value === null || value === undefined || Number.isNaN(Number(value))) return "-";
-      return "$" + Number(value).toFixed(2);
-    }
-
-    function tickClock() {
+    function nowClock() {
       const now = new Date();
       document.getElementById("clock").textContent =
         now.toLocaleTimeString("en-US", { hour12: false }) + " · " +
         now.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
     }
 
-    function setupNav() {
-      const navItems = Array.from(document.querySelectorAll(".nav-item"));
-      const titleMap = {
-        dashboard: "PORTFOLIO DASHBOARD",
-        asset: "ASSET MANAGER",
-        risk: "RISK + LEVERAGE",
-        sector: "SECTOR INTELLIGENCE",
-        news: "LIVE NEWS FEED",
-        account: "ACCOUNT",
-        settings: "SETTINGS",
-      };
-      navItems.forEach((item) => {
-        item.addEventListener("click", () => {
-          navItems.forEach((n) => n.classList.remove("on"));
-          item.classList.add("on");
-          const panel = item.getAttribute("data-panel");
-          document.querySelectorAll(".panel").forEach((p) => p.classList.remove("on"));
-          document.getElementById("panel-" + panel).classList.add("on");
-          document.getElementById("top-title").textContent = titleMap[panel] || panel.toUpperCase();
-        });
+    function fmtPct(v) {
+      if (v === null || v === undefined || Number.isNaN(Number(v))) return "-";
+      const n = Number(v);
+      return (n >= 0 ? "+" : "") + n.toFixed(2) + "%";
+    }
+
+    function fmtMoney(v) {
+      if (v === null || v === undefined || Number.isNaN(Number(v))) return "$-";
+      return "$" + Number(v).toFixed(2);
+    }
+
+    async function fetchJSON(url, options) {
+      const resp = await fetch(url, options);
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.detail || "Request failed");
+      return data;
+    }
+
+    function updateHero() {
+      const market = marketRows.find((r) => r.symbol === selectedSymbol) || marketRows[0];
+      if (!market) return;
+      const pred = allStocks.find((r) => r.symbol === market.symbol);
+      document.getElementById("hero-symbol").textContent = market.symbol;
+      document.getElementById("hero-company").textContent = pred ? pred.company_name : "Case-4 stock";
+      document.getElementById("hero-price").textContent = fmtMoney(market.price);
+      const ch = document.getElementById("hero-change");
+      const isUp = Number(market.change_percent || 0) >= 0;
+      ch.className = "change " + (isUp ? "up" : "down");
+      ch.textContent = fmtPct(market.change_percent);
+      const direction = pred ? pred.predicted_direction : "up";
+      document.getElementById("hero-signal").textContent = direction === "down" ? "SHORT" : "LONG";
+      const conv = pred ? Math.max(20, Math.min(95, Math.round(Math.abs(pred.predicted_move_pct) * 6 + 35))) : 0;
+      document.getElementById("hero-conv").textContent = conv;
+      document.getElementById("hero-conv-fill").style.width = conv + "%";
+      renderChart(market, pred);
+      renderWhy(pred, market);
+    }
+
+    function renderChart(market, pred) {
+      const base = Number(market.price || 100);
+      const drift = Number(pred ? pred.predicted_move_pct : (market.change_percent || 0)) / 100 / 14;
+      const labels = [];
+      const points = [];
+      let px = base * 0.96;
+      for (let i = 0; i < 15; i++) {
+        labels.push("T" + i);
+        px = px * (1 + drift + (Math.sin(i * 1.1) * 0.004));
+        points.push(Number(px.toFixed(2)));
+      }
+      const ctx = document.getElementById("mainChart").getContext("2d");
+      if (chart) chart.destroy();
+      chart = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels,
+          datasets: [{ data: points, borderColor: "#00d084", borderWidth: 2, pointRadius: 0, tension: 0.35 }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { color: "rgba(255,255,255,.04)" }, ticks: { color: "#5a6380", font: { size: 10 } } },
+            y: { grid: { color: "rgba(255,255,255,.04)" }, ticks: { color: "#5a6380", font: { size: 10 }, callback: (v) => "$" + v } }
+          }
+        }
       });
     }
 
-    function setChip(id, label, state) {
-      const el = document.getElementById(id);
-      if (!el) return;
-      el.className = "chip " + (state || "");
-      el.textContent = label;
+    function renderWhy(pred, market) {
+      const txt = pred
+        ? pred.rationale + " Linked symbols: " + ((market.impacted_symbols || []).join(", ") || "none") + "."
+        : "Run all-stock analysis to surface explainable drivers, spillover path, and confidence.";
+      document.getElementById("why-text").textContent = txt;
     }
 
-    function renderHero() {
-      if (!marketRows.length) return;
-      let hero = marketRows[0];
-      for (const row of marketRows) {
-        const absMove = Math.abs(Number(row.change_percent || 0));
-        const bestAbs = Math.abs(Number(hero.change_percent || 0));
-        if (absMove > bestAbs) hero = row;
-      }
-      document.getElementById("hero-symbol").textContent = hero.symbol || "-";
-      document.getElementById("hero-company").textContent = "Top mover in Case 4 basket";
-      document.getElementById("hero-price").textContent = fmtMoney(hero.price);
-      const ch = document.getElementById("hero-change");
-      const pct = hero.change_percent;
-      const sign = pct !== null && pct !== undefined && Number(pct) >= 0 ? "+" : "";
-      ch.className = (pct !== null && Number(pct) < 0) ? "chg-dn" : "chg-up";
-      ch.textContent = "Daily " + sign + fmtPct(pct) + " (demo focus)";
-      selectedSymbol = hero.symbol || selectedSymbol;
-    }
-
-    async function loadProvider() {
-      const resp = await fetch("/api/market/provider");
-      const data = await resp.json();
-      const modePill = document.getElementById("mode-pill");
-      if (data.is_live_ready) {
-        modePill.className = "pill live";
-        modePill.textContent = "MODE: LIVE EODHD";
-      } else {
-        modePill.className = "pill warn";
-        modePill.textContent = "MODE: SETUP";
-      }
-      document.getElementById("provider-text").textContent =
-        "Provider: " + data.provider + " · EODHD key: " + (data.has_eodhd_key ? "set" : "missing");
-      document.getElementById("provider-notes").textContent = (data.notes || []).join(" ");
-      setChip("chip-market", data.is_live_ready ? "Market: Live EODHD" : "Market: Setup", data.is_live_ready ? "ok" : "warn");
-    }
-
-    async function loadSummary() {
-      const resp = await fetch("/api/dashboard/summary");
-      const data = await resp.json();
-      if (!resp.ok) throw new Error(data.detail || "summary failed");
-      document.getElementById("sum-events").textContent = data.earnings_events_evaluated ?? "-";
-      document.getElementById("sum-universe").textContent = data.stock_universe_size ?? "-";
-      document.getElementById("sum-baseline").textContent = fmtPct((data.baseline_accuracy ?? 0) * 100);
-      document.getElementById("sum-enhanced").textContent = fmtPct((data.enhanced_accuracy ?? 0) * 100);
-      document.getElementById("engine-foot").textContent =
-        (data.earnings_events_evaluated ?? 0) + " earnings events validated (dashboard ready)";
-      const hasData = Number(data.earnings_events_evaluated || 0) > 0;
-      setChip("chip-data", hasData ? "Data: Loaded" : "Data: Missing", hasData ? "ok" : "warn");
-    }
-
-    async function loadEvents() {
-      const wrap = document.getElementById("events-list");
-      wrap.innerHTML = "<div class='muted'>Loading...</div>";
-      const resp = await fetch("/api/dashboard/events?limit=12");
-      const data = await resp.json();
-      if (!resp.ok || !Array.isArray(data)) {
-        wrap.innerHTML = "<div class='muted'>Unable to load events.</div>";
+    function renderEvents(events) {
+      const wrap = document.getElementById("events-wrap");
+      if (!Array.isArray(events) || events.length === 0) {
+        wrap.innerHTML = "<div class='muted'>No validation events loaded.</div>";
         return;
       }
-      if (data.length === 0) {
-        wrap.innerHTML = "<div class='muted'>No event previews yet.</div>";
-        return;
-      }
-      wrap.innerHTML = data.map((ev) => {
-        return "<article class='item'>" +
-          "<div><strong>" + (ev.symbol || "-") + "</strong> · " + (ev.t_event_utc || "").slice(0, 10) + "</div>" +
-          "<div class='muted'>Actual 5D: " + (ev.actual_5d_return_pct ?? "-") + "%</div>" +
-          "<div class='muted'>Baseline sign: " + (ev.baseline_pred_sign ?? "-") + " · Enhanced: " + (ev.enhanced_pred_direction || "-") + "</div>" +
-          "</article>";
+      wrap.innerHTML = events.slice(0, 6).map((ev, i) => {
+        const iconClass = i % 2 === 0 ? "ev-a" : "ev-b";
+        return (
+          "<div class='event-row'>" +
+            "<div class='event-time'>" + String(ev.t_event_utc || "").slice(11, 16) + "</div>" +
+            "<div class='event-icon " + iconClass + "'>" + (ev.symbol || "-").slice(0, 2) + "</div>" +
+            "<div>" +
+              "<div class='event-title'>" + (ev.symbol || "-") + " post-earnings direction</div>" +
+              "<div class='event-impact'>Actual 5D " + fmtPct(ev.actual_5d_return_pct) +
+              " · Enhanced " + (ev.enhanced_pred_direction || "mixed") + "</div>" +
+            "</div>" +
+          "</div>"
+        );
       }).join("");
+    }
+
+    function renderAllStocks() {
+      const movers = document.getElementById("movers-list");
+      const sectors = document.getElementById("sectors-list");
+      if (!allStocks.length) {
+        movers.innerHTML = "<div class='muted'>Run ALL to compute predictions.</div>";
+        sectors.innerHTML = "<div class='muted'>No sector summary yet.</div>";
+        return;
+      }
+      movers.innerHTML = allStocks.slice(0, 8).map((row) => (
+        "<article class='item'>" +
+          "<div><strong>" + row.symbol + "</strong> · " + row.company_name + "</div>" +
+          "<div class='" + (row.predicted_direction === "down" ? "down" : "up") + "'>" +
+            row.predicted_direction.toUpperCase() + " " + fmtPct(row.predicted_move_pct) +
+          "</div>" +
+          "<div class='muted'>" + row.sector + " · corr " + row.correlation_to_sector + "</div>" +
+        "</article>"
+      )).join("");
+      sectors.innerHTML = allSectorSummary.map((s) => (
+        "<article class='item'>" +
+          "<div><strong>" + s.sector + "</strong></div>" +
+          "<div class='" + (Number(s.predicted_move_pct) < 0 ? "down" : "up") + "'>" + fmtPct(s.predicted_move_pct) + "</div>" +
+          "<div class='muted'>" + s.stock_count + " stocks</div>" +
+        "</article>"
+      )).join("");
     }
 
     async function loadMarket() {
-      const tbody = document.getElementById("market-table");
-      tbody.innerHTML = "<tr><td colspan='4' class='muted'>Loading...</td></tr>";
-      const resp = await fetch("/api/market/case4/stocks");
-      const data = await resp.json();
-      if (!resp.ok || !Array.isArray(data.symbols)) {
-        tbody.innerHTML = "<tr><td colspan='4' class='muted'>Market feed unavailable.</td></tr>";
-        return;
-      }
-      marketRows = data.symbols;
-      renderHero();
-      tbody.innerHTML = marketRows.map((row) => {
-        const isUp = row.change_percent !== null && Number(row.change_percent) >= 0;
-        const cls = isUp ? "chg-up" : "chg-dn";
-        const sign = isUp ? "+" : "";
-        return "<tr>" +
-          "<td>" + row.symbol + "</td>" +
-          "<td>" + fmtMoney(row.price) + "</td>" +
-          "<td class='" + cls + "'>" + sign + fmtPct(row.change_percent) + "</td>" +
-          "<td>" + (row.impacted_symbols || []).join(", ") + "</td>" +
-          "</tr>";
-      }).join("");
-      const sel = document.getElementById("asset-symbol");
-      sel.innerHTML = marketRows.map((row) => "<option>" + row.symbol + "</option>").join("");
-      if (marketRows.length) {
-        selectedSymbol = selectedSymbol || marketRows[0].symbol;
-        sel.value = selectedSymbol;
-      }
-      sel.onchange = async function () {
-        selectedSymbol = sel.value;
-        renderRiskPanel(selectedSymbol);
-      };
-      renderRiskPanel(selectedSymbol);
+      const data = await fetchJSON("/api/market/case4/stocks");
+      marketRows = Array.isArray(data.symbols) ? data.symbols : [];
+      const sel = document.getElementById("symbol-select");
+      sel.innerHTML = marketRows.map((r) => "<option>" + r.symbol + "</option>").join("");
+      if (marketRows.some((r) => r.symbol === selectedSymbol)) sel.value = selectedSymbol;
+      else if (marketRows.length) selectedSymbol = marketRows[0].symbol;
+      sel.onchange = () => { selectedSymbol = sel.value; updateHero(); };
+      updateHero();
     }
 
-    async function runDemoSequence() {
-      setChip("chip-api", "API: Running Demo", "warn");
-      const statusNews = document.getElementById("news-status");
-      const statusSector = document.getElementById("sector-status");
-      const prevNews = statusNews.textContent;
-      const prevSector = statusSector.textContent;
-      statusNews.textContent = "Demo: ingesting latest documents...";
-      statusSector.textContent = "Demo: waiting for sector forecast...";
-      try {
-        await runIngest();
-      } catch (_) {
-        statusNews.textContent = "Demo ingest step failed; continuing.";
-      }
-      try {
-        await runSectorAnalysis();
-      } catch (_) {
-        statusSector.textContent = "Demo sector step failed.";
-      }
-      renderRiskPanel(selectedSymbol);
-      setChip("chip-api", "API: Demo Ready", "ok");
-      if (statusNews.textContent === prevNews) {
-        statusNews.textContent = "Demo sequence complete.";
-      }
-      if (statusSector.textContent === prevSector) {
-        statusSector.textContent = "Demo sequence complete.";
-      }
-    }
-
-    function renderRiskPanel(symbol) {
-      document.getElementById("risk-symbol").textContent = symbol;
-      let direction = "N/A";
-      let confidence = 0;
-      if (lastSectorResult && Array.isArray(lastSectorResult.top_owned)) {
-        const row = lastSectorResult.top_owned.find((r) => r.symbol === symbol) ||
-          (Array.isArray(lastSectorResult.movers_not_owned) ? lastSectorResult.movers_not_owned.find((r) => r.symbol === symbol) : null);
-        if (row) {
-          direction = row.predicted_direction + " (" + row.predicted_move_pct + "%)";
-          confidence = Number(lastSectorResult.confidence || 0);
-        }
-      }
-      document.getElementById("risk-dir").textContent = "Direction: " + direction;
-      document.getElementById("risk-confidence").textContent = confidence ? confidence.toFixed(1) : "N/A";
-      document.getElementById("risk-confidence-fill").style.width = Math.max(0, Math.min(100, confidence)) + "%";
-      const selected = marketRows.find((r) => r.symbol === symbol);
-      const linked = selected && Array.isArray(selected.impacted_symbols) ? selected.impacted_symbols : [];
-      document.getElementById("risk-spill-count").textContent = linked.length;
-      document.getElementById("risk-spill-list").innerHTML = linked.length
-        ? linked.map((s) => "<article class='item'><strong>" + s + "</strong><div class='muted'>Affected-by path from " + symbol + "</div></article>").join("")
-        : "<div class='muted'>No linked spillover symbols mapped.</div>";
-      const notes = document.getElementById("risk-trigger-list");
-      notes.innerHTML = linked.length
-        ? linked.map((s) => "<article class='item'><div><strong>" + symbol + " -> " + s + "</strong></div><div class='muted'>Spillover edge from sector model graph.</div></article>").join("")
-        : "<div class='muted'>No current spillover notes.</div>";
+    async function loadSummaryAndEvents() {
+      const [summary, events, provider] = await Promise.all([
+        fetchJSON("/api/dashboard/summary"),
+        fetchJSON("/api/dashboard/events?limit=12"),
+        fetchJSON("/api/market/provider")
+      ]);
+      document.getElementById("engine-status").textContent =
+        (summary.earnings_events_evaluated || 0) + " events validated · baseline " +
+        fmtPct((summary.baseline_accuracy || 0) * 100);
+      document.getElementById("mode-pill").textContent = provider.is_live_ready ? "LIVE EODHD" : "SETUP";
+      renderEvents(events);
     }
 
     async function runIngest() {
-      const status = document.getElementById("news-status");
-      status.textContent = "Running intake...";
-      const resp = await fetch("/api/agents/news-intake/run", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ max_queries: 8, max_per_query: 10, hours_back: 24 * 7 })
-      });
-      const data = await resp.json();
-      if (!resp.ok) {
-        status.textContent = "Ingest error: " + (data.detail || "unknown");
-        return;
-      }
-      status.textContent = "Fetched " + data.fetched_articles + ", inserted " + data.inserted_documents + ".";
-      await loadNews();
-      setChip("chip-data", "Data: Refreshed", "ok");
-    }
-
-    async function loadNews() {
-      const wrap = document.getElementById("news-list");
-      wrap.innerHTML = "<div class='muted'>Loading...</div>";
-      const resp = await fetch("/api/agents/news-intake/documents?limit=25");
-      const data = await resp.json();
-      if (!resp.ok || !Array.isArray(data)) {
-        wrap.innerHTML = "<div class='muted'>Unable to load documents.</div>";
-        return;
-      }
-      if (data.length === 0) {
-        wrap.innerHTML = "<div class='muted'>No documents in store. Run intake first.</div>";
-        setChip("chip-data", "Data: No News Docs", "warn");
-        return;
-      }
-      wrap.innerHTML = data.map((doc) => {
-        return "<article class='item'>" +
-          "<div><strong>" + (doc.source || "source") + "</strong> · " + (doc.published_at || "").slice(0, 10) + "</div>" +
-          "<div style='margin:4px 0'>" + (doc.title || "Untitled") + "</div>" +
-          "<a href='" + (doc.url || "#") + "' target='_blank' rel='noreferrer'>Open article</a>" +
-          "</article>";
-      }).join("");
-      setChip("chip-data", "Data: News Ready (" + data.length + ")", "ok");
-    }
-
-    async function loadSectorCatalog() {
-      const sel = document.getElementById("sector-select");
-      const resp = await fetch("/api/agents/sector/catalog");
-      const data = await resp.json();
-      if (!resp.ok || !Array.isArray(data.sectors)) {
-        sel.innerHTML = "<option>AI Compute</option>";
-        setChip("chip-sector", "Sector: Fallback", "warn");
-        return;
-      }
-      sel.innerHTML = data.sectors.map((s) => "<option>" + s + "</option>").join("");
-      setChip("chip-sector", "Sector: Catalog Ready", "ok");
-    }
-
-    function renderSectorLists(data) {
-      const owned = document.getElementById("sector-owned-list");
-      const movers = document.getElementById("sector-movers-list");
-      const rowsOwned = Array.isArray(data.top_owned) ? data.top_owned : [];
-      const rowsMovers = Array.isArray(data.movers_not_owned) ? data.movers_not_owned : [];
-      owned.innerHTML = rowsOwned.length ? rowsOwned.map((r) => {
-        const cls = r.predicted_direction === "down" ? "down" : "up";
-        return "<article class='item'>" +
-          "<div><strong>" + r.symbol + " · " + r.company_name + "</strong></div>" +
-          "<div class='" + cls + "'>Move: " + r.predicted_move_pct + "% · " + r.leverage_or_hedge + "</div>" +
-          "<div class='muted'>Corr: " + r.correlation_to_sector + " · Link: " + (r.connected_to || "-") + "</div>" +
-          "<div class='muted'>" + r.rationale + "</div>" +
-          "</article>";
-      }).join("") : "<div class='muted'>No owned symbols matched.</div>";
-      movers.innerHTML = rowsMovers.length ? rowsMovers.map((r) => {
-        const cls = r.predicted_direction === "down" ? "down" : "up";
-        return "<article class='item'>" +
-          "<div><strong>" + r.symbol + " · " + r.company_name + "</strong></div>" +
-          "<div class='" + cls + "'>Move: " + r.predicted_move_pct + "% · " + r.leverage_or_hedge + "</div>" +
-          "<div class='muted'>Connected to: " + (r.connected_to || "-") + "</div>" +
-          "<div class='muted'>" + r.rationale + "</div>" +
-          "</article>";
-      }).join("") : "<div class='muted'>No non-owned movers predicted.</div>";
-    }
-
-    async function runSectorAnalysis() {
-      const status = document.getElementById("sector-status");
-      const sector = document.getElementById("sector-select").value;
-      const ownedRaw = document.getElementById("owned-input").value;
-      const owned = ownedRaw.split(",").map((s) => s.trim().toUpperCase()).filter(Boolean);
-      status.textContent = "Analyzing " + sector + "...";
-      const resp = await fetch("/api/agents/sector/analyze", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sector: sector, owned_symbols: owned, horizon_days: 5 }),
-      });
-      const data = await resp.json();
-      if (!resp.ok) {
-        status.textContent = "Sector analysis failed: " + (data.detail || "unknown");
-        setChip("chip-sector", "Sector: Error", "bad");
-        return;
-      }
-      lastSectorResult = data;
-      const cls = Number(data.predicted_sector_move_pct || 0) < 0 ? "down" : "up";
-      document.getElementById("sector-move").innerHTML = "<span class='" + cls + "'>" + data.predicted_sector_move_pct + "%</span>";
-      document.getElementById("sector-conf").textContent = data.confidence;
-      document.getElementById("sector-a").textContent = data.metric_a_news_pressure;
-      document.getElementById("sector-b").textContent = data.metric_b_correlation_strength;
-      renderSectorLists(data);
-      renderRiskPanel(selectedSymbol);
-      status.textContent = "Analysis updated at " + (data.generated_at_utc || "").replace("T", " ").slice(0, 19) + "Z";
-      setChip("chip-sector", "Sector: Forecast Ready", "ok");
-    }
-
-    async function registerUser() {
-      const username = document.getElementById("auth-username").value.trim();
-      const password = document.getElementById("auth-password").value;
-      const display = document.getElementById("auth-display").value.trim();
-      const status = document.getElementById("auth-status");
-      status.textContent = "Registering...";
-      const resp = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: username, password: password, display_name: display || null }),
-      });
-      const data = await resp.json();
-      if (!resp.ok) {
-        status.textContent = "Register error: " + (data.detail || "unknown");
-        setChip("chip-auth", "Auth: Error", "bad");
-        return;
-      }
-      authToken = data.token;
-      localStorage.setItem("blade_auth_token", authToken);
-      status.textContent = "Registered and logged in as " + data.username;
-      await loadMe();
-    }
-
-    async function loginUser() {
-      const username = document.getElementById("auth-username").value.trim();
-      const password = document.getElementById("auth-password").value;
-      const status = document.getElementById("auth-status");
-      status.textContent = "Logging in...";
-      const resp = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: username, password: password }),
-      });
-      const data = await resp.json();
-      if (!resp.ok) {
-        status.textContent = "Login error: " + (data.detail || "unknown");
-        setChip("chip-auth", "Auth: Error", "bad");
-        return;
-      }
-      authToken = data.token;
-      localStorage.setItem("blade_auth_token", authToken);
-      status.textContent = "Logged in as " + data.username;
-      await loadMe();
-    }
-
-    async function loadMe() {
-      const wrap = document.getElementById("auth-me");
-      if (!authToken) {
-        wrap.textContent = "No session loaded.";
-        setChip("chip-auth", "Auth: Guest", "warn");
-        return;
-      }
-      const resp = await fetch("/api/auth/me", {
-        headers: { "Authorization": "Bearer " + authToken },
-      });
-      const data = await resp.json();
-      if (!resp.ok) {
-        wrap.textContent = "Session invalid or expired.";
-        setChip("chip-auth", "Auth: Invalid", "bad");
-        return;
-      }
-      wrap.textContent = "User #" + data.user_id + " · " + data.username + " · created " + (data.created_at_utc || "");
-      setChip("chip-auth", "Auth: Signed In", "ok");
-    }
-
-    async function loadDemoStatus() {
       try {
-        const resp = await fetch("/health");
-        const data = await resp.json();
-        const ok = resp.ok && data.status === "ok";
-        setChip("chip-api", ok ? "API: Online" : "API: Degraded", ok ? "ok" : "bad");
-      } catch (_) {
-        setChip("chip-api", "API: Offline", "bad");
+        await fetchJSON("/api/agents/news-intake/run", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ max_queries: 8, max_per_query: 10, hours_back: 24 * 7 })
+        });
+      } catch (err) {
+        console.error(err);
       }
+      await refreshAll();
     }
 
-    function toggleChat(open) {
-      const widget = document.getElementById("chat-widget");
-      const fab = document.getElementById("chat-fab");
-      if (open) {
-        widget.classList.remove("min");
-        fab.style.display = "none";
-      } else {
-        widget.classList.add("min");
-        fab.style.display = "block";
+    async function runAllStocks() {
+      try {
+        const data = await fetchJSON("/api/agents/sector/analyze-all", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ horizon_days: 5 })
+        });
+        allStocks = Array.isArray(data.stocks) ? data.stocks : [];
+        allSectorSummary = Array.isArray(data.sectors) ? data.sectors : [];
+        document.getElementById("sent-score").textContent = String(data.confidence ?? "-");
+        document.getElementById("sent-sub").textContent = "Universe pass at " + (data.generated_at_utc || "").replace("T", " ").slice(0, 19) + "Z";
+      } catch (err) {
+        console.error(err);
       }
-    }
-
-    function addChat(role, text) {
-      const body = document.getElementById("chat-body");
-      const div = document.createElement("div");
-      div.className = "msg " + role;
-      div.textContent = text;
-      body.appendChild(div);
-      body.scrollTop = body.scrollHeight;
-    }
-
-    async function sendChat() {
-      const input = document.getElementById("chat-input");
-      const text = input.value.trim();
-      if (!text) return;
-      addChat("user", text);
-      input.value = "";
-      const resp = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text, session_id: chatSessionId }),
-      });
-      const data = await resp.json();
-      if (!resp.ok) {
-        addChat("bot", "Chat error: " + (data.detail || "unknown"));
-        return;
-      }
-      chatSessionId = data.session_id || chatSessionId;
-      addChat("bot", data.reply || "No reply.");
+      renderAllStocks();
+      updateHero();
     }
 
     async function refreshAll() {
-      await loadDemoStatus();
-      await loadProvider();
-      await loadSummary();
-      await loadEvents();
-      await loadMarket();
-      await loadNews();
-      await loadSectorCatalog();
-      await loadMe();
+      await Promise.all([loadMarket(), loadSummaryAndEvents()]);
+      await runAllStocks();
     }
 
-    async function init() {
-      setupNav();
-      tickClock();
-      setInterval(tickClock, 1000);
-      await refreshAll();
-      try {
-        await runSectorAnalysis();
-      } catch (_) {
-        // keep startup resilient for demos
-      }
-    }
-    init();
+    nowClock();
+    setInterval(nowClock, 1000);
+    refreshAll();
   </script>
 </body>
 </html>

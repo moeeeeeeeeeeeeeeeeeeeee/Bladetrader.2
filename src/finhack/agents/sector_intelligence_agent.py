@@ -65,6 +65,15 @@ class SectorPrediction:
     generated_at_utc: str
 
 
+@dataclass(slots=True)
+class UniversePrediction:
+    horizon_days: int
+    confidence: float
+    stocks: list[CompanyImpact]
+    sector_summary: list[dict[str, Any]]
+    generated_at_utc: str
+
+
 def _now_iso() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
 
@@ -321,5 +330,121 @@ class SectorIntelligenceAgent:
             news_articles_7d=article_hits_7d,
             top_owned=top_owned,
             movers_not_owned=movers_not_owned,
+            generated_at_utc=_now_iso(),
+        )
+
+    def predict_case4_universe(self, *, horizon_days: int = 5) -> UniversePrediction:
+        """Run a full Case-4 stock pass using each symbol's native sector context."""
+        docs_5y = self._load_recent_docs(days_back=365 * 5)
+        docs_7d = self._load_recent_docs(days_back=7)
+
+        price_cache: dict[str, list[float]] = {}
+        daily_cache: dict[str, list[float]] = {}
+        for symbol in CASE4_SYMBOLS:
+            prices = self._price_history(symbol, years=5)
+            price_cache[symbol] = prices
+            daily_cache[symbol] = self._daily_returns(prices)
+
+        sector_ret_cache: dict[str, list[float]] = {}
+        for sector in SECTOR_BUCKETS:
+            sector_symbols = [
+                c.symbol for c in SYMBOL_TO_COMPANY.values() if c.sector_bucket == sector
+            ]
+            ret_pool: list[float] = []
+            for symbol in sector_symbols:
+                ret_pool.extend(daily_cache.get(symbol, []))
+            sector_ret_cache[sector] = ret_pool
+
+        rows: list[CompanyImpact] = []
+        articles_7d = 0
+        sector_rollup: dict[str, list[float]] = {s: [] for s in SECTOR_BUCKETS}
+
+        for symbol in CASE4_SYMBOLS:
+            comp = SYMBOL_TO_COMPANY[symbol]
+            sector = comp.sector_bucket
+            daily = daily_cache.get(symbol, [])
+            sector_pool = sector_ret_cache.get(sector, [])
+
+            hist_scores = [self._score_doc(d, sector, symbol)[0] for d in docs_5y]
+            recent_scores: list[float] = []
+            recent_mentions = 0
+            for doc in docs_7d:
+                score, mention = self._score_doc(doc, sector, symbol)
+                if mention:
+                    recent_mentions += 1
+                if score != 0.0:
+                    recent_scores.append(score)
+            articles_7d += recent_mentions
+
+            score_a = (sum(recent_scores) / len(recent_scores)) if recent_scores else 0.0
+            hist_effect = (sum(hist_scores) / len(hist_scores)) if hist_scores else 0.0
+            corr = (
+                _corr(daily[-252:], sector_pool[-252:][: len(daily[-252:])])
+                if daily and sector_pool
+                else 0.0
+            )
+            network = len(SPILLOVER_MAP.get(symbol, [])) / 4.0
+            pred_move = max(
+                -12.0,
+                min(12.0, (0.45 * score_a) + (0.35 * hist_effect) + (1.1 * corr)),
+            )
+            sector_rollup[sector].append(pred_move)
+            direction = _direction(pred_move)
+            relation = "Leverage" if pred_move >= 0 else "Hedge"
+            connected = SPILLOVER_MAP.get(symbol, [None])[0]
+
+            rows.append(
+                CompanyImpact(
+                    symbol=symbol,
+                    company_name=comp.name,
+                    role="node",
+                    current_price=(price_cache.get(symbol, [])[-1] if price_cache.get(symbol) else None),
+                    predicted_direction=direction,
+                    predicted_move_pct=round(pred_move, 2),
+                    correlation_to_sector=round(corr, 3),
+                    leverage_or_hedge=relation,
+                    rationale=(
+                        f"Sector={sector}; Metric A/C={score_a:.2f}, "
+                        f"Metric B corr={corr:.2f}, Metric D network={network:.2f}."
+                    ),
+                    connected_to=connected,
+                )
+            )
+
+        rows.sort(key=lambda r: abs(r.predicted_move_pct), reverse=True)
+        top_moves = [abs(r.predicted_move_pct) for r in rows[:5]]
+        top_corr = [abs(r.correlation_to_sector) for r in rows[:5]]
+        confidence = round(
+            max(
+                5.0,
+                min(
+                    95.0,
+                    30.0
+                    + (min(40, articles_7d) * 1.1)
+                    + ((sum(top_corr) / max(1, len(top_corr))) * 20.0),
+                ),
+            ),
+            1,
+        )
+
+        summary: list[dict[str, Any]] = []
+        for sector in SECTOR_BUCKETS:
+            values = sector_rollup.get(sector, [])
+            if not values:
+                continue
+            summary.append(
+                {
+                    "sector": sector,
+                    "predicted_move_pct": round(sum(values) / len(values), 2),
+                    "stock_count": len(values),
+                }
+            )
+        summary.sort(key=lambda x: abs(float(x["predicted_move_pct"])), reverse=True)
+
+        return UniversePrediction(
+            horizon_days=max(5, min(horizon_days, 7)),
+            confidence=confidence if top_moves else 0.0,
+            stocks=rows,
+            sector_summary=summary,
             generated_at_utc=_now_iso(),
         )
