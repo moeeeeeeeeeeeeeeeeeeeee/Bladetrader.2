@@ -1,7 +1,18 @@
 __pycache__/
 *.py[cod]
 .env
-data/finhack.db
 *.db
+data/finhack.db
 data/uploads/
-data/case4_visuals/
+
+# Generated / local experiment outputs (keep clone small for GitHub)
+data/case4_dataset_snapshot.jsonl
+data/case4_dataset_summary.json
+data/case4_dataset_runlog.json
+data/case4_model_comparison.json
+data/case4_earnings_validation.json
+data/agent_case4_validation.json
+data/case4_backtest_summary.json
+data/case4_permutation_results.json
+data/models/
+data/*.log

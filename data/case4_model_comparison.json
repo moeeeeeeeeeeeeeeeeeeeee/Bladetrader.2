@@ -1,31 +1,108 @@
 {
-  "generated_at_utc": "2026-04-04T19:43:12.482464+00:00",
-  "objective": "Predict five-day post-earnings direction and compare baseline vs sentiment-enhanced model.",
+  "generated_at_utc": "2026-05-26T06:01:28.358827+00:00",
+  "mode": "live",
+  "objective": "Predict five-day post-earnings direction; compare baseline vs sentiment model.",
   "dataset": {
-    "events_total": 78,
-    "train_events": 54,
-    "test_events": 24,
+    "events_total": 972,
+    "train_events": 680,
+    "test_events": 292,
     "symbols": [
+      "A",
+      "AA",
+      "AAL",
+      "AAME",
+      "AAMI",
+      "AAOI",
+      "AAON",
+      "AAP",
+      "AAPG",
       "AAPL",
-      "AMD",
-      "AMZN",
-      "ANET",
-      "ASML",
-      "AVGO",
-      "CRM",
-      "CRWD",
-      "GOOGL",
-      "INTC",
-      "META",
-      "MSFT",
-      "NVDA",
-      "ORCL",
-      "PANW",
-      "PLTR",
-      "QCOM",
-      "SMCI",
-      "SNOW",
-      "TSM"
+      "AARD",
+      "AAT",
+      "AAUAF",
+      "AAUGF",
+      "AAVVF",
+      "AB",
+      "ABAT",
+      "ABBNY",
+      "ABBV",
+      "ABCB",
+      "ABCL",
+      "ABEO",
+      "ABEV",
+      "ABG",
+      "ABM",
+      "ABNB",
+      "ABOS",
+      "ABR",
+      "ABSI",
+      "ABT",
+      "ABTC",
+      "ABUS",
+      "ABVX",
+      "ABX",
+      "ABXXF",
+      "ACA",
+      "ACAD",
+      "ACB",
+      "ACCO",
+      "ACCS",
+      "ACDC",
+      "ACDVF",
+      "ACEL",
+      "ACET",
+      "ACGL",
+      "ACH",
+      "ACHC",
+      "ACHFF",
+      "ACHR",
+      "ACHV",
+      "ACI",
+      "ACIC",
+      "ACIU",
+      "ACIW",
+      "ACLS",
+      "ACLX",
+      "ACM",
+      "ACMR",
+      "ACN",
+      "ACNB",
+      "ACNT",
+      "ACOG",
+      "ACON",
+      "ACR",
+      "ACRE",
+      "ACRS",
+      "ACRV",
+      "ACT",
+      "ACTG",
+      "ACTU",
+      "ACU",
+      "ACVA",
+      "ACXP",
+      "AD",
+      "ADAM",
+      "ADAPY",
+      "ADBE",
+      "ADC",
+      "ADCT",
+      "ADDYY",
+      "ADEA",
+      "ADGM",
+      "ADI",
+      "ADIL",
+      "ADM",
+      "ADMA",
+      "ADNT",
+      "ADP",
+      "ADPT",
+      "ADSK",
+      "ADT",
+      "ADTN",
+      "ADUR",
+      "ADUS",
+      "ADV",
+      "AEBI"
     ],
     "features_baseline": [
       "baseline_pre_7d_return_pct",
@@ -48,167 +125,2649 @@
   },
   "results": {
     "baseline": {
-      "accuracy": 0.375,
-      "precision": 0.1111111111111111,
-      "recall": 0.125,
-      "f1": 0.11764705882352941,
-      "n_test": 24
+      "accuracy": 0.5034246575342466,
+      "precision": 0.453125,
+      "recall": 0.6850393700787402,
+      "f1": 0.5454545454545454,
+      "n_test": 292
     },
     "sentiment_enhanced": {
-      "accuracy": 0.375,
-      "precision": 0.1111111111111111,
-      "recall": 0.125,
-      "f1": 0.11764705882352941,
-      "n_test": 24
+      "accuracy": 0.5273972602739726,
+      "precision": 0.4662576687116564,
+      "recall": 0.5984251968503937,
+      "f1": 0.5241379310344828,
+      "n_test": 292
     },
-    "accuracy_uplift_pp": 0.0
+    "accuracy_uplift_pp": 2.4
   },
-  "test_predictions_preview": [
+  "test_predictions": [
     {
-      "symbol": "CRWD",
-      "t_event_utc": "2025-12-02T21:00:00+00:00",
+      "symbol": "ABNB",
+      "t_event_utc": "2025-08-06 20:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -4.5594,
+      "model_trade_return_pct": -4.5594
+    },
+    {
+      "symbol": "ACAD",
+      "t_event_utc": "2025-08-06 20:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 5.5882,
+      "model_trade_return_pct": 5.5882
+    },
+    {
+      "symbol": "ADMA",
+      "t_event_utc": "2025-08-06 20:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -7.2276,
+      "model_trade_return_pct": -7.2276
+    },
+    {
+      "symbol": "ACIC",
+      "t_event_utc": "2025-08-06 20:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 6.8759,
+      "model_trade_return_pct": 6.8759
+    },
+    {
+      "symbol": "AAPG",
+      "t_event_utc": "2025-08-07 04:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -0.8409,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ACIW",
+      "t_event_utc": "2025-08-07 10:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": 6.5615,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ADV",
+      "t_event_utc": "2025-08-07 11:00:00+00:00",
       "actual": 1,
       "baseline_pred": 0,
-      "enhanced_pred": 0
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 10.9756,
+      "model_trade_return_pct": 10.9756
     },
     {
-      "symbol": "SNOW",
-      "t_event_utc": "2025-12-03T21:00:00+00:00",
+      "symbol": "ACRS",
+      "t_event_utc": "2025-08-07 11:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 7.6433,
+      "model_trade_return_pct": 7.6433
+    },
+    {
+      "symbol": "ACHV",
+      "t_event_utc": "2025-08-07 11:00:00+00:00",
       "actual": 0,
       "baseline_pred": 1,
-      "enhanced_pred": 1
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -3.4091,
+      "model_trade_return_pct": null
     },
     {
-      "symbol": "CRM",
-      "t_event_utc": "2025-12-03T21:00:00+00:00",
+      "symbol": "ACET",
+      "t_event_utc": "2025-08-07 20:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -5.4286,
+      "model_trade_return_pct": -5.4286
+    },
+    {
+      "symbol": "ACLX",
+      "t_event_utc": "2025-08-07 20:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": 0.9979,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "AAOI",
+      "t_event_utc": "2025-08-07 20:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -5.9113,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ACDC",
+      "t_event_utc": "2025-08-07 20:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -42.6471,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ABCL",
+      "t_event_utc": "2025-08-07 20:00:00+00:00",
       "actual": 1,
       "baseline_pred": 0,
-      "enhanced_pred": 0
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": 6.1321,
+      "model_trade_return_pct": null
     },
     {
-      "symbol": "ORCL",
-      "t_event_utc": "2025-12-10T21:00:00+00:00",
+      "symbol": "ACA",
+      "t_event_utc": "2025-08-07 20:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 14.1245,
+      "model_trade_return_pct": 14.1245
+    },
+    {
+      "symbol": "ABX",
+      "t_event_utc": "2025-08-08 13:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": 7.9108,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ACH",
+      "t_event_utc": "2025-08-11 10:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 17.7106,
+      "model_trade_return_pct": 17.7106
+    },
+    {
+      "symbol": "AD",
+      "t_event_utc": "2025-08-11 11:00:00+00:00",
       "actual": 0,
       "baseline_pred": 1,
-      "enhanced_pred": 1
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -1.2725,
+      "model_trade_return_pct": -1.2725
     },
     {
-      "symbol": "AVGO",
-      "t_event_utc": "2025-12-11T21:00:00+00:00",
+      "symbol": "AAON",
+      "t_event_utc": "2025-08-11 11:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 13.5207,
+      "model_trade_return_pct": 13.5207
+    },
+    {
+      "symbol": "ACHR",
+      "t_event_utc": "2025-08-11 20:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": 3.2495,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ACXP",
+      "t_event_utc": "2025-08-11 20:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": 14.9554,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ACVA",
+      "t_event_utc": "2025-08-11 20:00:00+00:00",
       "actual": 0,
       "baseline_pred": 1,
-      "enhanced_pred": 1
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -13.2584,
+      "model_trade_return_pct": null
     },
     {
-      "symbol": "TSM",
-      "t_event_utc": "2026-01-15T06:00:00+00:00",
+      "symbol": "ABOS",
+      "t_event_utc": "2025-08-12 11:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 9.5238,
+      "model_trade_return_pct": 9.5238
+    },
+    {
+      "symbol": "ADCT",
+      "t_event_utc": "2025-08-12 11:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 5.7823,
+      "model_trade_return_pct": 5.7823
+    },
+    {
+      "symbol": "ACCS",
+      "t_event_utc": "2025-08-12 12:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -9.8333,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ABSI",
+      "t_event_utc": "2025-08-12 20:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -11.7845,
+      "model_trade_return_pct": -11.7845
+    },
+    {
+      "symbol": "ADAPY",
+      "t_event_utc": "2025-08-13 11:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -26.9231,
+      "model_trade_return_pct": -26.9231
+    },
+    {
+      "symbol": "AAME",
+      "t_event_utc": "2025-08-13 19:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": 40.8163,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ADIL",
+      "t_event_utc": "2025-08-13 20:00:00+00:00",
       "actual": 0,
       "baseline_pred": 0,
-      "enhanced_pred": 0
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -7.0,
+      "model_trade_return_pct": -7.0
     },
     {
-      "symbol": "INTC",
-      "t_event_utc": "2026-01-22T21:00:00+00:00",
+      "symbol": "ACRV",
+      "t_event_utc": "2025-08-13 20:00:00+00:00",
       "actual": 0,
-      "baseline_pred": 1,
-      "enhanced_pred": 1
+      "baseline_pred": 0,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -0.7634,
+      "model_trade_return_pct": -0.7634
     },
     {
-      "symbol": "ASML",
-      "t_event_utc": "2026-01-28T00:00:00+00:00",
+      "symbol": "AARD",
+      "t_event_utc": "2025-08-13 20:00:00+00:00",
       "actual": 0,
-      "baseline_pred": 1,
-      "enhanced_pred": 1
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -13.6607,
+      "model_trade_return_pct": null
     },
     {
-      "symbol": "MSFT",
-      "t_event_utc": "2026-01-28T21:00:00+00:00",
+      "symbol": "AAP",
+      "t_event_utc": "2025-08-14 10:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -2.1988,
+      "model_trade_return_pct": -2.1988
+    },
+    {
+      "symbol": "AEBI",
+      "t_event_utc": "2025-08-14 10:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -4.0332,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ABEO",
+      "t_event_utc": "2025-08-14 11:00:00+00:00",
       "actual": 0,
       "baseline_pred": 1,
-      "enhanced_pred": 1
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -1.6598,
+      "model_trade_return_pct": -1.6598
+    },
+    {
+      "symbol": "ACON",
+      "t_event_utc": "2025-08-14 17:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": 1.498,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ACTU",
+      "t_event_utc": "2025-08-14 20:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -6.7518,
+      "model_trade_return_pct": -6.7518
+    },
+    {
+      "symbol": "ACOG",
+      "t_event_utc": "2025-08-14 20:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": 3.25,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ACRV",
+      "t_event_utc": "2025-08-14 20:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -5.036,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ABXXF",
+      "t_event_utc": "2025-08-15 02:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": 21.5858,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ADI",
+      "t_event_utc": "2025-08-20 11:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 4.3411,
+      "model_trade_return_pct": 4.3411
+    },
+    {
+      "symbol": "A",
+      "t_event_utc": "2025-08-27 20:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 8.2484,
+      "model_trade_return_pct": 8.2484
+    },
+    {
+      "symbol": "ADUR",
+      "t_event_utc": "2025-08-27 21:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -5.2405,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ADSK",
+      "t_event_utc": "2025-08-28 20:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 13.1304,
+      "model_trade_return_pct": 13.1304
+    },
+    {
+      "symbol": "ABM",
+      "t_event_utc": "2025-09-05 10:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -5.118,
+      "model_trade_return_pct": -5.118
+    },
+    {
+      "symbol": "ABVX",
+      "t_event_utc": "2025-09-08 20:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -4.5889,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ADBE",
+      "t_event_utc": "2025-09-11 20:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": 4.8238,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ABAT",
+      "t_event_utc": "2025-09-18 21:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": 44.6667,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ACN",
+      "t_event_utc": "2025-09-25 10:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": 5.0654,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ACI",
+      "t_event_utc": "2025-10-14 11:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 0.4154,
+      "model_trade_return_pct": 0.4154
+    },
+    {
+      "symbol": "ABT",
+      "t_event_utc": "2025-10-15 11:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -1.1588,
+      "model_trade_return_pct": -1.1588
+    },
+    {
+      "symbol": "ADUR",
+      "t_event_utc": "2025-10-15 20:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -17.739,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ABBNY",
+      "t_event_utc": "2025-10-16 04:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -1.0789,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ACU",
+      "t_event_utc": "2025-10-21 10:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": 2.1986,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ADC",
+      "t_event_utc": "2025-10-21 20:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -1.28,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "AA",
+      "t_event_utc": "2025-10-22 20:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 9.1447,
+      "model_trade_return_pct": 9.1447
+    },
+    {
+      "symbol": "AB",
+      "t_event_utc": "2025-10-23 10:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 1.1193,
+      "model_trade_return_pct": 1.1193
+    },
+    {
+      "symbol": "ACNB",
+      "t_event_utc": "2025-10-23 11:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -1.7479,
+      "model_trade_return_pct": -1.7479
+    },
+    {
+      "symbol": "ABCB",
+      "t_event_utc": "2025-10-27 20:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -2.8492,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ABG",
+      "t_event_utc": "2025-10-28 10:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -2.3146,
+      "model_trade_return_pct": -2.3146
+    },
+    {
+      "symbol": "AAT",
+      "t_event_utc": "2025-10-28 20:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -5.6195,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "AAVVF",
+      "t_event_utc": "2025-10-28 21:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 2.6119,
+      "model_trade_return_pct": 2.6119
+    },
+    {
+      "symbol": "ADDYY",
+      "t_event_utc": "2025-10-28 23:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -15.5862,
+      "model_trade_return_pct": -15.5862
+    },
+    {
+      "symbol": "ADP",
+      "t_event_utc": "2025-10-29 10:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -0.6317,
+      "model_trade_return_pct": -0.6317
+    },
+    {
+      "symbol": "ACR",
+      "t_event_utc": "2025-10-29 20:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 14.7012,
+      "model_trade_return_pct": 14.7012
+    },
+    {
+      "symbol": "ABEV",
+      "t_event_utc": "2025-10-30 10:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 4.35,
+      "model_trade_return_pct": 4.35
+    },
+    {
+      "symbol": "AAP",
+      "t_event_utc": "2025-10-30 10:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -6.3707,
+      "model_trade_return_pct": -6.3707
+    },
+    {
+      "symbol": "AAMI",
+      "t_event_utc": "2025-10-30 11:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -12.1127,
+      "model_trade_return_pct": -12.1127
+    },
+    {
+      "symbol": "ACCO",
+      "t_event_utc": "2025-10-30 20:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -10.9995,
+      "model_trade_return_pct": -10.9995
     },
     {
       "symbol": "AAPL",
-      "t_event_utc": "2026-01-29T21:00:00+00:00",
-      "actual": 1,
-      "baseline_pred": 0,
-      "enhanced_pred": 0
-    },
-    {
-      "symbol": "PLTR",
-      "t_event_utc": "2026-02-02T21:00:00+00:00",
-      "actual": 0,
-      "baseline_pred": 0,
-      "enhanced_pred": 0
-    },
-    {
-      "symbol": "AMD",
-      "t_event_utc": "2026-02-03T21:00:00+00:00",
-      "actual": 0,
-      "baseline_pred": 0,
-      "enhanced_pred": 0
-    },
-    {
-      "symbol": "SMCI",
-      "t_event_utc": "2026-02-03T21:00:00+00:00",
-      "actual": 1,
-      "baseline_pred": 0,
-      "enhanced_pred": 0
-    },
-    {
-      "symbol": "GOOGL",
-      "t_event_utc": "2026-02-04T21:00:00+00:00",
-      "actual": 0,
-      "baseline_pred": 0,
-      "enhanced_pred": 0
-    },
-    {
-      "symbol": "QCOM",
-      "t_event_utc": "2026-02-04T21:00:00+00:00",
-      "actual": 0,
-      "baseline_pred": 0,
-      "enhanced_pred": 0
-    },
-    {
-      "symbol": "AMZN",
-      "t_event_utc": "2026-02-05T21:00:00+00:00",
-      "actual": 0,
-      "baseline_pred": 0,
-      "enhanced_pred": 0
-    },
-    {
-      "symbol": "ANET",
-      "t_event_utc": "2026-02-12T21:00:00+00:00",
-      "actual": 0,
-      "baseline_pred": 0,
-      "enhanced_pred": 0
-    },
-    {
-      "symbol": "PANW",
-      "t_event_utc": "2026-02-17T21:00:00+00:00",
+      "t_event_utc": "2025-10-30 20:00:00+00:00",
       "actual": 0,
       "baseline_pred": 1,
-      "enhanced_pred": 1
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -0.6006,
+      "model_trade_return_pct": null
     },
     {
-      "symbol": "SNOW",
-      "t_event_utc": "2026-02-25T21:00:00+00:00",
-      "actual": 0,
-      "baseline_pred": 0,
-      "enhanced_pred": 0
-    },
-    {
-      "symbol": "NVDA",
-      "t_event_utc": "2026-02-25T21:00:00+00:00",
+      "symbol": "ACH",
+      "t_event_utc": "2025-10-30 20:00:00+00:00",
       "actual": 0,
       "baseline_pred": 1,
-      "enhanced_pred": 1
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -37.0968,
+      "model_trade_return_pct": -37.0968
+    },
+    {
+      "symbol": "ACA",
+      "t_event_utc": "2025-10-30 21:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 6.9919,
+      "model_trade_return_pct": 6.9919
+    },
+    {
+      "symbol": "ABBV",
+      "t_event_utc": "2025-10-31 11:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 0.5137,
+      "model_trade_return_pct": 0.5137
+    },
+    {
+      "symbol": "ABR",
+      "t_event_utc": "2025-10-31 12:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -8.5227,
+      "model_trade_return_pct": -8.5227
+    },
+    {
+      "symbol": "ADEA",
+      "t_event_utc": "2025-11-03 13:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -0.7692,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ADUS",
+      "t_event_utc": "2025-11-03 21:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -5.1769,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ADTN",
+      "t_event_utc": "2025-11-04 04:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": 1.5171,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ADM",
+      "t_event_utc": "2025-11-04 11:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -4.1416,
+      "model_trade_return_pct": -4.1416
+    },
+    {
+      "symbol": "ADT",
+      "t_event_utc": "2025-11-04 12:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 0.4938,
+      "model_trade_return_pct": 0.4938
+    },
+    {
+      "symbol": "ACIU",
+      "t_event_utc": "2025-11-04 12:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": 2.7273,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ACLS",
+      "t_event_utc": "2025-11-04 13:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 6.2974,
+      "model_trade_return_pct": 6.2974
+    },
+    {
+      "symbol": "ACEL",
+      "t_event_utc": "2025-11-04 21:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": 3.424,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ACDVF",
+      "t_event_utc": "2025-11-04 22:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -1.6529,
+      "model_trade_return_pct": -1.6529
+    },
+    {
+      "symbol": "ADNT",
+      "t_event_utc": "2025-11-05 11:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 5.6056,
+      "model_trade_return_pct": 5.6056
+    },
+    {
+      "symbol": "ACB",
+      "t_event_utc": "2025-11-05 12:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 0,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 1.5695,
+      "model_trade_return_pct": 1.5695
+    },
+    {
+      "symbol": "ACTG",
+      "t_event_utc": "2025-11-05 12:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 0.2762,
+      "model_trade_return_pct": 0.2762
+    },
+    {
+      "symbol": "ACMR",
+      "t_event_utc": "2025-11-05 13:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": 8.5742,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ACAD",
+      "t_event_utc": "2025-11-05 21:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": 8.0609,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ACT",
+      "t_event_utc": "2025-11-05 21:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 4.7591,
+      "model_trade_return_pct": 4.7591
+    },
+    {
+      "symbol": "ACIC",
+      "t_event_utc": "2025-11-05 21:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -2.9039,
+      "model_trade_return_pct": -2.9039
+    },
+    {
+      "symbol": "ACHC",
+      "t_event_utc": "2025-11-05 21:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -15.8124,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ADMA",
+      "t_event_utc": "2025-11-05 21:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": 7.0917,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ACVA",
+      "t_event_utc": "2025-11-05 21:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -32.638,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ACET",
+      "t_event_utc": "2025-11-05 21:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -0.5072,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ACLX",
+      "t_event_utc": "2025-11-05 21:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": 3.0111,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ADPT",
+      "t_event_utc": "2025-11-05 21:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -17.5668,
+      "model_trade_return_pct": -17.5668
+    },
+    {
+      "symbol": "ACIW",
+      "t_event_utc": "2025-11-06 11:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -6.8536,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "AAON",
+      "t_event_utc": "2025-11-06 12:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -4.8586,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ACRS",
+      "t_event_utc": "2025-11-06 12:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": 2.2026,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ACHV",
+      "t_event_utc": "2025-11-06 12:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -3.3755,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ABNB",
+      "t_event_utc": "2025-11-06 21:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": 0.5476,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ACHR",
+      "t_event_utc": "2025-11-06 21:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -10.3604,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "AAOI",
+      "t_event_utc": "2025-11-06 21:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -28.1443,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ABCL",
+      "t_event_utc": "2025-11-06 21:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -20.0883,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ABX",
+      "t_event_utc": "2025-11-06 22:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 22.5393,
+      "model_trade_return_pct": 22.5393
+    },
+    {
+      "symbol": "ACRE",
+      "t_event_utc": "2025-11-07 11:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -2.568,
+      "model_trade_return_pct": -2.568
+    },
+    {
+      "symbol": "AD",
+      "t_event_utc": "2025-11-07 12:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -1.0354,
+      "model_trade_return_pct": -1.0354
+    },
+    {
+      "symbol": "ADCT",
+      "t_event_utc": "2025-11-10 12:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -5.7007,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ACDC",
+      "t_event_utc": "2025-11-10 21:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -4.3587,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ACON",
+      "t_event_utc": "2025-11-12 11:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -14.8644,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ACXP",
+      "t_event_utc": "2025-11-12 12:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -19.6787,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ABOS",
+      "t_event_utc": "2025-11-12 12:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -20.5128,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ABEO",
+      "t_event_utc": "2025-11-12 12:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -14.9798,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ACCS",
+      "t_event_utc": "2025-11-12 14:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -10.0552,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ABSI",
+      "t_event_utc": "2025-11-12 21:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -15.8824,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "AEBI",
+      "t_event_utc": "2025-11-13 12:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -5.7655,
+      "model_trade_return_pct": -5.7655
+    },
+    {
+      "symbol": "ABUS",
+      "t_event_utc": "2025-11-13 12:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -7.8947,
+      "model_trade_return_pct": -7.8947
+    },
+    {
+      "symbol": "ACTU",
+      "t_event_utc": "2025-11-13 21:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 3.5714,
+      "model_trade_return_pct": 3.5714
+    },
+    {
+      "symbol": "ACOG",
+      "t_event_utc": "2025-11-13 21:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -4.894,
+      "model_trade_return_pct": -4.894
+    },
+    {
+      "symbol": "ACRV",
+      "t_event_utc": "2025-11-13 21:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 9.1787,
+      "model_trade_return_pct": 9.1787
+    },
+    {
+      "symbol": "ADIL",
+      "t_event_utc": "2025-11-13 21:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -6.395,
+      "model_trade_return_pct": -6.395
+    },
+    {
+      "symbol": "AARD",
+      "t_event_utc": "2025-11-13 21:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -13.1676,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ACM",
+      "t_event_utc": "2025-11-18 11:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -18.2948,
+      "model_trade_return_pct": -18.2948
+    },
+    {
+      "symbol": "A",
+      "t_event_utc": "2025-11-24 21:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -3.1185,
+      "model_trade_return_pct": -3.1185
+    },
+    {
+      "symbol": "ADI",
+      "t_event_utc": "2025-11-25 12:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 10.404,
+      "model_trade_return_pct": 10.404
+    },
+    {
+      "symbol": "ADSK",
+      "t_event_utc": "2025-11-25 21:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": 4.3508,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ADBE",
+      "t_event_utc": "2025-12-10 21:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": 3.3602,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ABVX",
+      "t_event_utc": "2025-12-15 21:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": 17.6491,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ABM",
+      "t_event_utc": "2025-12-17 11:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -12.601,
+      "model_trade_return_pct": -12.601
+    },
+    {
+      "symbol": "ACN",
+      "t_event_utc": "2025-12-18 11:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 0.4186,
+      "model_trade_return_pct": 0.4186
+    },
+    {
+      "symbol": "AAUGF",
+      "t_event_utc": "2025-12-29 21:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 0,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 4.712,
+      "model_trade_return_pct": 4.712
+    },
+    {
+      "symbol": "ACI",
+      "t_event_utc": "2026-01-07 12:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 10.0686,
+      "model_trade_return_pct": 10.0686
+    },
+    {
+      "symbol": "ADUR",
+      "t_event_utc": "2026-01-14 21:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -10.2125,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ABT",
+      "t_event_utc": "2026-01-22 12:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -2.3202,
+      "model_trade_return_pct": -2.3202
+    },
+    {
+      "symbol": "ACNB",
+      "t_event_utc": "2026-01-22 13:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -2.1831,
+      "model_trade_return_pct": -2.1831
+    },
+    {
+      "symbol": "AA",
+      "t_event_utc": "2026-01-22 21:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -3.9594,
+      "model_trade_return_pct": -3.9594
+    },
+    {
+      "symbol": "AAL",
+      "t_event_utc": "2026-01-27 12:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": 3.3948,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ADP",
+      "t_event_utc": "2026-01-28 11:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -6.3904,
+      "model_trade_return_pct": -6.3904
+    },
+    {
+      "symbol": "ABBNY",
+      "t_event_utc": "2026-01-29 05:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -1.0946,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "AAPL",
+      "t_event_utc": "2026-01-29 21:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": 6.8259,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ABCB",
+      "t_event_utc": "2026-01-29 21:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 3.7393,
+      "model_trade_return_pct": 3.7393
+    },
+    {
+      "symbol": "ADM",
+      "t_event_utc": "2026-02-03 11:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 1.8252,
+      "model_trade_return_pct": 1.8252
+    },
+    {
+      "symbol": "AAT",
+      "t_event_utc": "2026-02-03 21:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": 5.3097,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ACT",
+      "t_event_utc": "2026-02-03 21:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 5.4301,
+      "model_trade_return_pct": 5.4301
+    },
+    {
+      "symbol": "ADNT",
+      "t_event_utc": "2026-02-04 11:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 9.934,
+      "model_trade_return_pct": 9.934
+    },
+    {
+      "symbol": "ACB",
+      "t_event_utc": "2026-02-04 12:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -8.2667,
+      "model_trade_return_pct": -8.2667
+    },
+    {
+      "symbol": "ABBV",
+      "t_event_utc": "2026-02-04 12:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 1.7411,
+      "model_trade_return_pct": 1.7411
+    },
+    {
+      "symbol": "AB",
+      "t_event_utc": "2026-02-05 11:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -4.3437,
+      "model_trade_return_pct": -4.3437
+    },
+    {
+      "symbol": "ABG",
+      "t_event_utc": "2026-02-05 12:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 6.1256,
+      "model_trade_return_pct": 6.1256
+    },
+    {
+      "symbol": "AAMI",
+      "t_event_utc": "2026-02-05 13:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 0,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 7.8113,
+      "model_trade_return_pct": 7.8113
+    },
+    {
+      "symbol": "ADPT",
+      "t_event_utc": "2026-02-05 21:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -5.6466,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ABAT",
+      "t_event_utc": "2026-02-05 21:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": 7.0822,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ACM",
+      "t_event_utc": "2026-02-09 21:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -11.1685,
+      "model_trade_return_pct": -11.1685
+    },
+    {
+      "symbol": "ACGL",
+      "t_event_utc": "2026-02-09 21:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 2.9357,
+      "model_trade_return_pct": 2.9357
+    },
+    {
+      "symbol": "ACRE",
+      "t_event_utc": "2026-02-10 11:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -9.8077,
+      "model_trade_return_pct": -9.8077
+    },
+    {
+      "symbol": "ADC",
+      "t_event_utc": "2026-02-10 21:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 0.2352,
+      "model_trade_return_pct": 0.2352
+    },
+    {
+      "symbol": "ABEV",
+      "t_event_utc": "2026-02-12 06:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -4.0625,
+      "model_trade_return_pct": -4.0625
+    },
+    {
+      "symbol": "ABNB",
+      "t_event_utc": "2026-02-12 21:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 10.288,
+      "model_trade_return_pct": 10.288
+    },
+    {
+      "symbol": "ACDVF",
+      "t_event_utc": "2026-02-12 22:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": 7.4074,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "AAP",
+      "t_event_utc": "2026-02-13 11:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -5.9133,
+      "model_trade_return_pct": -5.9133
+    },
+    {
+      "symbol": "ACLS",
+      "t_event_utc": "2026-02-17 21:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -16.9848,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ADI",
+      "t_event_utc": "2026-02-18 12:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 4.166,
+      "model_trade_return_pct": 4.166
+    },
+    {
+      "symbol": "ADAM",
+      "t_event_utc": "2026-02-18 21:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 1.3681,
+      "model_trade_return_pct": 1.3681
+    },
+    {
+      "symbol": "ACIC",
+      "t_event_utc": "2026-02-19 21:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 2.0665,
+      "model_trade_return_pct": 2.0665
+    },
+    {
+      "symbol": "ACH",
+      "t_event_utc": "2026-02-19 21:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -2.4194,
+      "model_trade_return_pct": -2.4194
+    },
+    {
+      "symbol": "AD",
+      "t_event_utc": "2026-02-20 12:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -1.096,
+      "model_trade_return_pct": -1.096
+    },
+    {
+      "symbol": "ADEA",
+      "t_event_utc": "2026-02-23 21:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 10.2985,
+      "model_trade_return_pct": 10.2985
+    },
+    {
+      "symbol": "ACVA",
+      "t_event_utc": "2026-02-23 21:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -13.9085,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ADUS",
+      "t_event_utc": "2026-02-23 21:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -10.516,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ABCL",
+      "t_event_utc": "2026-02-24 21:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 15.2174,
+      "model_trade_return_pct": 15.2174
+    },
+    {
+      "symbol": "ACHC",
+      "t_event_utc": "2026-02-25 12:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": 15.499,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ADMA",
+      "t_event_utc": "2026-02-25 21:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 5.4847,
+      "model_trade_return_pct": 5.4847
+    },
+    {
+      "symbol": "A",
+      "t_event_utc": "2026-02-25 21:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -3.3515,
+      "model_trade_return_pct": -3.3515
+    },
+    {
+      "symbol": "ACAD",
+      "t_event_utc": "2026-02-25 21:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -6.3276,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ADTN",
+      "t_event_utc": "2026-02-26 04:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 1.5136,
+      "model_trade_return_pct": 1.5136
+    },
+    {
+      "symbol": "ACU",
+      "t_event_utc": "2026-02-26 11:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -5.0784,
+      "model_trade_return_pct": -5.0784
+    },
+    {
+      "symbol": "ACRS",
+      "t_event_utc": "2026-02-26 11:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -0.3195,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ACIW",
+      "t_event_utc": "2026-02-26 11:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": 7.6884,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ACMR",
+      "t_event_utc": "2026-02-26 12:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -15.305,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ADSK",
+      "t_event_utc": "2026-02-26 21:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 13.1377,
+      "model_trade_return_pct": 13.1377
+    },
+    {
+      "symbol": "ACA",
+      "t_event_utc": "2026-02-26 21:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -12.7216,
+      "model_trade_return_pct": -12.7216
+    },
+    {
+      "symbol": "AAOI",
+      "t_event_utc": "2026-02-26 21:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": 88.3777,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ACLX",
+      "t_event_utc": "2026-02-26 21:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": 0.4215,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ABR",
+      "t_event_utc": "2026-02-27 13:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 9.584,
+      "model_trade_return_pct": 9.584
+    },
+    {
+      "symbol": "ADT",
+      "t_event_utc": "2026-03-02 11:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -8.2858,
+      "model_trade_return_pct": -8.2858
+    },
+    {
+      "symbol": "AAON",
+      "t_event_utc": "2026-03-02 12:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -13.7496,
+      "model_trade_return_pct": -13.7496
+    },
+    {
+      "symbol": "ACHR",
+      "t_event_utc": "2026-03-02 21:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -13.2979,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ADV",
+      "t_event_utc": "2026-03-03 12:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 0,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 22.5865,
+      "model_trade_return_pct": 22.5865
+    },
+    {
+      "symbol": "ACEL",
+      "t_event_utc": "2026-03-03 21:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": 3.4327,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ADIL",
+      "t_event_utc": "2026-03-05 22:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -5.0761,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "AAVVF",
+      "t_event_utc": "2026-03-05 22:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 6.3885,
+      "model_trade_return_pct": 6.3885
+    },
+    {
+      "symbol": "ACCO",
+      "t_event_utc": "2026-03-09 11:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -11.7153,
+      "model_trade_return_pct": -11.7153
+    },
+    {
+      "symbol": "ABM",
+      "t_event_utc": "2026-03-10 10:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -7.5583,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ADCT",
+      "t_event_utc": "2026-03-10 11:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -14.375,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ACTG",
+      "t_event_utc": "2026-03-11 11:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 0.8,
+      "model_trade_return_pct": 0.8
+    },
+    {
+      "symbol": "ABX",
+      "t_event_utc": "2026-03-12 00:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -8.4264,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ACXP",
+      "t_event_utc": "2026-03-12 20:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": 32.3353,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ACET",
+      "t_event_utc": "2026-03-12 20:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 0,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 0.4261,
+      "model_trade_return_pct": 0.4261
+    },
+    {
+      "symbol": "ADBE",
+      "t_event_utc": "2026-03-12 20:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -8.8183,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ACIU",
+      "t_event_utc": "2026-03-13 11:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -5.4726,
+      "model_trade_return_pct": -5.4726
+    },
+    {
+      "symbol": "ACDC",
+      "t_event_utc": "2026-03-13 20:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": 1.1024,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ABEO",
+      "t_event_utc": "2026-03-17 11:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -9.0336,
+      "model_trade_return_pct": -9.0336
+    },
+    {
+      "symbol": "ACON",
+      "t_event_utc": "2026-03-18 20:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -2.7108,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ACN",
+      "t_event_utc": "2026-03-19 10:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -3.5028,
+      "model_trade_return_pct": -3.5028
+    },
+    {
+      "symbol": "AEBI",
+      "t_event_utc": "2026-03-19 10:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -18.2301,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ACRV",
+      "t_event_utc": "2026-03-19 11:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -16.4706,
+      "model_trade_return_pct": -16.4706
+    },
+    {
+      "symbol": "ACCS",
+      "t_event_utc": "2026-03-19 12:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 0,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 26.8148,
+      "model_trade_return_pct": 26.8148
+    },
+    {
+      "symbol": "ABUS",
+      "t_event_utc": "2026-03-23 11:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -2.7149,
+      "model_trade_return_pct": -2.7149
+    },
+    {
+      "symbol": "ABVX",
+      "t_event_utc": "2026-03-23 20:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -12.0603,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "AARD",
+      "t_event_utc": "2026-03-23 20:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -10.4551,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ACHV",
+      "t_event_utc": "2026-03-24 11:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 1.3793,
+      "model_trade_return_pct": 1.3793
+    },
+    {
+      "symbol": "ABSI",
+      "t_event_utc": "2026-03-24 20:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -0.3322,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ABOS",
+      "t_event_utc": "2026-03-26 11:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": 5.8824,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ACTU",
+      "t_event_utc": "2026-03-26 20:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 0,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 9.2511,
+      "model_trade_return_pct": 9.2511
+    },
+    {
+      "symbol": "ABTC",
+      "t_event_utc": "2026-03-27 10:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": 2.907,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ADGM",
+      "t_event_utc": "2026-03-27 12:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": 2.459,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ACOG",
+      "t_event_utc": "2026-03-31 21:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": 20.8561,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ABXXF",
+      "t_event_utc": "2026-04-01 02:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": 10.721,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ACI",
+      "t_event_utc": "2026-04-14 11:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 4.6516,
+      "model_trade_return_pct": 4.6516
+    },
+    {
+      "symbol": "ADUR",
+      "t_event_utc": "2026-04-14 20:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": 1.0899,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ABT",
+      "t_event_utc": "2026-04-16 11:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -3.1319,
+      "model_trade_return_pct": -3.1319
+    },
+    {
+      "symbol": "AA",
+      "t_event_utc": "2026-04-16 20:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -7.158,
+      "model_trade_return_pct": -7.158
+    },
+    {
+      "symbol": "ADC",
+      "t_event_utc": "2026-04-21 20:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -2.5487,
+      "model_trade_return_pct": -2.5487
+    },
+    {
+      "symbol": "ABBNY",
+      "t_event_utc": "2026-04-22 05:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -1.1957,
+      "model_trade_return_pct": -1.1957
+    },
+    {
+      "symbol": "ACU",
+      "t_event_utc": "2026-04-23 10:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -6.2557,
+      "model_trade_return_pct": -6.2557
+    },
+    {
+      "symbol": "AAL",
+      "t_event_utc": "2026-04-23 11:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -0.5942,
+      "model_trade_return_pct": -0.5942
+    },
+    {
+      "symbol": "ACNB",
+      "t_event_utc": "2026-04-23 13:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 0.416,
+      "model_trade_return_pct": 0.416
+    },
+    {
+      "symbol": "ABCB",
+      "t_event_utc": "2026-04-23 20:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 0.7445,
+      "model_trade_return_pct": 0.7445
+    },
+    {
+      "symbol": "AB",
+      "t_event_utc": "2026-04-28 10:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 4.9701,
+      "model_trade_return_pct": 4.9701
+    },
+    {
+      "symbol": "ABG",
+      "t_event_utc": "2026-04-28 11:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -1.0271,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "AAT",
+      "t_event_utc": "2026-04-28 20:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -3.2916,
+      "model_trade_return_pct": -3.2916
+    },
+    {
+      "symbol": "ACGL",
+      "t_event_utc": "2026-04-28 20:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -3.0084,
+      "model_trade_return_pct": -3.0084
+    },
+    {
+      "symbol": "ADP",
+      "t_event_utc": "2026-04-29 10:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -3.6548,
+      "model_trade_return_pct": -3.6548
+    },
+    {
+      "symbol": "ABBV",
+      "t_event_utc": "2026-04-29 11:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 0.5591,
+      "model_trade_return_pct": 0.5591
+    },
+    {
+      "symbol": "ADAM",
+      "t_event_utc": "2026-04-29 20:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 13.9355,
+      "model_trade_return_pct": 13.9355
+    },
+    {
+      "symbol": "ACHC",
+      "t_event_utc": "2026-04-29 21:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -10.4742,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ACR",
+      "t_event_utc": "2026-04-30 10:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 7.7762,
+      "model_trade_return_pct": 7.7762
+    },
+    {
+      "symbol": "ADT",
+      "t_event_utc": "2026-04-30 10:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -8.3665,
+      "model_trade_return_pct": -8.3665
+    },
+    {
+      "symbol": "AAMI",
+      "t_event_utc": "2026-04-30 11:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -1.2175,
+      "model_trade_return_pct": -1.2175
+    },
+    {
+      "symbol": "ACIU",
+      "t_event_utc": "2026-04-30 11:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -3.6304,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "AAVVF",
+      "t_event_utc": "2026-04-30 17:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -3.2895,
+      "model_trade_return_pct": -3.2895
+    },
+    {
+      "symbol": "ACA",
+      "t_event_utc": "2026-04-30 20:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 1.2414,
+      "model_trade_return_pct": 1.2414
+    },
+    {
+      "symbol": "ACDVF",
+      "t_event_utc": "2026-04-30 20:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": 6.1448,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "AAPL",
+      "t_event_utc": "2026-04-30 20:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": 5.9296,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ACCO",
+      "t_event_utc": "2026-04-30 20:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 26.4782,
+      "model_trade_return_pct": 26.4782
+    },
+    {
+      "symbol": "ADCT",
+      "t_event_utc": "2026-05-04 11:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -5.4348,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ADUS",
+      "t_event_utc": "2026-05-04 20:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -2.3272,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ADEA",
+      "t_event_utc": "2026-05-04 20:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -5.3226,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ADTN",
+      "t_event_utc": "2026-05-05 03:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -1.6993,
+      "model_trade_return_pct": -1.6993
+    },
+    {
+      "symbol": "ABEV",
+      "t_event_utc": "2026-05-05 06:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -3.2641,
+      "model_trade_return_pct": -3.2641
+    },
+    {
+      "symbol": "ADM",
+      "t_event_utc": "2026-05-05 10:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 0,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 1.9447,
+      "model_trade_return_pct": 1.9447
+    },
+    {
+      "symbol": "ACEL",
+      "t_event_utc": "2026-05-05 20:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -8.0192,
+      "model_trade_return_pct": -8.0192
+    },
+    {
+      "symbol": "ACT",
+      "t_event_utc": "2026-05-05 20:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 1.1581,
+      "model_trade_return_pct": 1.1581
+    },
+    {
+      "symbol": "ACIC",
+      "t_event_utc": "2026-05-05 20:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -10.7835,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ADPT",
+      "t_event_utc": "2026-05-05 20:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -1.0885,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ADNT",
+      "t_event_utc": "2026-05-06 10:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -1.2993,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ADV",
+      "t_event_utc": "2026-05-06 11:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -19.7658,
+      "model_trade_return_pct": -19.7658
+    },
+    {
+      "symbol": "ACVA",
+      "t_event_utc": "2026-05-06 20:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 8.2375,
+      "model_trade_return_pct": 8.2375
+    },
+    {
+      "symbol": "ACAD",
+      "t_event_utc": "2026-05-06 20:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 3.2588,
+      "model_trade_return_pct": 3.2588
+    },
+    {
+      "symbol": "ADMA",
+      "t_event_utc": "2026-05-06 20:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -15.6746,
+      "model_trade_return_pct": -15.6746
+    },
+    {
+      "symbol": "ABX",
+      "t_event_utc": "2026-05-07 00:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -2.2388,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ACRE",
+      "t_event_utc": "2026-05-07 10:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -6.5347,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ACMR",
+      "t_event_utc": "2026-05-07 11:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": 6.7399,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "AAON",
+      "t_event_utc": "2026-05-07 11:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 0,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 8.3172,
+      "model_trade_return_pct": 8.3172
+    },
+    {
+      "symbol": "ACTG",
+      "t_event_utc": "2026-05-07 11:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -0.7439,
+      "model_trade_return_pct": -0.7439
+    },
+    {
+      "symbol": "ACIW",
+      "t_event_utc": "2026-05-07 11:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -12.3901,
+      "model_trade_return_pct": -12.3901
+    },
+    {
+      "symbol": "ACRS",
+      "t_event_utc": "2026-05-07 11:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -1.2346,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "AARD",
+      "t_event_utc": "2026-05-07 13:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": 20.1786,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "AAOI",
+      "t_event_utc": "2026-05-07 20:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": 29.2098,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ABNB",
+      "t_event_utc": "2026-05-07 20:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -4.8341,
+      "model_trade_return_pct": -4.8341
+    },
+    {
+      "symbol": "ACLS",
+      "t_event_utc": "2026-05-07 20:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": 1.8782,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ABSI",
+      "t_event_utc": "2026-05-07 20:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -3.6522,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "AD",
+      "t_event_utc": "2026-05-08 11:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -10.3102,
+      "model_trade_return_pct": -10.3102
+    },
+    {
+      "symbol": "ABR",
+      "t_event_utc": "2026-05-08 12:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -19.6941,
+      "model_trade_return_pct": -19.6941
+    },
+    {
+      "symbol": "ACDC",
+      "t_event_utc": "2026-05-08 20:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": 9.3093,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ADIL",
+      "t_event_utc": "2026-05-08 20:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -3.4965,
+      "model_trade_return_pct": -3.4965
+    },
+    {
+      "symbol": "ACH",
+      "t_event_utc": "2026-05-11 10:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -29.563,
+      "model_trade_return_pct": -29.563
+    },
+    {
+      "symbol": "ABAT",
+      "t_event_utc": "2026-05-11 12:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -10.5422,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ACM",
+      "t_event_utc": "2026-05-11 20:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -10.0755,
+      "model_trade_return_pct": -10.0755
+    },
+    {
+      "symbol": "ABCL",
+      "t_event_utc": "2026-05-11 20:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -20.7619,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ACXP",
+      "t_event_utc": "2026-05-11 20:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -17.4312,
+      "model_trade_return_pct": -17.4312
+    },
+    {
+      "symbol": "ACHR",
+      "t_event_utc": "2026-05-11 21:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -9.4801,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ACHV",
+      "t_event_utc": "2026-05-12 11:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -25.7095,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ABOS",
+      "t_event_utc": "2026-05-12 11:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -12.5,
+      "model_trade_return_pct": -12.5
+    },
+    {
+      "symbol": "ADGM",
+      "t_event_utc": "2026-05-12 12:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -9.5341,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ABUS",
+      "t_event_utc": "2026-05-13 11:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 1.3921,
+      "model_trade_return_pct": 1.3921
+    },
+    {
+      "symbol": "ABEO",
+      "t_event_utc": "2026-05-13 11:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -6.8301,
+      "model_trade_return_pct": -6.8301
+    },
+    {
+      "symbol": "ACET",
+      "t_event_utc": "2026-05-13 20:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -3.8414,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ACON",
+      "t_event_utc": "2026-05-13 20:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -2.7439,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "ACRV",
+      "t_event_utc": "2026-05-13 20:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 0,
+      "enhanced_pred": 0,
+      "actual_5d_return_pct": -8.3333,
+      "model_trade_return_pct": null
+    },
+    {
+      "symbol": "AEBI",
+      "t_event_utc": "2026-05-14 11:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 0,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 6.3677,
+      "model_trade_return_pct": 6.3677
+    },
+    {
+      "symbol": "ACTU",
+      "t_event_utc": "2026-05-14 20:00:00+00:00",
+      "actual": 0,
+      "baseline_pred": 1,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": -16.5517,
+      "model_trade_return_pct": -16.5517
+    },
+    {
+      "symbol": "ACOG",
+      "t_event_utc": "2026-05-14 20:00:00+00:00",
+      "actual": 1,
+      "baseline_pred": 0,
+      "enhanced_pred": 1,
+      "actual_5d_return_pct": 2.4648,
+      "model_trade_return_pct": 2.4648
     }
-  ],
-  "visualizations": {
-    "sentiment_trend": "data/case4_visuals/sentiment_trend.png",
-    "sentiment_vs_return": "data/case4_visuals/sentiment_vs_return.png",
-    "spillover_relationships": "data/case4_visuals/spillover_relationships.png",
-    "model_comparison": "data/case4_visuals/model_comparison.png"
-  }
+  ]
 }

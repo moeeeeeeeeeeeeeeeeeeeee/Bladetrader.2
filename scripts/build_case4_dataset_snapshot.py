@@ -1,10 +1,8 @@
 """
-Build a reusable local Case 4 dataset snapshot for hackathon iteration.
+Export a reproducible JSONL snapshot from the local news document store.
 
-Goal:
-- Pull as much AI-market news as practical (with graceful fallbacks)
-- Persist to SQLite via Agent 1
-- Export a stable JSONL snapshot so repeated model tests need no API calls
+Loads rows from SQLite (populated by `NewsIntakeAgent`), writes one JSON object
+per line so offline scripts can run without repeating external API calls.
 """
 
 from __future__ import annotations
@@ -25,7 +23,6 @@ from finhack.agents.news_intake_agent import NewsIngestResult, NewsIntakeAgent
 from finhack.config import load_settings
 
 load_dotenv()
-
 
 PROFILES: dict[str, dict[str, int]] = {
     "quick": {
@@ -134,15 +131,16 @@ def _load_documents(db_path: Path) -> list[dict[str, Any]]:
     return docs
 
 
-def _export_snapshot(docs: list[dict[str, Any]], out_dir: Path) -> tuple[Path, Path]:
+def _export_snapshot_jsonl(docs: list[dict[str, Any]], out_dir: Path) -> Path:
     out_dir.mkdir(parents=True, exist_ok=True)
     jsonl_path = out_dir / "case4_dataset_snapshot.jsonl"
-    summary_path = out_dir / "case4_dataset_summary.json"
-
     with jsonl_path.open("w", encoding="utf-8") as f:
         for d in docs:
             f.write(json.dumps(d, ensure_ascii=True) + "\n")
+    return jsonl_path
 
+
+def _snapshot_console_summary(docs: list[dict[str, Any]]) -> dict[str, Any]:
     domains = Counter(d.get("source_domain", "") for d in docs if d.get("source_domain"))
     top_domains = domains.most_common(15)
     timestamps = [
@@ -151,14 +149,12 @@ def _export_snapshot(docs: list[dict[str, Any]], out_dir: Path) -> tuple[Path, P
     timestamps = [t for t in timestamps if t is not None]
     min_ts = min(timestamps).isoformat() if timestamps else None
     max_ts = max(timestamps).isoformat() if timestamps else None
-    summary = {
+    return {
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "document_count": len(docs),
         "date_range": {"min": min_ts, "max": max_ts},
         "top_source_domains": top_domains,
     }
-    summary_path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
-    return jsonl_path, summary_path
 
 
 def _safe_run_ingest(agent: NewsIntakeAgent, **kwargs: Any) -> tuple[NewsIngestResult | None, str | None]:
@@ -178,7 +174,9 @@ def _safe_run_backfill(
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Build local hackathon dataset snapshot")
+    parser = argparse.ArgumentParser(
+        description="Ingest news into SQLite and export data/case4_dataset_snapshot.jsonl"
+    )
     parser.add_argument("--profile", choices=tuple(PROFILES.keys()), default="quick")
     parser.add_argument("--skip-ingest", action="store_true")
     parser.add_argument("--trusted-sources-only", action="store_true")
@@ -239,29 +237,15 @@ def main() -> None:
     db_path = _resolve_db_path(settings.database_url)
     docs = _load_documents(db_path)
     data_dir = Path("data")
-    jsonl_path, summary_path = _export_snapshot(docs, data_dir)
-
+    jsonl_path = _export_snapshot_jsonl(docs, data_dir)
+    summary = _snapshot_console_summary(docs)
     run_log["database_path"] = str(db_path)
     run_log["snapshot_jsonl"] = str(jsonl_path)
-    run_log["snapshot_summary"] = str(summary_path)
     run_log["document_count"] = len(docs)
-    run_log_path = data_dir / "case4_dataset_runlog.json"
-    run_log_path.write_text(json.dumps(run_log, indent=2), encoding="utf-8")
 
-    print(
-        json.dumps(
-            {
-                "profile": args.profile,
-                "document_count": len(docs),
-                "snapshot_jsonl": str(jsonl_path),
-                "snapshot_summary": str(summary_path),
-                "runlog": str(run_log_path),
-            },
-            indent=2,
-        )
-    )
+    print(json.dumps({"profile": args.profile, "snapshot_jsonl": str(jsonl_path), **summary}, indent=2))
+    print(json.dumps({"ingest_run": run_log}, indent=2), flush=True)
 
 
 if __name__ == "__main__":
     main()
-

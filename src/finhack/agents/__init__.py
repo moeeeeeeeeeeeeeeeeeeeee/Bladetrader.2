@@ -1,2 +1,2 @@
-"""Agent modules for FinHack26 pipelines."""
+"""Agent modules for news intake and sector intelligence."""
 

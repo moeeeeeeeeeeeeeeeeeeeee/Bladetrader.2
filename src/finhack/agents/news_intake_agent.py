@@ -23,6 +23,9 @@ from xml.etree import ElementTree as ET
 import httpx
 
 from finhack.config import Settings, load_settings
+from finhack.data.company_graph import SYMBOL_TO_COMPANY
+from finhack.data.trading_universe import trading_symbols
+from finhack.eodhd_news import _article_keyword_hits, _article_relevance, fetch_eodhd_live_for_symbols
 
 GNEWS_SEARCH_URL = "https://gnews.io/api/v4/search"
 GDELT_DOC_API_URL = "https://api.gdeltproject.org/api/v2/doc/doc"
@@ -203,30 +206,6 @@ TRUSTED_RSS_FEEDS: tuple[str, ...] = (
     "https://www.wired.com/feed/rss",
 )
 
-YFINANCE_NEWS_TICKERS: tuple[str, ...] = (
-    "NVDA",
-    "MSFT",
-    "GOOGL",
-    "AMZN",
-    "META",
-    "AAPL",
-    "AMD",
-    "AVGO",
-    "TSM",
-    "ASML",
-    "QCOM",
-    "INTC",
-    "ANET",
-    "SMCI",
-    "PLTR",
-    "SNOW",
-    "ORCL",
-    "CRM",
-    "PANW",
-    "CRWD",
-)
-
-
 @dataclass(slots=True)
 class NewsDocument:
     doc_id: str
@@ -253,6 +232,10 @@ class NewsIngestResult:
     transport: str
     primary_api_enforced: bool
     source_counts: dict[str, int]
+
+
+def _empty_source_counts() -> dict[str, int]:
+    return {"gnews": 0, "gdelt": 0, "rss": 0, "eodhd": 0}
 
 
 def _utc_now_iso() -> str:
@@ -300,13 +283,30 @@ def _is_trusted_source_domain(domain: str) -> bool:
     return False
 
 
-def _match_terms(text: str, terms: tuple[str, ...]) -> list[str]:
-    hay = text.lower()
-    hits: list[str] = []
+def _compile_term_patterns(terms: tuple[str, ...]) -> tuple[tuple[str, re.Pattern[str]], ...]:
+    """
+    Pre-compile keyword regexes once at import time.
+
+    _match_terms previously rebuilt and compiled a pattern per term on every
+    document; ingestion calls this for two large tuples per article.
+    """
+    out: list[tuple[str, re.Pattern[str]]] = []
     for term in terms:
         escaped = re.escape(term.lower()).replace(r"\ ", r"\s+")
-        pattern = rf"(?<!\w){escaped}(?!\w)"
-        if re.search(pattern, hay):
+        out.append((term, re.compile(rf"(?<!\w){escaped}(?!\w)")))
+    return tuple(out)
+
+
+# Module-level patterns: same matching behavior as dynamic _match_terms, lower per-doc cost.
+_AI_CORE_TERM_PATTERNS = _compile_term_patterns(AI_CORE_TERMS)
+_MARKET_IMPACT_TERM_PATTERNS = _compile_term_patterns(MARKET_IMPACT_TERMS)
+
+
+def _match_terms(text: str, patterns: tuple[tuple[str, re.Pattern[str]], ...]) -> list[str]:
+    hay = text.lower()
+    hits: list[str] = []
+    for term, pattern in patterns:
+        if pattern.search(hay):
             hits.append(term)
     return hits
 
@@ -397,6 +397,7 @@ class NewsIntakeAgent:
         require_primary_api: bool | None = None,
         enable_gdelt: bool | None = None,
         enable_rss_fallback: bool | None = None,
+        enable_eodhd: bool | None = None,
     ) -> NewsIngestResult:
         queries = _build_query_plan(max_queries)
         if not queries:
@@ -408,7 +409,7 @@ class NewsIntakeAgent:
                 documents=[],
                 transport="none",
                 primary_api_enforced=False,
-                source_counts={"gnews": 0, "gdelt": 0, "yfinance_news": 0, "rss": 0},
+                source_counts=_empty_source_counts(),
             )
 
         fetched_count = 0
@@ -440,6 +441,7 @@ class NewsIntakeAgent:
             if enable_rss_fallback is None
             else enable_rss_fallback
         )
+        use_eodhd = self.settings.news_enable_eodhd if enable_eodhd is None else enable_eodhd
 
         if enforce_gnews and not self.settings.gnews_api_key:
             raise ValueError(
@@ -447,8 +449,24 @@ class NewsIntakeAgent:
                 "Set GNEWS_API_KEY in .env for mandatory primary API ingest."
             )
 
-        source_counts = {"gnews": 0, "gdelt": 0, "yfinance_news": 0, "rss": 0}
+        source_counts = _empty_source_counts()
         transports_used: set[str] = set()
+
+        if use_eodhd and (self.settings.eodhd_api_key or "").strip():
+            eodhd_fetched, eodhd_inserted, eodhd_skipped, eodhd_docs = self._ingest_eodhd_live(
+                from_ts=from_ts,
+                dedupe_urls=dedupe_urls,
+                trusted_sources_only=enforce_trusted,
+                max_per_symbol=max(5, min(max_per_query * 2, 60)),
+            )
+            fetched_count += eodhd_fetched
+            inserted_count += eodhd_inserted
+            skipped_count += eodhd_skipped
+            inserted_docs.extend(eodhd_docs)
+            source_counts["eodhd"] += eodhd_fetched
+            if eodhd_fetched:
+                transports_used.add("eodhd")
+
         with httpx.Client(timeout=30.0) as client:
             for q in queries:
                 articles: list[dict[str, Any]] = []
@@ -476,16 +494,6 @@ class NewsIntakeAgent:
                     source_counts["gdelt"] += len(gdelt_articles)
                     if gdelt_articles:
                         transports_used.add("gdelt")
-
-                yf_articles = self._fetch_yfinance_news_articles(
-                    query=q,
-                    max_per_query=max_per_query,
-                    from_iso=from_ts.isoformat(),
-                )
-                articles.extend(yf_articles)
-                source_counts["yfinance_news"] += len(yf_articles)
-                if yf_articles:
-                    transports_used.add("yfinance_news")
 
                 # Secondary layer: smaller links / RSS expansion.
                 if use_rss_fallback:
@@ -524,9 +532,11 @@ class NewsIntakeAgent:
                 "Primary GNews ingest returned zero articles. "
                 "Your API quota may be exhausted or the query window returned no data."
             )
-        if enforce_primary_api and (source_counts["gnews"] + source_counts["gdelt"]) == 0:
+        if enforce_primary_api and (
+            source_counts["gnews"] + source_counts["gdelt"] + source_counts["eodhd"]
+        ) == 0:
             raise ValueError(
-                "Primary API ingest returned zero articles (GNews + GDELT). "
+                "Primary API ingest returned zero articles (GNews + GDELT + EODHD). "
                 "Check provider quotas or query windows."
             )
 
@@ -564,7 +574,7 @@ class NewsIntakeAgent:
                 documents=[],
                 transport="none",
                 primary_api_enforced=True,
-                source_counts={"gnews": 0, "gdelt": 0, "yfinance_news": 0, "rss": 0},
+                source_counts=_empty_source_counts(),
             )
 
         enforce_trusted = (
@@ -601,7 +611,7 @@ class NewsIntakeAgent:
         skipped_count = 0
         inserted_docs: list[NewsDocument] = []
         dedupe_urls: set[str] = set()
-        source_counts = {"gnews": 0, "gdelt": 0, "yfinance_news": 0, "rss": 0}
+        source_counts = _empty_source_counts()
 
         with httpx.Client(timeout=30.0) as client:
             cursor = start
@@ -674,6 +684,11 @@ class NewsIntakeAgent:
                             else:
                                 skipped_count += 1
                 cursor = chunk_end
+                print(
+                    f"  backfill chunk through {chunk_end.date()} "
+                    f"(inserted={inserted_count}, fetched={fetched_count})",
+                    flush=True,
+                )
 
         if enforce_gnews and source_counts["gnews"] == 0:
             raise ValueError(
@@ -741,64 +756,6 @@ class NewsIntakeAgent:
                 if pub_dt is not None and pub_dt < from_dt:
                     continue
                 out.append(row)
-                if len(out) >= max_per_query * 3:
-                    break
-        return out
-
-    def _fetch_yfinance_news_articles(
-        self,
-        *,
-        query: str,
-        max_per_query: int,
-        from_iso: str,
-    ) -> list[dict[str, Any]]:
-        _ = query
-        from_dt = self._parse_datetime(from_iso)
-        if from_dt is None:
-            from_dt = datetime.now(timezone.utc) - timedelta(days=60)
-        out: list[dict[str, Any]] = []
-        try:
-            import yfinance as yf
-        except Exception:  # noqa: BLE001
-            return out
-
-        for symbol in YFINANCE_NEWS_TICKERS:
-            if len(out) >= max_per_query * 3:
-                break
-            try:
-                rows = yf.Ticker(symbol).news or []
-            except Exception:  # noqa: BLE001
-                continue
-            for row in rows:
-                if not isinstance(row, dict):
-                    continue
-                title = _compact_text(str(row.get("title", "")))
-                summary = _compact_text(str(row.get("summary", "")))
-                link = _compact_text(str(row.get("link", "")))
-                provider = _compact_text(str(row.get("publisher", ""))) or "yfinance"
-                ts = row.get("providerPublishTime")
-                published_at = None
-                if isinstance(ts, (int, float)):
-                    published_at = (
-                        datetime.fromtimestamp(float(ts), tz=timezone.utc)
-                        .replace(microsecond=0)
-                        .isoformat()
-                    )
-                pub_dt = self._parse_datetime(published_at)
-                if pub_dt is not None and pub_dt < from_dt:
-                    continue
-                if not link:
-                    continue
-                out.append(
-                    {
-                        "title": title,
-                        "url": link,
-                        "description": summary,
-                        "content": summary,
-                        "publishedAt": published_at,
-                        "source": {"name": provider, "url": None},
-                    }
-                )
                 if len(out) >= max_per_query * 3:
                     break
         return out
@@ -977,6 +934,112 @@ class NewsIntakeAgent:
                 return []
         return []
 
+    def _ingest_eodhd_live(
+        self,
+        *,
+        from_ts: datetime,
+        dedupe_urls: set[str],
+        trusted_sources_only: bool,
+        max_per_symbol: int = 40,
+    ) -> tuple[int, int, int, list[NewsDocument]]:
+        api_key = (self.settings.eodhd_api_key or "").strip()
+        if not api_key:
+            return 0, 0, 0, []
+
+        now = datetime.now(timezone.utc)
+        pairs = fetch_eodhd_live_for_symbols(
+            trading_symbols(settings=self.settings, limit=200),
+            from_ts,
+            now,
+            api_key,
+            max_articles_per_symbol=max_per_symbol,
+        )
+        fetched = len(pairs)
+        inserted = 0
+        skipped = 0
+        docs: list[NewsDocument] = []
+        for symbol, raw in pairs:
+            candidate = self._to_document_eodhd(
+                raw,
+                symbol=symbol,
+                trusted_sources_only=trusted_sources_only,
+            )
+            if not candidate:
+                skipped += 1
+                continue
+            if candidate.url in dedupe_urls:
+                skipped += 1
+                continue
+            dedupe_urls.add(candidate.url)
+            if self._insert_document(candidate):
+                inserted += 1
+                docs.append(candidate)
+            else:
+                skipped += 1
+        return fetched, inserted, skipped, docs
+
+    def _to_document_eodhd(
+        self,
+        article: dict[str, Any],
+        *,
+        symbol: str,
+        trusted_sources_only: bool,
+    ) -> NewsDocument | None:
+        raw_url = _compact_text(str(article.get("link") or article.get("url") or ""))
+        if not raw_url:
+            return None
+        canonical_url = _canonicalize_url(raw_url)
+        source_domain = _extract_domain(canonical_url)
+        if trusted_sources_only and not _is_trusted_source_domain(source_domain):
+            return None
+
+        title = _compact_text(str(article.get("title") or ""))
+        content = _compact_text(str(article.get("content") or ""))
+        body = content or title
+        combined = _compact_text(" ".join(x for x in [title, body] if x))
+        if not combined:
+            return None
+
+        clean = (symbol or "").strip().upper()
+        company = SYMBOL_TO_COMPANY.get(clean)
+        company_name = company.name.lower() if company else clean.lower()
+        low = combined.lower()
+        ai_hits = _match_terms(combined, _AI_CORE_TERM_PATTERNS)
+        market_hits = _match_terms(combined, _MARKET_IMPACT_TERM_PATTERNS)
+        tag_hits = _article_keyword_hits(article)
+        has_ticker_context = (
+            clean.lower() in low
+            or company_name in low
+            or any(clean in hit.upper() for hit in tag_hits)
+        )
+        if not (ai_hits or market_hits or has_ticker_context):
+            return None
+
+        keyword_hits = sorted(set(ai_hits + market_hits + tag_hits))
+        relevance_score = _article_relevance(article, title, body)
+        if relevance_score < 3.0 and not has_ticker_context:
+            return None
+
+        source_name = _compact_text(str(article.get("source") or "eodhd")) or "eodhd"
+        published_at = _compact_text(str(article.get("date") or "")) or None
+        doc_id = hashlib.sha256(canonical_url.encode("utf-8")).hexdigest()[:24]
+        query = f"eodhd:{clean}"
+
+        return NewsDocument(
+            doc_id=doc_id,
+            url=canonical_url,
+            published_at=published_at,
+            fetched_at=_utc_now_iso(),
+            source=source_name,
+            source_url=canonical_url,
+            source_domain=source_domain,
+            title=title,
+            body=body,
+            keyword_hits=keyword_hits,
+            relevance_score=relevance_score,
+            query=query,
+        )
+
     def _to_document(
         self,
         article: dict[str, Any],
@@ -1000,8 +1063,8 @@ class NewsIntakeAgent:
         if not combined:
             return None
 
-        ai_hits = _match_terms(combined, AI_CORE_TERMS)
-        market_hits = _match_terms(combined, MARKET_IMPACT_TERMS)
+        ai_hits = _match_terms(combined, _AI_CORE_TERM_PATTERNS)
+        market_hits = _match_terms(combined, _MARKET_IMPACT_TERM_PATTERNS)
         if not ai_hits or not market_hits:
             return None
 

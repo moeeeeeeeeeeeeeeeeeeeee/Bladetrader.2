@@ -1,0 +1,1239 @@
+{
+  "documents_before": {
+    "total": 206,
+    "last_7_days": 58
+  },
+  "documents_after": {
+    "total": 46957,
+    "last_7_days": 1938
+  },
+  "backfill": {
+    "queries_used": [
+      "artificial intelligence stock market impact",
+      "generative ai earnings guidance",
+      "ai regulation impact on technology stocks",
+      "gpu demand semiconductor stocks",
+      "hyperscaler ai capex spending",
+      "data center expansion ai demand",
+      "cloud infrastructure ai investment",
+      "ai policy and market reaction",
+      "ai startup funding public markets",
+      "enterprise ai adoption revenue growth",
+      "ai chips supply chain and stocks",
+      "power demand from ai data centers",
+      "hbm memory demand ai boom",
+      "labor automation ai productivity market"
+    ],
+    "fetched_articles": 803,
+    "inserted_documents": 61,
+    "skipped_documents": 742,
+    "documents": [
+      {
+        "doc_id": "48b6e97f2ba5897949384de7",
+        "url": "https://www.cnbc.com/2025/12/07/chinese-internet-tech-ramp-up-ai-spend-who-could-benefit.html",
+        "published_at": "20251207T133000Z",
+        "fetched_at": "2026-05-22T21:09:11+00:00",
+        "source": "cnbc.com",
+        "source_url": "None",
+        "source_domain": "cnbc.com",
+        "title": "Chinese internet tech ramp up AI spend . Who could benefit",
+        "body": "Chinese internet tech ramp up AI spend . Who could benefit gpu demand semiconductor stocks Chinese internet tech ramp up AI spend . Who could benefit gpu demand semiconductor stocks",
+        "keyword_hits": [
+          "ai",
+          "gpu demand",
+          "stocks"
+        ],
+        "relevance_score": 5.0,
+        "query": "gpu demand semiconductor stocks"
+      },
+      {
+        "doc_id": "285da5ad5a3c1815a7e5ec66",
+        "url": "https://finance.yahoo.com/news/beyond-nvidia-5-semiconductor-stocks-222300600.html",
+        "published_at": "20251205T021500Z",
+        "fetched_at": "2026-05-22T21:09:11+00:00",
+        "source": "finance.yahoo.com",
+        "source_url": "None",
+        "source_domain": "finance.yahoo.com",
+        "title": "Beyond NVIDIA : 5 Semiconductor Stocks Set to Dominate 2026",
+        "body": "Beyond NVIDIA : 5 Semiconductor Stocks Set to Dominate 2026 gpu demand semiconductor stocks Beyond NVIDIA : 5 Semiconductor Stocks Set to Dominate 2026 gpu demand semiconductor stocks",
+        "keyword_hits": [
+          "gpu demand",
+          "nvidia",
+          "stocks"
+        ],
+        "relevance_score": 5.0,
+        "query": "gpu demand semiconductor stocks"
+      },
+      {
+        "doc_id": "03c317674726300fe53cc281",
+        "url": "https://finance.yahoo.com/news/best-ai-stocks-buy-1-210000512.html",
+        "published_at": "20251128T084500Z",
+        "fetched_at": "2026-05-22T21:09:11+00:00",
+        "source": "finance.yahoo.com",
+        "source_url": "None",
+        "source_domain": "finance.yahoo.com",
+        "title": "The Best AI Stocks to Buy With $1 , 000 Right Now",
+        "body": "The Best AI Stocks to Buy With $1 , 000 Right Now gpu demand semiconductor stocks The Best AI Stocks to Buy With $1 , 000 Right Now gpu demand semiconductor stocks",
+        "keyword_hits": [
+          "ai",
+          "gpu demand",
+          "stocks"
+        ],
+        "relevance_score": 5.0,
+        "query": "gpu demand semiconductor stocks"
+      },
+      {
+        "doc_id": "ecedb6a50489ec001f183972",
+        "url": "https://finance.yahoo.com/news/nvidia-corporation-stock-nvda-outperforming-131852843.html",
+        "published_at": "20251126T214500Z",
+        "fetched_at": "2026-05-22T21:09:11+00:00",
+        "source": "finance.yahoo.com",
+        "source_url": "None",
+        "source_domain": "finance.yahoo.com",
+        "title": "NVIDIA Corporation Stock : Is NVDA Outperforming the Technology Sector ?",
+        "body": "NVIDIA Corporation Stock : Is NVDA Outperforming the Technology Sector ? gpu demand semiconductor stocks NVIDIA Corporation Stock : Is NVDA Outperforming the Technology Sector ? gpu demand semiconductor stocks",
+        "keyword_hits": [
+          "gpu demand",
+          "nvidia",
+          "stock",
+          "stocks"
+        ],
+        "relevance_score": 6.5,
+        "query": "gpu demand semiconductor stocks"
+      },
+      {
+        "doc_id": "f23245f94c8e4e619fc9c383",
+        "url": "https://finance.yahoo.com/news/1-unstoppable-artificial-intelligence-ai-191500028.html",
+        "published_at": "20251126T204500Z",
+        "fetched_at": "2026-05-22T21:09:11+00:00",
+        "source": "finance.yahoo.com",
+        "source_url": "None",
+        "source_domain": "finance.yahoo.com",
+        "title": "1 Unstoppable Artificial Intelligence ( AI ) Stock to Buy Before It Soars More Than 300 %, According to a Wall Street Analyst",
+        "body": "1 Unstoppable Artificial Intelligence ( AI ) Stock to Buy Before It Soars More Than 300 %, According to a Wall Street Analyst gpu demand semiconductor stocks 1 Unstoppable Artificial Intelligence ( AI ) Stock to Buy Before It Soars More Than 300 %, According to a Wall Street Analyst gpu demand semiconductor stocks",
+        "keyword_hits": [
+          "ai",
+          "artificial intelligence",
+          "gpu demand",
+          "stock",
+          "stocks"
+        ],
+        "relevance_score": 8.5,
+        "query": "gpu demand semiconductor stocks"
+      },
+      {
+        "doc_id": "7f8b695513904bb437b68785",
+        "url": "https://techcrunch.com/2025/12/22/tech-layoffs-2025-list/",
+        "published_at": "20251222T184500Z",
+        "fetched_at": "2026-05-22T21:25:37+00:00",
+        "source": "techcrunch.com",
+        "source_url": "None",
+        "source_domain": "techcrunch.com",
+        "title": "A comprehensive list of 2025 tech layoffs",
+        "body": "A comprehensive list of 2025 tech layoffs artificial intelligence stock market impact A comprehensive list of 2025 tech layoffs artificial intelligence stock market impact",
+        "keyword_hits": [
+          "artificial intelligence",
+          "market",
+          "stock",
+          "stock market"
+        ],
+        "relevance_score": 6.5,
+        "query": "artificial intelligence stock market impact"
+      },
+      {
+        "doc_id": "beca19fae657c25fa2bc2c2b",
+        "url": "https://www.cnbc.com/2025/12/22/ai-adoption-will-play-a-greater-role-deciding-next-years-winners-and-losers-heres-why.html",
+        "published_at": "20251222T181500Z",
+        "fetched_at": "2026-05-22T21:25:37+00:00",
+        "source": "cnbc.com",
+        "source_url": "None",
+        "source_domain": "cnbc.com",
+        "title": "AI adoption will play a greater role deciding next year winners and losers . Here why",
+        "body": "AI adoption will play a greater role deciding next year winners and losers . Here why artificial intelligence stock market impact AI adoption will play a greater role deciding next year winners and losers . Here why artificial intelligence stock market impact",
+        "keyword_hits": [
+          "ai",
+          "artificial intelligence",
+          "market",
+          "stock",
+          "stock market"
+        ],
+        "relevance_score": 8.5,
+        "query": "artificial intelligence stock market impact"
+      },
+      {
+        "doc_id": "3edd2a8b6b21df5352d7eebd",
+        "url": "https://www.cnbc.com/2025/12/21/three-top-wall-street-analysts-stay-bullish-on-nvidia-stock-heres-why.html",
+        "published_at": "20251221T133000Z",
+        "fetched_at": "2026-05-22T21:29:15+00:00",
+        "source": "cnbc.com",
+        "source_url": "None",
+        "source_domain": "cnbc.com",
+        "title": "Three top Wall Street analysts stay bullish on Nvidia stock . Here why",
+        "body": "Three top Wall Street analysts stay bullish on Nvidia stock . Here why gpu demand semiconductor stocks Three top Wall Street analysts stay bullish on Nvidia stock . Here why gpu demand semiconductor stocks",
+        "keyword_hits": [
+          "gpu demand",
+          "nvidia",
+          "stock",
+          "stocks"
+        ],
+        "relevance_score": 6.5,
+        "query": "gpu demand semiconductor stocks"
+      },
+      {
+        "doc_id": "5a9e03f95445e834b89cfbe8",
+        "url": "https://finance.yahoo.com/news/ai-stocks-could-surge-december-065000998.html",
+        "published_at": "20251219T073000Z",
+        "fetched_at": "2026-05-22T21:29:15+00:00",
+        "source": "finance.yahoo.com",
+        "source_url": "None",
+        "source_domain": "finance.yahoo.com",
+        "title": "These AI Stocks Could Surge in December as Momentum Builds",
+        "body": "These AI Stocks Could Surge in December as Momentum Builds gpu demand semiconductor stocks These AI Stocks Could Surge in December as Momentum Builds gpu demand semiconductor stocks",
+        "keyword_hits": [
+          "ai",
+          "gpu demand",
+          "stocks"
+        ],
+        "relevance_score": 5.0,
+        "query": "gpu demand semiconductor stocks"
+      },
+      {
+        "doc_id": "68daf5ca5b3f092300a0d73d",
+        "url": "https://www.cnbc.com/2026/01/05/ces-2026-what-wall-street-expects-from-biggest-tech-show-of-the-year.html",
+        "published_at": "20260105T184500Z",
+        "fetched_at": "2026-05-22T21:44:48+00:00",
+        "source": "cnbc.com",
+        "source_url": "None",
+        "source_domain": "cnbc.com",
+        "title": "CES 2026 : What Wall Street expects from biggest tech show of the year",
+        "body": "CES 2026 : What Wall Street expects from biggest tech show of the year artificial intelligence stock market impact CES 2026 : What Wall Street expects from biggest tech show of the year artificial intelligence stock market impact",
+        "keyword_hits": [
+          "artificial intelligence",
+          "market",
+          "stock",
+          "stock market"
+        ],
+        "relevance_score": 6.5,
+        "query": "artificial intelligence stock market impact"
+      },
+      {
+        "doc_id": "9e0cc8903cc2478f80f85928",
+        "url": "https://finance.yahoo.com/news/10-magnificent-stocks-richer-2026-092600282.html",
+        "published_at": "20260105T100000Z",
+        "fetched_at": "2026-05-22T21:44:48+00:00",
+        "source": "finance.yahoo.com",
+        "source_url": "None",
+        "source_domain": "finance.yahoo.com",
+        "title": "10 Magnificent Stocks That Can Make You Richer in 2026",
+        "body": "10 Magnificent Stocks That Can Make You Richer in 2026 artificial intelligence stock market impact 10 Magnificent Stocks That Can Make You Richer in 2026 artificial intelligence stock market impact",
+        "keyword_hits": [
+          "artificial intelligence",
+          "market",
+          "stock",
+          "stock market",
+          "stocks"
+        ],
+        "relevance_score": 8.0,
+        "query": "artificial intelligence stock market impact"
+      },
+      {
+        "doc_id": "c3fb41b81eb7cf18d3a6ae42",
+        "url": "https://finance.yahoo.com/news/where-does-nvidia-semiconductor-stocks-150456906.html",
+        "published_at": "20260103T210000Z",
+        "fetched_at": "2026-05-22T21:48:28+00:00",
+        "source": "finance.yahoo.com",
+        "source_url": "None",
+        "source_domain": "finance.yahoo.com",
+        "title": "Where Does Nvidia and the Semiconductor Stocks Stand Going Into 2026 ?",
+        "body": "Where Does Nvidia and the Semiconductor Stocks Stand Going Into 2026 ? gpu demand semiconductor stocks Where Does Nvidia and the Semiconductor Stocks Stand Going Into 2026 ? gpu demand semiconductor stocks",
+        "keyword_hits": [
+          "gpu demand",
+          "nvidia",
+          "stocks"
+        ],
+        "relevance_score": 5.0,
+        "query": "gpu demand semiconductor stocks"
+      },
+      {
+        "doc_id": "211c10bec3c68b78c1937464",
+        "url": "https://finance.yahoo.com/news/asia-first-trading-day-2026-042208747.html",
+        "published_at": "20260103T083000Z",
+        "fetched_at": "2026-05-22T21:48:28+00:00",
+        "source": "finance.yahoo.com",
+        "source_url": "None",
+        "source_domain": "finance.yahoo.com",
+        "title": "Asia First Trading Day of 2026 : AI Chips Steal the Show While Bitcoin Flatlines",
+        "body": "Asia First Trading Day of 2026 : AI Chips Steal the Show While Bitcoin Flatlines gpu demand semiconductor stocks Asia First Trading Day of 2026 : AI Chips Steal the Show While Bitcoin Flatlines gpu demand semiconductor stocks",
+        "keyword_hits": [
+          "ai",
+          "gpu demand",
+          "stocks"
+        ],
+        "relevance_score": 5.0,
+        "query": "gpu demand semiconductor stocks"
+      },
+      {
+        "doc_id": "e11ef45d4ef230ccbc189a9f",
+        "url": "https://finance.yahoo.com/news/cantor-fitzgerald-nvidia-broadcom-may-114444609.html",
+        "published_at": "20251227T023000Z",
+        "fetched_at": "2026-05-22T21:48:28+00:00",
+        "source": "finance.yahoo.com",
+        "source_url": "None",
+        "source_domain": "finance.yahoo.com",
+        "title": "Cantor Fitzgerald : Nvidia and Broadcom May Explode on Next - Gen AI Rollout",
+        "body": "Cantor Fitzgerald : Nvidia and Broadcom May Explode on Next - Gen AI Rollout gpu demand semiconductor stocks Cantor Fitzgerald : Nvidia and Broadcom May Explode on Next - Gen AI Rollout gpu demand semiconductor stocks",
+        "keyword_hits": [
+          "ai",
+          "gpu demand",
+          "nvidia",
+          "stocks"
+        ],
+        "relevance_score": 7.0,
+        "query": "gpu demand semiconductor stocks"
+      },
+      {
+        "doc_id": "474dd04f4e43e7e1203b058c",
+        "url": "https://finance.yahoo.com/news/3-silver-etfs-riding-ai-150813454.html",
+        "published_at": "20251223T024500Z",
+        "fetched_at": "2026-05-22T21:48:29+00:00",
+        "source": "finance.yahoo.com",
+        "source_url": "None",
+        "source_domain": "finance.yahoo.com",
+        "title": "3 Silver ETFs Riding the AI Boom To Insane Returns",
+        "body": "3 Silver ETFs Riding the AI Boom To Insane Returns gpu demand semiconductor stocks 3 Silver ETFs Riding the AI Boom To Insane Returns gpu demand semiconductor stocks",
+        "keyword_hits": [
+          "ai",
+          "ai boom",
+          "gpu demand",
+          "stocks"
+        ],
+        "relevance_score": 6.5,
+        "query": "gpu demand semiconductor stocks"
+      },
+      {
+        "doc_id": "56c10c13b09c695aabf288bd",
+        "url": "https://finance.yahoo.com/news/epam-systems-quarterly-earnings-preview-141036391.html",
+        "published_at": "20260119T180000Z",
+        "fetched_at": "2026-05-22T22:03:27+00:00",
+        "source": "finance.yahoo.com",
+        "source_url": "None",
+        "source_domain": "finance.yahoo.com",
+        "title": "EPAM System Quarterly Earnings Preview : What You Need to Know",
+        "body": "EPAM System Quarterly Earnings Preview : What You Need to Know artificial intelligence stock market impact EPAM System Quarterly Earnings Preview : What You Need to Know artificial intelligence stock market impact",
+        "keyword_hits": [
+          "artificial intelligence",
+          "earnings",
+          "market",
+          "stock",
+          "stock market"
+        ],
+        "relevance_score": 8.0,
+        "query": "artificial intelligence stock market impact"
+      },
+      {
+        "doc_id": "c14fd67dd6640c5bb434731d",
+        "url": "https://www.cnbc.com/2026/01/16/micron-stock-climbs-as-ceo-highlights-ai-demand-for-memory.html",
+        "published_at": "20260116T190000Z",
+        "fetched_at": "2026-05-22T22:06:53+00:00",
+        "source": "cnbc.com",
+        "source_url": "None",
+        "source_domain": "cnbc.com",
+        "title": "Micron stock climbs as CEO highlights AI demand for memory",
+        "body": "Micron stock climbs as CEO highlights AI demand for memory gpu demand semiconductor stocks Micron stock climbs as CEO highlights AI demand for memory gpu demand semiconductor stocks",
+        "keyword_hits": [
+          "ai",
+          "gpu demand",
+          "stock",
+          "stocks"
+        ],
+        "relevance_score": 6.5,
+        "query": "gpu demand semiconductor stocks"
+      },
+      {
+        "doc_id": "3b0f17f69be85dd58208d8b6",
+        "url": "https://finance.yahoo.com/news/wall-street-favorite-artificial-intelligence-162700027.html",
+        "published_at": "20260113T171500Z",
+        "fetched_at": "2026-05-22T22:06:53+00:00",
+        "source": "finance.yahoo.com",
+        "source_url": "None",
+        "source_domain": "finance.yahoo.com",
+        "title": "Wall Street Has a New Favorite Artificial Intelligence ( AI ) Semiconductor Stock for 2026 -- With Nearly 100 % of Analysts Covering It Rating It a Buy ( Hint : It Not Nvidia )",
+        "body": "Wall Street Has a New Favorite Artificial Intelligence ( AI ) Semiconductor Stock for 2026 -- With Nearly 100 % of Analysts Covering It Rating It a Buy ( Hint : It Not Nvidia ) gpu demand semiconductor stocks Wall Street Has a New Favorite Artificial Intelligence ( AI ) Semiconductor Stock for 2026 -- With Nearly 100 % of Analysts Covering It Rating It a Buy ( Hint : It Not Nvidia ) gpu demand semiconductor stocks",
+        "keyword_hits": [
+          "ai",
+          "artificial intelligence",
+          "gpu demand",
+          "nvidia",
+          "stock",
+          "stocks"
+        ],
+        "relevance_score": 10.5,
+        "query": "gpu demand semiconductor stocks"
+      },
+      {
+        "doc_id": "78bc03ac4fe45df2a1d02e70",
+        "url": "https://finance.yahoo.com/news/prediction-artificial-intelligence-ai-chip-160500348.html",
+        "published_at": "20260113T164500Z",
+        "fetched_at": "2026-05-22T22:06:53+00:00",
+        "source": "finance.yahoo.com",
+        "source_url": "None",
+        "source_domain": "finance.yahoo.com",
+        "title": "Prediction : This Artificial Intelligence ( AI ) Chip Stock Will Outperform Nvidia in 2026 ( Hint : It Not AMD )",
+        "body": "Prediction : This Artificial Intelligence ( AI ) Chip Stock Will Outperform Nvidia in 2026 ( Hint : It Not AMD ) gpu demand semiconductor stocks Prediction : This Artificial Intelligence ( AI ) Chip Stock Will Outperform Nvidia in 2026 ( Hint : It Not AMD ) gpu demand semiconductor stocks",
+        "keyword_hits": [
+          "ai",
+          "artificial intelligence",
+          "gpu demand",
+          "nvidia",
+          "stock",
+          "stocks"
+        ],
+        "relevance_score": 10.5,
+        "query": "gpu demand semiconductor stocks"
+      },
+      {
+        "doc_id": "6d540af07f382a2c3234e4a7",
+        "url": "https://finance.yahoo.com/news/safest-trillion-dollar-artificial-intelligence-015000901.html",
+        "published_at": "20260111T023000Z",
+        "fetched_at": "2026-05-22T22:06:53+00:00",
+        "source": "finance.yahoo.com",
+        "source_url": "None",
+        "source_domain": "finance.yahoo.com",
+        "title": "The Safest Trillion - Dollar Artificial Intelligence ( AI ) Stock to Invest $50 , 000 In Right Now",
+        "body": "The Safest Trillion - Dollar Artificial Intelligence ( AI ) Stock to Invest $50 , 000 In Right Now gpu demand semiconductor stocks The Safest Trillion - Dollar Artificial Intelligence ( AI ) Stock to Invest $50 , 000 In Right Now gpu demand semiconductor stocks",
+        "keyword_hits": [
+          "ai",
+          "artificial intelligence",
+          "gpu demand",
+          "stock",
+          "stocks"
+        ],
+        "relevance_score": 8.5,
+        "query": "gpu demand semiconductor stocks"
+      },
+      {
+        "doc_id": "6681526ebbe5ed59c57ed9a2",
+        "url": "https://finance.yahoo.com/news/3-top-artificial-intelligence-stocks-173500191.html",
+        "published_at": "20260110T183000Z",
+        "fetched_at": "2026-05-22T22:06:53+00:00",
+        "source": "finance.yahoo.com",
+        "source_url": "None",
+        "source_domain": "finance.yahoo.com",
+        "title": "3 Top Artificial Intelligence Stocks to Buy in January",
+        "body": "3 Top Artificial Intelligence Stocks to Buy in January gpu demand semiconductor stocks 3 Top Artificial Intelligence Stocks to Buy in January gpu demand semiconductor stocks",
+        "keyword_hits": [
+          "artificial intelligence",
+          "gpu demand",
+          "stocks"
+        ],
+        "relevance_score": 5.0,
+        "query": "gpu demand semiconductor stocks"
+      },
+      {
+        "doc_id": "0d485f7f633f5a1e5ee092c2",
+        "url": "https://www.benzinga.com/analyst-stock-ratings/analyst-color/26/02/50308916/apple-to-give-qualcomm-holiday-boost-but-trouble-looms-next-quarter",
+        "published_at": "20260202T191500Z",
+        "fetched_at": "2026-05-22T22:22:54+00:00",
+        "source": "benzinga.com",
+        "source_url": "None",
+        "source_domain": "benzinga.com",
+        "title": "What Going On With Qualcomm Stock Monday ? - Qualcomm ( NASDAQ : QCOM )",
+        "body": "What Going On With Qualcomm Stock Monday ? - Qualcomm ( NASDAQ : QCOM ) artificial intelligence stock market impact What Going On With Qualcomm Stock Monday ? - Qualcomm ( NASDAQ : QCOM ) artificial intelligence stock market impact",
+        "keyword_hits": [
+          "artificial intelligence",
+          "market",
+          "nasdaq",
+          "stock",
+          "stock market"
+        ],
+        "relevance_score": 8.0,
+        "query": "artificial intelligence stock market impact"
+      },
+      {
+        "doc_id": "1fe040e084f2ddf8aa1d85ae",
+        "url": "https://finance.yahoo.com/news/why-tesla-stock-could-double-193000110.html",
+        "published_at": "20260201T200000Z",
+        "fetched_at": "2026-05-22T22:22:54+00:00",
+        "source": "finance.yahoo.com",
+        "source_url": "None",
+        "source_domain": "finance.yahoo.com",
+        "title": "Why Tesla Stock Could Double as Optimus Reaches Human - Level Proficiency This Year",
+        "body": "Why Tesla Stock Could Double as Optimus Reaches Human - Level Proficiency This Year artificial intelligence stock market impact Why Tesla Stock Could Double as Optimus Reaches Human - Level Proficiency This Year artificial intelligence stock market impact",
+        "keyword_hits": [
+          "artificial intelligence",
+          "market",
+          "stock",
+          "stock market"
+        ],
+        "relevance_score": 6.5,
+        "query": "artificial intelligence stock market impact"
+      },
+      {
+        "doc_id": "96685e31796013ef47c5898b",
+        "url": "https://www.cnbc.com/2026/02/01/here-are-the-7-big-things-were-focused-on-in-the-stock-market-this-week.html",
+        "published_at": "20260201T163000Z",
+        "fetched_at": "2026-05-22T22:22:54+00:00",
+        "source": "cnbc.com",
+        "source_url": "None",
+        "source_domain": "cnbc.com",
+        "title": "Here are the 7 big things were focused on in the stock market this week",
+        "body": "Here are the 7 big things were focused on in the stock market this week artificial intelligence stock market impact Here are the 7 big things were focused on in the stock market this week artificial intelligence stock market impact",
+        "keyword_hits": [
+          "artificial intelligence",
+          "market",
+          "stock",
+          "stock market"
+        ],
+        "relevance_score": 6.5,
+        "query": "artificial intelligence stock market impact"
+      },
+      {
+        "doc_id": "d824f62dc0e72bdee6c20585",
+        "url": "https://finance.yahoo.com/news/prediction-best-performing-ai-stocks-100400084.html",
+        "published_at": "20260202T191500Z",
+        "fetched_at": "2026-05-22T22:27:31+00:00",
+        "source": "finance.yahoo.com",
+        "source_url": "None",
+        "source_domain": "finance.yahoo.com",
+        "title": "Prediction : These Will Be the Best - Performing AI Stocks in 2026",
+        "body": "Prediction : These Will Be the Best - Performing AI Stocks in 2026 gpu demand semiconductor stocks Prediction : These Will Be the Best - Performing AI Stocks in 2026 gpu demand semiconductor stocks",
+        "keyword_hits": [
+          "ai",
+          "gpu demand",
+          "stocks"
+        ],
+        "relevance_score": 5.0,
+        "query": "gpu demand semiconductor stocks"
+      },
+      {
+        "doc_id": "d9fc89f6da839317c7e9a151",
+        "url": "https://finance.yahoo.com/news/got-5-000-3-cheapest-100400642.html",
+        "published_at": "20260202T191500Z",
+        "fetched_at": "2026-05-22T22:27:31+00:00",
+        "source": "finance.yahoo.com",
+        "source_url": "None",
+        "source_domain": "finance.yahoo.com",
+        "title": "Got $5 , 000 ? These Are 3 of the Cheapest Artificial Intelligence ( AI ) Stocks to Buy Right Now",
+        "body": "Got $5 , 000 ? These Are 3 of the Cheapest Artificial Intelligence ( AI ) Stocks to Buy Right Now gpu demand semiconductor stocks Got $5 , 000 ? These Are 3 of the Cheapest Artificial Intelligence ( AI ) Stocks to Buy Right Now gpu demand semiconductor stocks",
+        "keyword_hits": [
+          "ai",
+          "artificial intelligence",
+          "gpu demand",
+          "stocks"
+        ],
+        "relevance_score": 7.0,
+        "query": "gpu demand semiconductor stocks"
+      },
+      {
+        "doc_id": "c80d7702cb140bd786deabbd",
+        "url": "https://finance.yahoo.com/news/people-listened-nvidia-nvda-ceo-114644985.html",
+        "published_at": "20260123T203000Z",
+        "fetched_at": "2026-05-22T22:27:31+00:00",
+        "source": "finance.yahoo.com",
+        "source_url": "None",
+        "source_domain": "finance.yahoo.com",
+        "title": "People Should Have Listened to NVIDIA ( NVDA ) CEO , Says Jim Cramer",
+        "body": "People Should Have Listened to NVIDIA ( NVDA ) CEO , Says Jim Cramer gpu demand semiconductor stocks People Should Have Listened to NVIDIA ( NVDA ) CEO , Says Jim Cramer gpu demand semiconductor stocks",
+        "keyword_hits": [
+          "gpu demand",
+          "nvidia",
+          "stocks"
+        ],
+        "relevance_score": 5.0,
+        "query": "gpu demand semiconductor stocks"
+      },
+      {
+        "doc_id": "3a9669040b378b01d5ecfdf0",
+        "url": "https://finance.yahoo.com/news/barry-silbert-forecasts-10-bitcoins-160229662.html",
+        "published_at": "20260216T170000Z",
+        "fetched_at": "2026-05-22T22:41:16+00:00",
+        "source": "finance.yahoo.com",
+        "source_url": "None",
+        "source_domain": "finance.yahoo.com",
+        "title": "Barry Silbert Forecasts Up To 10 % Of Bitcoin Market Cap Will Move To Privacy Coins Crypto Mogul Says Zcash Can Rocket 500x , BTC Wont",
+        "body": "Barry Silbert Forecasts Up To 10 % Of Bitcoin Market Cap Will Move To Privacy Coins Crypto Mogul Says Zcash Can Rocket 500x , BTC Wont artificial intelligence stock market impact Barry Silbert Forecasts Up To 10 % Of Bitcoin Market Cap Will Move To Privacy Coins Crypto Mogul Says Zcash Can Rocket 500x , BTC Wont artificial intelligence stock market impact",
+        "keyword_hits": [
+          "artificial intelligence",
+          "market",
+          "stock",
+          "stock market"
+        ],
+        "relevance_score": 6.5,
+        "query": "artificial intelligence stock market impact"
+      },
+      {
+        "doc_id": "bb4a2db2a6ef0218219fc52a",
+        "url": "https://finance.yahoo.com/news/werner-enterprises-touts-firstfleet-deal-070206281.html",
+        "published_at": "20260216T074500Z",
+        "fetched_at": "2026-05-22T22:41:16+00:00",
+        "source": "finance.yahoo.com",
+        "source_url": "None",
+        "source_domain": "finance.yahoo.com",
+        "title": "Werner Enterprises Touts FirstFleet Deal , Sees Supply - Driven Truckload Cycle Inflection at Conference",
+        "body": "Werner Enterprises Touts FirstFleet Deal , Sees Supply - Driven Truckload Cycle Inflection at Conference artificial intelligence stock market impact Werner Enterprises Touts FirstFleet Deal , Sees Supply - Driven Truckload Cycle Inflection at Conference artificial intelligence stock market impact",
+        "keyword_hits": [
+          "artificial intelligence",
+          "market",
+          "stock",
+          "stock market"
+        ],
+        "relevance_score": 6.5,
+        "query": "artificial intelligence stock market impact"
+      },
+      {
+        "doc_id": "c4c58f9c447f4991e35b3370",
+        "url": "https://jp.reuters.com/opinion/forex-forum/KSDVSRNXXVKGVHMYLSNTNXNROA-2026-02-16/",
+        "published_at": "20260216T053000Z",
+        "fetched_at": "2026-05-22T22:41:16+00:00",
+        "source": "jp.reuters.com",
+        "source_url": "None",
+        "source_domain": "jp.reuters.com",
+        "title": "\u30b3\u30e9\u30e0 \uff1a \u9ad8\u5e02\u767a\u8a00\u53d7\u3051 \u300c \u30dd\u30b8\u30c6\u30a3\u30d6\u4fee\u6b63 \u300d\u3001 \u8846\u9662\u9078\u5f8c\u306e\u30c9\u30eb \uff0f \u5186\u76f8\u5834\u3092\u8aad\u3080\uff1d\u5c3e\u6cb3\u771e\u6a39\u6c0f",
+        "body": "\u30b3\u30e9\u30e0 \uff1a \u9ad8\u5e02\u767a\u8a00\u53d7\u3051 \u300c \u30dd\u30b8\u30c6\u30a3\u30d6\u4fee\u6b63 \u300d\u3001 \u8846\u9662\u9078\u5f8c\u306e\u30c9\u30eb \uff0f \u5186\u76f8\u5834\u3092\u8aad\u3080\uff1d\u5c3e\u6cb3\u771e\u6a39\u6c0f artificial intelligence stock market impact \u30b3\u30e9\u30e0 \uff1a \u9ad8\u5e02\u767a\u8a00\u53d7\u3051 \u300c \u30dd\u30b8\u30c6\u30a3\u30d6\u4fee\u6b63 \u300d\u3001 \u8846\u9662\u9078\u5f8c\u306e\u30c9\u30eb \uff0f \u5186\u76f8\u5834\u3092\u8aad\u3080\uff1d\u5c3e\u6cb3\u771e\u6a39\u6c0f artificial intelligence stock market impact",
+        "keyword_hits": [
+          "artificial intelligence",
+          "market",
+          "stock",
+          "stock market"
+        ],
+        "relevance_score": 6.5,
+        "query": "artificial intelligence stock market impact"
+      },
+      {
+        "doc_id": "145a5a1d7450bf6b8f0be9bf",
+        "url": "https://finance.yahoo.com/news/prediction-nvidia-difficult-time-living-122600897.html",
+        "published_at": "20260216T130000Z",
+        "fetched_at": "2026-05-22T22:44:11+00:00",
+        "source": "finance.yahoo.com",
+        "source_url": "None",
+        "source_domain": "finance.yahoo.com",
+        "title": "Prediction : Nvidia Will Have a Difficult Time Living Up to Investor Lofty Expectations on Feb . 25",
+        "body": "Prediction : Nvidia Will Have a Difficult Time Living Up to Investor Lofty Expectations on Feb . 25 gpu demand semiconductor stocks Prediction : Nvidia Will Have a Difficult Time Living Up to Investor Lofty Expectations on Feb . 25 gpu demand semiconductor stocks",
+        "keyword_hits": [
+          "gpu demand",
+          "investor",
+          "nvidia",
+          "stocks"
+        ],
+        "relevance_score": 6.5,
+        "query": "gpu demand semiconductor stocks"
+      },
+      {
+        "doc_id": "b475b9a0204f9d90f805517a",
+        "url": "https://finance.yahoo.com/news/unpopular-opinion-jensen-huang-making-092600850.html",
+        "published_at": "20260209T100000Z",
+        "fetched_at": "2026-05-22T22:44:11+00:00",
+        "source": "finance.yahoo.com",
+        "source_url": "None",
+        "source_domain": "finance.yahoo.com",
+        "title": "Unpopular Opinion : Jensen Huang Is Making Nvidia Its Own Worst Enemy",
+        "body": "Unpopular Opinion : Jensen Huang Is Making Nvidia Its Own Worst Enemy gpu demand semiconductor stocks Unpopular Opinion : Jensen Huang Is Making Nvidia Its Own Worst Enemy gpu demand semiconductor stocks",
+        "keyword_hits": [
+          "gpu demand",
+          "nvidia",
+          "stocks"
+        ],
+        "relevance_score": 5.0,
+        "query": "gpu demand semiconductor stocks"
+      },
+      {
+        "doc_id": "56fd25bd14e4d4aef4650805",
+        "url": "https://finance.yahoo.com/news/prediction-artificial-intelligence-ai-stock-005700649.html",
+        "published_at": "20260206T210000Z",
+        "fetched_at": "2026-05-22T22:44:11+00:00",
+        "source": "finance.yahoo.com",
+        "source_url": "None",
+        "source_domain": "finance.yahoo.com",
+        "title": "Prediction : This Artificial Intelligence ( AI ) Stock Will Be Worth More Than Micron By the End of Next Year",
+        "body": "Prediction : This Artificial Intelligence ( AI ) Stock Will Be Worth More Than Micron By the End of Next Year gpu demand semiconductor stocks Prediction : This Artificial Intelligence ( AI ) Stock Will Be Worth More Than Micron By the End of Next Year gpu demand semiconductor stocks",
+        "keyword_hits": [
+          "ai",
+          "artificial intelligence",
+          "gpu demand",
+          "stock",
+          "stocks"
+        ],
+        "relevance_score": 8.5,
+        "query": "gpu demand semiconductor stocks"
+      },
+      {
+        "doc_id": "5f98e9b54f943cc6f69e800b",
+        "url": "https://finance.yahoo.com/news/dave-ramsey-says-corner-lots-173036069.html",
+        "published_at": "20260302T181500Z",
+        "fetched_at": "2026-05-22T22:59:09+00:00",
+        "source": "finance.yahoo.com",
+        "source_url": "None",
+        "source_domain": "finance.yahoo.com",
+        "title": "Dave Ramsey Says Corner Lots Are A Mixed Blessing They Present Well From The Street , But You Have No Freaking Backyard Just A Tiny Triangle",
+        "body": "Dave Ramsey Says Corner Lots Are A Mixed Blessing They Present Well From The Street , But You Have No Freaking Backyard Just A Tiny Triangle artificial intelligence stock market impact Dave Ramsey Says Corner Lots Are A Mixed Blessing They Present Well From The Street , But You Have No Freaking Backyard Just A Tiny Triangle artificial intelligence stock market impact",
+        "keyword_hits": [
+          "artificial intelligence",
+          "market",
+          "stock",
+          "stock market"
+        ],
+        "relevance_score": 6.5,
+        "query": "artificial intelligence stock market impact"
+      },
+      {
+        "doc_id": "a08552a3bb1db3086a3c154d",
+        "url": "https://finance.yahoo.com/news/4-software-stocks-38-82-160500458.html",
+        "published_at": "20260302T164500Z",
+        "fetched_at": "2026-05-22T22:59:09+00:00",
+        "source": "finance.yahoo.com",
+        "source_url": "None",
+        "source_domain": "finance.yahoo.com",
+        "title": "4 Software Stocks With 38 % to 82 % Upside Potential According to Wall Street",
+        "body": "4 Software Stocks With 38 % to 82 % Upside Potential According to Wall Street artificial intelligence stock market impact 4 Software Stocks With 38 % to 82 % Upside Potential According to Wall Street artificial intelligence stock market impact",
+        "keyword_hits": [
+          "artificial intelligence",
+          "market",
+          "stock",
+          "stock market",
+          "stocks"
+        ],
+        "relevance_score": 8.0,
+        "query": "artificial intelligence stock market impact"
+      },
+      {
+        "doc_id": "2ef26a76eed4f9ad456d16eb",
+        "url": "https://finance.yahoo.com/news/ex-southern-california-real-estate-150103896.html",
+        "published_at": "20260302T163000Z",
+        "fetched_at": "2026-05-22T22:59:09+00:00",
+        "source": "finance.yahoo.com",
+        "source_url": "None",
+        "source_domain": "finance.yahoo.com",
+        "title": "Ex - Southern California Real Estate Agent Selling $900K Condo Asks Why People Are Still Paying 5 % Commission Shelling Out 45K For MLS Listing Seems Crazy",
+        "body": "Ex - Southern California Real Estate Agent Selling $900K Condo Asks Why People Are Still Paying 5 % Commission Shelling Out 45K For MLS Listing Seems Crazy artificial intelligence stock market impact Ex - Southern California Real Estate Agent Selling $900K Condo Asks Why People Are Still Paying 5 % Commission Shelling Out 45K For MLS Listing Seems Crazy artificial intelligence stock market impact",
+        "keyword_hits": [
+          "artificial intelligence",
+          "market",
+          "stock",
+          "stock market"
+        ],
+        "relevance_score": 6.5,
+        "query": "artificial intelligence stock market impact"
+      },
+      {
+        "doc_id": "ce3143cd4ec1c63cad031430",
+        "url": "https://finance.yahoo.com/news/amazon-extreme-ai-spending-sends-123002260.html",
+        "published_at": "20260302T153000Z",
+        "fetched_at": "2026-05-22T22:59:09+00:00",
+        "source": "finance.yahoo.com",
+        "source_url": "None",
+        "source_domain": "finance.yahoo.com",
+        "title": "Amazon Extreme AI Spending Sends Stock to Worst Month in Years",
+        "body": "Amazon Extreme AI Spending Sends Stock to Worst Month in Years artificial intelligence stock market impact Amazon Extreme AI Spending Sends Stock to Worst Month in Years artificial intelligence stock market impact",
+        "keyword_hits": [
+          "ai",
+          "ai spending",
+          "artificial intelligence",
+          "market",
+          "stock",
+          "stock market"
+        ],
+        "relevance_score": 10.0,
+        "query": "artificial intelligence stock market impact"
+      },
+      {
+        "doc_id": "039201da410948664166449a",
+        "url": "https://finance.yahoo.com/news/week-growth-wasnt-enough-wall-143300233.html",
+        "published_at": "20260302T151500Z",
+        "fetched_at": "2026-05-22T22:59:10+00:00",
+        "source": "finance.yahoo.com",
+        "source_url": "None",
+        "source_domain": "finance.yahoo.com",
+        "title": "The Week When Growth Wasnt Enough for Wall Street",
+        "body": "The Week When Growth Wasnt Enough for Wall Street artificial intelligence stock market impact The Week When Growth Wasnt Enough for Wall Street artificial intelligence stock market impact",
+        "keyword_hits": [
+          "artificial intelligence",
+          "market",
+          "stock",
+          "stock market"
+        ],
+        "relevance_score": 6.5,
+        "query": "artificial intelligence stock market impact"
+      },
+      {
+        "doc_id": "79b3fd2d252c7100af5f6bf3",
+        "url": "https://finance.yahoo.com/news/hagerty-hgty-q4-2025-earnings-133519827.html",
+        "published_at": "20260302T141500Z",
+        "fetched_at": "2026-05-22T22:59:10+00:00",
+        "source": "finance.yahoo.com",
+        "source_url": "None",
+        "source_domain": "finance.yahoo.com",
+        "title": "Hagerty ( HGTY ) Q4 2025 Earnings Call Transcript",
+        "body": "Hagerty ( HGTY ) Q4 2025 Earnings Call Transcript artificial intelligence stock market impact Hagerty ( HGTY ) Q4 2025 Earnings Call Transcript artificial intelligence stock market impact",
+        "keyword_hits": [
+          "artificial intelligence",
+          "earnings",
+          "market",
+          "stock",
+          "stock market"
+        ],
+        "relevance_score": 8.0,
+        "query": "artificial intelligence stock market impact"
+      },
+      {
+        "doc_id": "e6d948b98875c55b9bc14359",
+        "url": "https://finance.yahoo.com/news/collapse-everything-ai-could-hinge-155600019.html",
+        "published_at": "20260226T233000Z",
+        "fetched_at": "2026-05-22T23:02:46+00:00",
+        "source": "finance.yahoo.com",
+        "source_url": "None",
+        "source_domain": "finance.yahoo.com",
+        "title": "The Collapse of Everything AI Could Hinge on Nvidia Earnings . What Wall Street Expects from NVDA Stock .",
+        "body": "The Collapse of Everything AI Could Hinge on Nvidia Earnings . What Wall Street Expects from NVDA Stock . gpu demand semiconductor stocks The Collapse of Everything AI Could Hinge on Nvidia Earnings . What Wall Street Expects from NVDA Stock . gpu demand semiconductor stocks",
+        "keyword_hits": [
+          "ai",
+          "earnings",
+          "gpu demand",
+          "nvidia",
+          "stock",
+          "stocks"
+        ],
+        "relevance_score": 10.0,
+        "query": "gpu demand semiconductor stocks"
+      },
+      {
+        "doc_id": "989d7391a9c31818fb242e79",
+        "url": "https://finance.yahoo.com/news/got-5-000-5-must-055000365.html",
+        "published_at": "20260221T071500Z",
+        "fetched_at": "2026-05-22T23:02:49+00:00",
+        "source": "finance.yahoo.com",
+        "source_url": "None",
+        "source_domain": "finance.yahoo.com",
+        "title": "Got $5 , 000 ? Here Are 5 Must - Buy Artificial Intelligence ( AI ) Stocks Right Now .",
+        "body": "Got $5 , 000 ? Here Are 5 Must - Buy Artificial Intelligence ( AI ) Stocks Right Now . gpu demand semiconductor stocks Got $5 , 000 ? Here Are 5 Must - Buy Artificial Intelligence ( AI ) Stocks Right Now . gpu demand semiconductor stocks",
+        "keyword_hits": [
+          "ai",
+          "artificial intelligence",
+          "gpu demand",
+          "stocks"
+        ],
+        "relevance_score": 7.0,
+        "query": "gpu demand semiconductor stocks"
+      },
+      {
+        "doc_id": "081014128397cfe371097fb3",
+        "url": "https://finance.yahoo.com/news/sandisk-nvidia-203700112.html",
+        "published_at": "20260216T211500Z",
+        "fetched_at": "2026-05-22T23:02:52+00:00",
+        "source": "finance.yahoo.com",
+        "source_url": "None",
+        "source_domain": "finance.yahoo.com",
+        "title": "Is Sandisk the New Nvidia ?",
+        "body": "Is Sandisk the New Nvidia ? gpu demand semiconductor stocks Is Sandisk the New Nvidia ? gpu demand semiconductor stocks",
+        "keyword_hits": [
+          "gpu demand",
+          "nvidia",
+          "stocks"
+        ],
+        "relevance_score": 5.0,
+        "query": "gpu demand semiconductor stocks"
+      },
+      {
+        "doc_id": "609d879785f81730fac2aafa",
+        "url": "https://finance.yahoo.com/markets/crypto/articles/mara-sells-1b-bitcoin-loss-180105074.html",
+        "published_at": "20260330T183000Z",
+        "fetched_at": "2026-05-22T23:38:23+00:00",
+        "source": "finance.yahoo.com",
+        "source_url": "None",
+        "source_domain": "finance.yahoo.com",
+        "title": "MARA Sells $1B In Bitcoin At A Loss To Pay Down Debt As Hedge Fund CIO Warns : Just The Beginning",
+        "body": "MARA Sells $1B In Bitcoin At A Loss To Pay Down Debt As Hedge Fund CIO Warns : Just The Beginning artificial intelligence stock market impact MARA Sells $1B In Bitcoin At A Loss To Pay Down Debt As Hedge Fund CIO Warns : Just The Beginning artificial intelligence stock market impact",
+        "keyword_hits": [
+          "artificial intelligence",
+          "market",
+          "stock",
+          "stock market"
+        ],
+        "relevance_score": 6.5,
+        "query": "artificial intelligence stock market impact"
+      },
+      {
+        "doc_id": "2668bdee7ba53dbce17391a2",
+        "url": "https://finance.yahoo.com/markets/crypto/articles/grant-cardone-responds-actor-terrence-170104249.html",
+        "published_at": "20260330T174500Z",
+        "fetched_at": "2026-05-22T23:38:24+00:00",
+        "source": "finance.yahoo.com",
+        "source_url": "None",
+        "source_domain": "finance.yahoo.com",
+        "title": "Grant Cardone Responds To Actor Terrence Howard Claim That Bitcoin Is Going To Die , Says The Actor Doesnt Know What Entrepreneurs Are Doing With BTC",
+        "body": "Grant Cardone Responds To Actor Terrence Howard Claim That Bitcoin Is Going To Die , Says The Actor Doesnt Know What Entrepreneurs Are Doing With BTC artificial intelligence stock market impact Grant Cardone Responds To Actor Terrence Howard Claim That Bitcoin Is Going To Die , Says The Actor Doesnt Know What Entrepreneurs Are Doing With BTC artificial intelligence stock market impact",
+        "keyword_hits": [
+          "artificial intelligence",
+          "market",
+          "stock",
+          "stock market"
+        ],
+        "relevance_score": 6.5,
+        "query": "artificial intelligence stock market impact"
+      },
+      {
+        "doc_id": "39dc97dc4b3e815ac9f04406",
+        "url": "https://finance.yahoo.com/markets/crypto/articles/michael-saylor-spent-decade-doing-100109987.html",
+        "published_at": "20260330T104500Z",
+        "fetched_at": "2026-05-22T23:38:24+00:00",
+        "source": "finance.yahoo.com",
+        "source_url": "None",
+        "source_domain": "finance.yahoo.com",
+        "title": "Michael Saylor Spent A Decade Doing Everything Under The Sun , But Still Couldnt Get Ahead Success Hit When He Understood This One Thing",
+        "body": "Michael Saylor Spent A Decade Doing Everything Under The Sun , But Still Couldnt Get Ahead Success Hit When He Understood This One Thing artificial intelligence stock market impact Michael Saylor Spent A Decade Doing Everything Under The Sun , But Still Couldnt Get Ahead Success Hit When He Understood This One Thing artificial intelligence stock market impact",
+        "keyword_hits": [
+          "artificial intelligence",
+          "market",
+          "stock",
+          "stock market"
+        ],
+        "relevance_score": 6.5,
+        "query": "artificial intelligence stock market impact"
+      },
+      {
+        "doc_id": "072387979ee2f18c40197e5b",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/nvidia-advanced-micro-devices-sounded-132600579.html",
+        "published_at": "20260324T010000Z",
+        "fetched_at": "2026-05-22T23:43:08+00:00",
+        "source": "finance.yahoo.com",
+        "source_url": "None",
+        "source_domain": "finance.yahoo.com",
+        "title": "Nvidia and Advanced Micro Devices Have Sounded a $711 Billion Warning to Wall Street That AI Investors Simply Cant Ignore",
+        "body": "Nvidia and Advanced Micro Devices Have Sounded a $711 Billion Warning to Wall Street That AI Investors Simply Cant Ignore gpu demand semiconductor stocks Nvidia and Advanced Micro Devices Have Sounded a $711 Billion Warning to Wall Street That AI Investors Simply Cant Ignore gpu demand semiconductor stocks",
+        "keyword_hits": [
+          "ai",
+          "gpu demand",
+          "investors",
+          "nvidia",
+          "stocks"
+        ],
+        "relevance_score": 8.5,
+        "query": "gpu demand semiconductor stocks"
+      },
+      {
+        "doc_id": "32d4b8bc80e8dcfd187011d2",
+        "url": "https://www.cnbc.com/2026/03/16/2-of-our-biggest-takeaways-from-nvidia-ceo-jensen-huangs-gtc-keynote-speech.html",
+        "published_at": "20260317T014500Z",
+        "fetched_at": "2026-05-22T23:43:08+00:00",
+        "source": "cnbc.com",
+        "source_url": "None",
+        "source_domain": "cnbc.com",
+        "title": "2 of our biggest takeaways from Nvidia CEO Jensen Huang GTC keynote speech",
+        "body": "2 of our biggest takeaways from Nvidia CEO Jensen Huang GTC keynote speech gpu demand semiconductor stocks 2 of our biggest takeaways from Nvidia CEO Jensen Huang GTC keynote speech gpu demand semiconductor stocks",
+        "keyword_hits": [
+          "gpu demand",
+          "nvidia",
+          "stocks"
+        ],
+        "relevance_score": 5.0,
+        "query": "gpu demand semiconductor stocks"
+      },
+      {
+        "doc_id": "fed454b04e35b0df9fa24fb9",
+        "url": "https://www.bbc.com/ukrainian/articles/c2k3p272ew1o",
+        "published_at": "20260413T083000Z",
+        "fetched_at": "2026-05-22T23:58:17+00:00",
+        "source": "bbc.com",
+        "source_url": "None",
+        "source_domain": "bbc.com",
+        "title": "\u0425\u0442\u043e \u043f\u0435\u0440\u0435\u043c\u0430\u0433\u0430\u0454 \u0443 \u0432\u0435\u043b\u0438\u043a\u0456\u0439 \u0442\u0435\u0445\u043d\u043e\u043b\u043e\u0433\u0456\u0447\u043d\u0456\u0439 \u0431\u0438\u0442\u0432\u0456 - \u041a\u0438\u0442\u0430\u0439 \u0447\u0438 \u0421\u0428\u0410",
+        "body": "\u0425\u0442\u043e \u043f\u0435\u0440\u0435\u043c\u0430\u0433\u0430\u0454 \u0443 \u0432\u0435\u043b\u0438\u043a\u0456\u0439 \u0442\u0435\u0445\u043d\u043e\u043b\u043e\u0433\u0456\u0447\u043d\u0456\u0439 \u0431\u0438\u0442\u0432\u0456 - \u041a\u0438\u0442\u0430\u0439 \u0447\u0438 \u0421\u0428\u0410 artificial intelligence stock market impact \u0425\u0442\u043e \u043f\u0435\u0440\u0435\u043c\u0430\u0433\u0430\u0454 \u0443 \u0432\u0435\u043b\u0438\u043a\u0456\u0439 \u0442\u0435\u0445\u043d\u043e\u043b\u043e\u0433\u0456\u0447\u043d\u0456\u0439 \u0431\u0438\u0442\u0432\u0456 - \u041a\u0438\u0442\u0430\u0439 \u0447\u0438 \u0421\u0428\u0410 artificial intelligence stock market impact",
+        "keyword_hits": [
+          "artificial intelligence",
+          "market",
+          "stock",
+          "stock market"
+        ],
+        "relevance_score": 6.5,
+        "query": "artificial intelligence stock market impact"
+      },
+      {
+        "doc_id": "5544312cd676be7fcbc2447d",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/ramit-sethi-says-rethink-money-000155302.html",
+        "published_at": "20260413T004500Z",
+        "fetched_at": "2026-05-22T23:58:18+00:00",
+        "source": "finance.yahoo.com",
+        "source_url": "None",
+        "source_domain": "finance.yahoo.com",
+        "title": "Ramit Sethi Says You Need To Rethink Your Money Beliefs Every Year If Your Income And Net Worth Are Up , But Small Purchases Still Cause Stress",
+        "body": "Ramit Sethi Says You Need To Rethink Your Money Beliefs Every Year If Your Income And Net Worth Are Up , But Small Purchases Still Cause Stress artificial intelligence stock market impact Ramit Sethi Says You Need To Rethink Your Money Beliefs Every Year If Your Income And Net Worth Are Up , But Small Purchases Still Cause Stress artificial intelligence stock market impact",
+        "keyword_hits": [
+          "artificial intelligence",
+          "market",
+          "stock",
+          "stock market"
+        ],
+        "relevance_score": 6.5,
+        "query": "artificial intelligence stock market impact"
+      },
+      {
+        "doc_id": "335dad9a19196139b3369d78",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/post-ozempic-economy-2-industries-202500981.html",
+        "published_at": "20260412T210000Z",
+        "fetched_at": "2026-05-22T23:58:18+00:00",
+        "source": "finance.yahoo.com",
+        "source_url": "None",
+        "source_domain": "finance.yahoo.com",
+        "title": "The Post - Ozempic Economy ? 2 Industries Bracing for a Slimmer , Less Hungry America",
+        "body": "The Post - Ozempic Economy ? 2 Industries Bracing for a Slimmer , Less Hungry America artificial intelligence stock market impact The Post - Ozempic Economy ? 2 Industries Bracing for a Slimmer , Less Hungry America artificial intelligence stock market impact",
+        "keyword_hits": [
+          "artificial intelligence",
+          "market",
+          "stock",
+          "stock market"
+        ],
+        "relevance_score": 6.5,
+        "query": "artificial intelligence stock market impact"
+      },
+      {
+        "doc_id": "1c86bad1cad52bd781c526ea",
+        "url": "https://finance.yahoo.com/sectors/technology/articles/broadcom-long-term-google-tpu-155634924.html",
+        "published_at": "20260407T163000Z",
+        "fetched_at": "2026-05-23T00:01:43+00:00",
+        "source": "finance.yahoo.com",
+        "source_url": "None",
+        "source_domain": "finance.yahoo.com",
+        "title": "Broadcom Long - Term Google TPU Deal Is Bigger Than It Looks for AI Infrastructure",
+        "body": "Broadcom Long - Term Google TPU Deal Is Bigger Than It Looks for AI Infrastructure gpu demand semiconductor stocks Broadcom Long - Term Google TPU Deal Is Bigger Than It Looks for AI Infrastructure gpu demand semiconductor stocks",
+        "keyword_hits": [
+          "ai",
+          "gpu demand",
+          "stocks",
+          "tpu"
+        ],
+        "relevance_score": 6.5,
+        "query": "gpu demand semiconductor stocks"
+      },
+      {
+        "doc_id": "cc43ceb305827b886d5d8efc",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/intel-jumps-8-amd-rises-142424490.html",
+        "published_at": "20260402T223000Z",
+        "fetched_at": "2026-05-23T00:01:43+00:00",
+        "source": "finance.yahoo.com",
+        "source_url": "None",
+        "source_domain": "finance.yahoo.com",
+        "title": "Intel Jumps 8 %, AMD Rises 3 %: A $14 . 2 Billion Fab Deal and AI Momentum Lift the Chip Sector",
+        "body": "Intel Jumps 8 %, AMD Rises 3 %: A $14 . 2 Billion Fab Deal and AI Momentum Lift the Chip Sector gpu demand semiconductor stocks Intel Jumps 8 %, AMD Rises 3 %: A $14 . 2 Billion Fab Deal and AI Momentum Lift the Chip Sector gpu demand semiconductor stocks",
+        "keyword_hits": [
+          "ai",
+          "gpu demand",
+          "stocks"
+        ],
+        "relevance_score": 5.0,
+        "query": "gpu demand semiconductor stocks"
+      },
+      {
+        "doc_id": "2a84d42d07aa36e11e3c30f7",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/nvidia-5-trillion-buy-sell-034852460.html",
+        "published_at": "20260425T043000Z",
+        "fetched_at": "2026-05-23T00:21:14+00:00",
+        "source": "finance.yahoo.com",
+        "source_url": "None",
+        "source_domain": "finance.yahoo.com",
+        "title": "Nvidia at $5 Trillion : Buy , Sell , or Hold ?",
+        "body": "Nvidia at $5 Trillion : Buy , Sell , or Hold ? gpu demand semiconductor stocks Nvidia at $5 Trillion : Buy , Sell , or Hold ? gpu demand semiconductor stocks",
+        "keyword_hits": [
+          "gpu demand",
+          "nvidia",
+          "stocks"
+        ],
+        "relevance_score": 5.0,
+        "query": "gpu demand semiconductor stocks"
+      },
+      {
+        "doc_id": "d8451df713a90e3b2cb579d9",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/stock-market-today-april-24-212124844.html",
+        "published_at": "20260424T220000Z",
+        "fetched_at": "2026-05-23T00:21:15+00:00",
+        "source": "finance.yahoo.com",
+        "source_url": "None",
+        "source_domain": "finance.yahoo.com",
+        "title": "Stock Market Today , April 24 : Nvidia Surges on Soaring AI Chip Demand",
+        "body": "Stock Market Today , April 24 : Nvidia Surges on Soaring AI Chip Demand gpu demand semiconductor stocks Stock Market Today , April 24 : Nvidia Surges on Soaring AI Chip Demand gpu demand semiconductor stocks",
+        "keyword_hits": [
+          "ai",
+          "gpu demand",
+          "market",
+          "nvidia",
+          "stock",
+          "stock market",
+          "stocks"
+        ],
+        "relevance_score": 11.5,
+        "query": "gpu demand semiconductor stocks"
+      },
+      {
+        "doc_id": "9c4c3a2b53a7a3546e05e9db",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/micron-soars-6-amd-rallies-160838361.html",
+        "published_at": "20260422T164500Z",
+        "fetched_at": "2026-05-23T00:21:15+00:00",
+        "source": "finance.yahoo.com",
+        "source_url": "None",
+        "source_domain": "finance.yahoo.com",
+        "title": "Micron Soars 6 %, AMD Rallies 4 %, Broadcom Climbs 4 % on Reignited AI Chip Demand",
+        "body": "Micron Soars 6 %, AMD Rallies 4 %, Broadcom Climbs 4 % on Reignited AI Chip Demand gpu demand semiconductor stocks Micron Soars 6 %, AMD Rallies 4 %, Broadcom Climbs 4 % on Reignited AI Chip Demand gpu demand semiconductor stocks",
+        "keyword_hits": [
+          "ai",
+          "gpu demand",
+          "stocks"
+        ],
+        "relevance_score": 5.0,
+        "query": "gpu demand semiconductor stocks"
+      },
+      {
+        "doc_id": "a35d241c9205a9ed1b66410d",
+        "url": "https://www.cnbc.com/2026/05/11/the-stock-market-has-only-done-this-3-times-since-the-gulf-war-its-not-a-good-sign.html",
+        "published_at": "20260511T173000Z",
+        "fetched_at": "2026-05-23T00:35:35+00:00",
+        "source": "cnbc.com",
+        "source_url": "None",
+        "source_domain": "cnbc.com",
+        "title": "The stock market has only done this 3 times since the Gulf War . It not a good sign",
+        "body": "The stock market has only done this 3 times since the Gulf War . It not a good sign artificial intelligence stock market impact The stock market has only done this 3 times since the Gulf War . It not a good sign artificial intelligence stock market impact",
+        "keyword_hits": [
+          "artificial intelligence",
+          "market",
+          "stock",
+          "stock market"
+        ],
+        "relevance_score": 6.5,
+        "query": "artificial intelligence stock market impact"
+      },
+      {
+        "doc_id": "e89ccaf79427e1d998c9350f",
+        "url": "https://www.benzinga.com/markets/tech/26/05/52454791/nvidias-iren-deal-looks-increasingly-like-a-coreweave-repeat",
+        "published_at": "20260511T174500Z",
+        "fetched_at": "2026-05-23T00:39:01+00:00",
+        "source": "benzinga.com",
+        "source_url": "None",
+        "source_domain": "benzinga.com",
+        "title": "Nvidia IREN Deal Looks Increasingly Like A CoreWeave Repeat - CoreWeave ( NASDAQ : CRWV ), IREN ( NASDAQ : IRE",
+        "body": "Nvidia IREN Deal Looks Increasingly Like A CoreWeave Repeat - CoreWeave ( NASDAQ : CRWV ), IREN ( NASDAQ : IRE gpu demand semiconductor stocks Nvidia IREN Deal Looks Increasingly Like A CoreWeave Repeat - CoreWeave ( NASDAQ : CRWV ), IREN ( NASDAQ : IRE gpu demand semiconductor stocks",
+        "keyword_hits": [
+          "gpu demand",
+          "nasdaq",
+          "nvidia",
+          "stocks"
+        ],
+        "relevance_score": 6.5,
+        "query": "gpu demand semiconductor stocks"
+      },
+      {
+        "doc_id": "b3ba3ec67db3221c8411c213",
+        "url": "https://finance.yahoo.com/sectors/technology/articles/blackrock-larry-fink-says-ai-190430516.html",
+        "published_at": "20260511T063000Z",
+        "fetched_at": "2026-05-23T00:39:02+00:00",
+        "source": "finance.yahoo.com",
+        "source_url": "None",
+        "source_domain": "finance.yahoo.com",
+        "title": "BlackRock Larry Fink Says AI Is Creating a New Trillion Dollar Asset Class And Trump Policies May Accelerate It",
+        "body": "BlackRock Larry Fink Says AI Is Creating a New Trillion Dollar Asset Class And Trump Policies May Accelerate It gpu demand semiconductor stocks BlackRock Larry Fink Says AI Is Creating a New Trillion Dollar Asset Class And Trump Policies May Accelerate It gpu demand semiconductor stocks",
+        "keyword_hits": [
+          "ai",
+          "gpu demand",
+          "stocks"
+        ],
+        "relevance_score": 5.0,
+        "query": "gpu demand semiconductor stocks"
+      },
+      {
+        "doc_id": "ec0c93edbfdc7560cb3e5408",
+        "url": "https://finance.yahoo.com/sectors/technology/articles/nvidia-nvda-gains-another-enterprise-165850296.html",
+        "published_at": "20260508T174500Z",
+        "fetched_at": "2026-05-23T00:39:02+00:00",
+        "source": "finance.yahoo.com",
+        "source_url": "None",
+        "source_domain": "finance.yahoo.com",
+        "title": "NVIDIA ( NVDA ) Gains Another Enterprise AI Win As Adoption Continues To Expand",
+        "body": "NVIDIA ( NVDA ) Gains Another Enterprise AI Win As Adoption Continues To Expand gpu demand semiconductor stocks NVIDIA ( NVDA ) Gains Another Enterprise AI Win As Adoption Continues To Expand gpu demand semiconductor stocks",
+        "keyword_hits": [
+          "ai",
+          "gpu demand",
+          "nvidia",
+          "stocks"
+        ],
+        "relevance_score": 7.0,
+        "query": "gpu demand semiconductor stocks"
+      },
+      {
+        "doc_id": "793e38a5f8efa63d0dbd2563",
+        "url": "https://finance.yahoo.com/markets/stocks/articles/amd-ai-moment-may-bigger-175430728.html",
+        "published_at": "20260508T053000Z",
+        "fetched_at": "2026-05-23T00:39:02+00:00",
+        "source": "finance.yahoo.com",
+        "source_url": "None",
+        "source_domain": "finance.yahoo.com",
+        "title": "AMD AI Moment May Be Bigger Than Nvidia Investors Realize",
+        "body": "AMD AI Moment May Be Bigger Than Nvidia Investors Realize gpu demand semiconductor stocks AMD AI Moment May Be Bigger Than Nvidia Investors Realize gpu demand semiconductor stocks",
+        "keyword_hits": [
+          "ai",
+          "gpu demand",
+          "investors",
+          "nvidia",
+          "stocks"
+        ],
+        "relevance_score": 8.5,
+        "query": "gpu demand semiconductor stocks"
+      },
+      {
+        "doc_id": "fc629c35dc600df363b628b0",
+        "url": "https://www.cnbc.com/2026/05/06/nvidia-is-falling-behind-as-semiconductors-surge-heres-what-analysts-say-is-going-on.html",
+        "published_at": "20260506T203000Z",
+        "fetched_at": "2026-05-23T00:39:02+00:00",
+        "source": "cnbc.com",
+        "source_url": "None",
+        "source_domain": "cnbc.com",
+        "title": "Nvidia is falling behind as semiconductors surge . Here what analysts say is going on",
+        "body": "Nvidia is falling behind as semiconductors surge . Here what analysts say is going on gpu demand semiconductor stocks Nvidia is falling behind as semiconductors surge . Here what analysts say is going on gpu demand semiconductor stocks",
+        "keyword_hits": [
+          "gpu demand",
+          "nvidia",
+          "stocks"
+        ],
+        "relevance_score": 5.0,
+        "query": "gpu demand semiconductor stocks"
+      }
+    ],
+    "transport": "gnews+gdelt_backfill",
+    "primary_api_enforced": false,
+    "source_counts": {
+      "gnews": 0,
+      "gdelt": 803,
+      "yfinance_news": 0,
+      "rss": 0,
+      "eodhd": 0
+    }
+  },
+  "ingest": {
+    "queries_used": [
+      "artificial intelligence stock market impact",
+      "generative ai earnings guidance",
+      "ai regulation impact on technology stocks",
+      "gpu demand semiconductor stocks",
+      "hyperscaler ai capex spending",
+      "data center expansion ai demand",
+      "cloud infrastructure ai investment",
+      "ai policy and market reaction",
+      "ai startup funding public markets",
+      "enterprise ai adoption revenue growth",
+      "ai chips supply chain and stocks",
+      "power demand from ai data centers",
+      "hbm memory demand ai boom",
+      "labor automation ai productivity market"
+    ],
+    "fetched_articles": 1320,
+    "inserted_documents": 0,
+    "skipped_documents": 1320,
+    "documents": [],
+    "transport": "gdelt+rss",
+    "primary_api_enforced": false,
+    "source_counts": {
+      "gnews": 0,
+      "gdelt": 60,
+      "yfinance_news": 0,
+      "rss": 1260,
+      "eodhd": 0
+    }
+  },
+  "eodhd_symbol_news": {},
+  "eodhd_earnings_news": null
+}

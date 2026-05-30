@@ -9,11 +9,9 @@ import math
 import sqlite3
 from typing import Any
 
-import httpx
-import yfinance as yf
-
 from finhack.config import Settings, load_settings
 from finhack.data.company_graph import CASE4_SYMBOLS, SECTOR_BUCKETS, SPILLOVER_MAP, SYMBOL_TO_COMPANY
+from finhack.market_data import get_close_series
 
 
 SECTOR_KEYWORDS: dict[str, tuple[str, ...]] = {
@@ -69,6 +67,7 @@ class SectorPrediction:
 class UniversePrediction:
     horizon_days: int
     confidence: float
+    news_articles_7d: int
     stocks: list[CompanyImpact]
     sector_summary: list[dict[str, Any]]
     generated_at_utc: str
@@ -154,48 +153,17 @@ class SectorIntelligenceAgent:
         return out
 
     def _price_history(self, symbol: str, years: int = 5) -> list[float]:
-        if self.settings.market_data_provider.value == "eodhd" and self.settings.eodhd_api_key:
-            try:
-                return self._price_history_eodhd(symbol=symbol, years=years)
-            except Exception:
-                pass
-        hist = yf.Ticker(symbol).history(period=f"{max(1, years)}y", interval="1d", auto_adjust=False)
-        if hist.empty or "Close" not in hist.columns:
-            return []
-        return [float(v) for v in hist["Close"].dropna().tolist()]
-
-    def _price_history_eodhd(self, *, symbol: str, years: int) -> list[float]:
         to_dt = datetime.now(timezone.utc).date()
         from_dt = to_dt - timedelta(days=max(365, years * 366))
-        eodhd_symbol = f"{symbol}.US"
-        with httpx.Client(timeout=20.0) as client:
-            resp = client.get(
-                f"https://eodhd.com/api/eod/{eodhd_symbol}",
-                params={
-                    "api_token": self.settings.eodhd_api_key,
-                    "fmt": "json",
-                    "from": from_dt.isoformat(),
-                    "to": to_dt.isoformat(),
-                    "period": "d",
-                    "order": "a",
-                },
-            )
-            resp.raise_for_status()
-            payload = resp.json()
-        if not isinstance(payload, list):
+        series = get_close_series(
+            symbol,
+            start=from_dt.isoformat(),
+            end=to_dt.isoformat(),
+            settings=self.settings,
+        )
+        if series.empty:
             return []
-        out: list[float] = []
-        for row in payload:
-            if not isinstance(row, dict):
-                continue
-            val = row.get("adjusted_close")
-            if val is None:
-                val = row.get("close")
-            try:
-                out.append(float(val))
-            except (TypeError, ValueError):
-                continue
-        return out
+        return [float(v) for v in series.dropna().tolist()]
 
     def _daily_returns(self, prices: list[float]) -> list[float]:
         if len(prices) < 2:
@@ -444,6 +412,7 @@ class SectorIntelligenceAgent:
         return UniversePrediction(
             horizon_days=max(5, min(horizon_days, 7)),
             confidence=confidence if top_moves else 0.0,
+            news_articles_7d=articles_7d,
             stocks=rows,
             sector_summary=summary,
             generated_at_utc=_now_iso(),

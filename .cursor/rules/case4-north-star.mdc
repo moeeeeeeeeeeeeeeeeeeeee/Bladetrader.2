@@ -1,25 +1,24 @@
 ---
-description: Keep all work aligned to Case 4 objective
+description: Research focus for BladeTrader (post-earnings sentiment + spillover)
 alwaysApply: true
 ---
 
-# Case 4 North Star
+# Research focus
 
-Treat the end product as a sentiment-driven prediction system for post-earnings stock direction, while allowing iterative prototype quality during development.
+This is a **single-user, personal research tool**. Not a product, not a demo, not a hackathon entry. The owner is the only user.
 
-- Always prioritize features that support:
-  - baseline vs sentiment-enhanced model comparison
-  - company-level sentiment + cross-company spillover features
-  - five-trading-day post-earnings direction prediction
-- Keep strict leakage controls: only use information available in the 7-day window ending at earnings date `T`.
-- Use time-aware validation and avoid random splits that leak future information.
-- Ensure outputs are explainable: show source links, feature rationale, spillover path, and confidence.
-- Prefer practical pipeline steps over perfect modeling early; optimize quality after end-to-end flow works.
-- When proposing changes, tie them back to one of these deliverables:
-  - data pipeline
-  - sentiment methodology
-  - feature design
-  - validation approach
-  - dashboard visual evidence
-  - findings and improvement roadmap
+The repo studies **post-earnings direction** using a **seven-day window ending at earnings date T** for inputs, with **time-aware validation** (no random splits that leak the future).
 
+When changing code or docs, prefer work that supports:
+
+- Baseline vs sentiment-enhanced model comparison
+- Company-level text signals and **spillover** features across related tickers
+- **Explainable** outputs (sources, feature rationale, spillover paths, confidence)
+- The **data pipeline**, evaluation discipline, and a clear improvement path
+- **Efficiency** — strip anything not needed to predict correctly
+
+Avoid:
+
+- Re-introducing consumer features (chatbot, portfolio tracking, trade picks, hedge UI, deploy/readiness scaffolding, "live" badges/marketing copy)
+- Expanding scope into unrelated features unless the user asks
+- Hackathon framing ("Case 4", "judges", "demo", "live demo")
