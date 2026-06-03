@@ -1,8 +1,5 @@
 __pycache__/
 *.py[cod]
-.env
-*.db
-data/finhack.db
 data/uploads/
 
 # Generated / local experiment outputs (keep clone small for GitHub)
