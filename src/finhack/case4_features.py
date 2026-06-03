@@ -62,6 +62,48 @@ def _ticker_pattern(symbol: str) -> re.Pattern[str]:
     return pat
 
 
+# Earnings-specific keyword patterns. These look for the actual report
+# outcome ("beat estimates", "cut guidance", etc.) rather than generic
+# sentiment polarity. Patterns are case-insensitive and require word
+# boundaries so common English words don't trip them.
+EARNINGS_POSITIVE_PATTERNS: tuple[re.Pattern[str], ...] = (
+    re.compile(r"\b(beat[s]?|beating|beaten)\b\s+(?:estimates?|consensus|expectations?|forecasts?|earnings|revenue|sales|wall\s+street)", re.I),
+    re.compile(r"\b(exceed[s]?|exceeding|exceeded)\b\s+(?:estimates?|consensus|expectations?|forecasts?)", re.I),
+    re.compile(r"\b(raise[ds]?|raises|raising|hike[ds]?|hikes|hiking)\s+(?:its\s+|the\s+|full[\s-]?year\s+)?(?:guidance|outlook|forecast|target|estimates?)", re.I),
+    re.compile(r"\bguid(?:e|ed|ance|ing)\s+(?:higher|up|above)\b", re.I),
+    re.compile(r"\b(outperform[s]?|outperforming|outperformed)\b", re.I),
+    re.compile(r"\b(blowout|blow[\s-]?out)\b", re.I),
+    re.compile(r"\brecord\s+(?:revenue|profit|sales|quarter|earnings|results)\b", re.I),
+    re.compile(r"\b(above|ahead\s+of|stronger\s+than)\s+(?:estimates?|consensus|expectations?|forecasts?)\b", re.I),
+    re.compile(r"\b(surge[ds]?|surging|jump(?:ed|s|ing)?|rally(?:ed|ing|s)?|soar(?:s|ed|ing)?)\b\s+(?:after|on|to|past)\s", re.I),
+    re.compile(r"\b(stronger|better)[-\s]?than[-\s](?:expected|estimated|forecast)\b", re.I),
+)
+
+EARNINGS_NEGATIVE_PATTERNS: tuple[re.Pattern[str], ...] = (
+    re.compile(r"\b(miss(?:es)?|missed|missing)\s+(?:on\s+)?(?:estimates?|expectations?|consensus|earnings|revenue|sales|forecasts?|wall\s+street)\b", re.I),
+    re.compile(r"\b(fall|fell|falls|falling|fallen)\s+short\s+of\b", re.I),
+    re.compile(r"\b(cut[s]?|cutting|reduce[ds]?|reducing|lower(?:ed|s|ing)?|slash(?:ed|es|ing)?)\s+(?:its\s+|the\s+|full[\s-]?year\s+)?(?:guidance|outlook|forecast|target|estimates?)", re.I),
+    re.compile(r"\bguid(?:e|ed|ance|ing)\s+(?:lower|down|below)\b", re.I),
+    re.compile(r"\b(underperform[s]?|underperforming|underperformed)\b", re.I),
+    re.compile(r"\b(plunge[ds]?|plunging|tumble[ds]?|tumbling|slump[ds]?|slumping|crash(?:es|ed|ing)?)\b", re.I),
+    re.compile(r"\b(profit|earnings|revenue|sales)\s+warning\b", re.I),
+    re.compile(r"\b(below|short\s+of|weaker\s+than)\s+(?:estimates?|consensus|expectations?|forecasts?)\b", re.I),
+    re.compile(r"\b(disappoint(?:ment|ing|s|ed)?)\b", re.I),
+    re.compile(r"\b(weaker|worse)[-\s]?than[-\s](?:expected|estimated|forecast)\b", re.I),
+    re.compile(r"\b(downgrad(?:ed?|es|ing)|downgrade)\b", re.I),
+)
+
+
+def _count_pattern_hits(text: str, patterns: tuple[re.Pattern[str], ...]) -> int:
+    """Total regex matches across a tuple of compiled patterns."""
+    if not text:
+        return 0
+    total = 0
+    for pat in patterns:
+        total += len(pat.findall(text))
+    return total
+
+
 def _name_pattern(name_lower: str) -> re.Pattern[str]:
     """Case-insensitive word-boundary regex for a company-name string."""
     key = f"^NAME^{name_lower}"
@@ -270,6 +312,11 @@ def compute_news_features(
     finbert_pos = 0
     finbert_neg = 0
 
+    earnings_kw_pos_mentions = 0
+    earnings_kw_neg_mentions = 0
+    earnings_kw_pos_docs = 0
+    earnings_kw_neg_docs = 0
+
     for doc in docs:
         text = f"{doc['title']} {doc['body']}"
         low = text.lower()
@@ -293,6 +340,14 @@ def compute_news_features(
             if title:
                 weight = max(abs(lex_val), abs(fb_val) if fb_val is not None else 0.0)
                 driver_scores.append((weight + rel, title))
+            pos_hits = _count_pattern_hits(text, EARNINGS_POSITIVE_PATTERNS)
+            neg_hits = _count_pattern_hits(text, EARNINGS_NEGATIVE_PATTERNS)
+            earnings_kw_pos_mentions += pos_hits
+            earnings_kw_neg_mentions += neg_hits
+            if pos_hits > 0:
+                earnings_kw_pos_docs += 1
+            if neg_hits > 0:
+                earnings_kw_neg_docs += 1
         for pat in peer_pats:
             if pat.search(text):
                 spill_mentions += 1
@@ -322,6 +377,14 @@ def compute_news_features(
     driver_scores.sort(key=lambda x: x[0], reverse=True)
     top_drivers = [title for _, title in driver_scores[:3]]
 
+    earnings_kw_total_mentions = earnings_kw_pos_mentions + earnings_kw_neg_mentions
+    earnings_kw_polarity = 0.0
+    if earnings_kw_total_mentions > 0:
+        earnings_kw_polarity = (
+            earnings_kw_pos_mentions - earnings_kw_neg_mentions
+        ) / float(earnings_kw_total_mentions)
+    earnings_kw_density = earnings_kw_total_mentions / max(1, sym_docs)
+
     return {
         "sent_doc_count": sym_docs,
         "sent_lex_mean": round(lex_mean, 4),
@@ -342,6 +405,14 @@ def compute_news_features(
         "spillover_weighted_score_7d": round(weighted_spill_score, 4),
         "enhanced_exposure_score": round(exposure, 4),
         "top_drivers": top_drivers,
+        # Earnings-specific keyword features. Counted only on symbol-mentioning
+        # docs so generic news doesn't leak in.
+        "earnings_kw_pos_mentions": int(earnings_kw_pos_mentions),
+        "earnings_kw_neg_mentions": int(earnings_kw_neg_mentions),
+        "earnings_kw_pos_doc_count": int(earnings_kw_pos_docs),
+        "earnings_kw_neg_doc_count": int(earnings_kw_neg_docs),
+        "earnings_kw_polarity": round(earnings_kw_polarity, 4),
+        "earnings_kw_density": round(earnings_kw_density, 4),
     }
 
 

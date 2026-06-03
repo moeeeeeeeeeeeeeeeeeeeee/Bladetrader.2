@@ -139,6 +139,14 @@ def event_features(event: dict[str, Any], *, db: Path | None = None) -> dict[str
         "spillover_density_7d": news["spillover_density_7d"],
         "spillover_weighted_score_7d": news.get("spillover_weighted_score_7d", 0.0),
         "enhanced_documents_considered": news["enhanced_documents_considered"],
+        # Earnings-specific keyword features (beat/miss/guidance), computed
+        # only on symbol-mentioning docs.
+        "earnings_kw_pos_mentions": news.get("earnings_kw_pos_mentions", 0),
+        "earnings_kw_neg_mentions": news.get("earnings_kw_neg_mentions", 0),
+        "earnings_kw_pos_doc_count": news.get("earnings_kw_pos_doc_count", 0),
+        "earnings_kw_neg_doc_count": news.get("earnings_kw_neg_doc_count", 0),
+        "earnings_kw_polarity": news.get("earnings_kw_polarity", 0.0),
+        "earnings_kw_density": news.get("earnings_kw_density", 0.0),
     }
 
 
@@ -230,6 +238,15 @@ ENHANCED_FEATURES = PRICE_FEATURES + [
     "spillover_mentions_7d",
     "spillover_density_7d",
     "spillover_weighted_score_7d",
+    # Earnings-specific keyword features. These look for the actual report
+    # outcome ("beat estimates", "cut guidance", etc.) and should be more
+    # directionally predictive than generic FinBERT polarity.
+    "earnings_kw_pos_mentions",
+    "earnings_kw_neg_mentions",
+    "earnings_kw_pos_doc_count",
+    "earnings_kw_neg_doc_count",
+    "earnings_kw_polarity",
+    "earnings_kw_density",
 ]
 
 

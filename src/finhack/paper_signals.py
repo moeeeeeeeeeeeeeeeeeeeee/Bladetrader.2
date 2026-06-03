@@ -16,7 +16,7 @@ from finhack.case4_features import (
     sign_from_return,
 )
 from finhack.config import Settings, load_settings
-from finhack.data.trading_universe import resolve_trading_universe
+from finhack.data.trading_universe import UniverseEntry, resolve_trading_universe
 from finhack.market_data import get_close_series, get_upcoming_earnings_batch
 from finhack.research.case4_backtest import _position_weight
 from finhack.research.case4_trade_path import compute_swing_levels
@@ -101,11 +101,33 @@ def build_earnings_paper_signals(
     horizon_days: int = 14,
     universe_limit: int | None = None,
     min_confidence: float = DEFAULT_MIN_CONFIDENCE,
+    symbol_filter: list[str] | tuple[str, ...] | None = None,
     settings: Settings | None = None,
 ) -> PaperSignalsBundle:
     cfg = settings or load_settings()
     db_path = resolve_db_path(cfg)
-    universe = resolve_trading_universe(settings=cfg, limit=universe_limit)
+    if symbol_filter:
+        from finhack.data.company_graph import SYMBOL_TO_COMPANY
+
+        universe: list[UniverseEntry] = []
+        for sym in symbol_filter:
+            key = str(sym).upper().strip()
+            comp = SYMBOL_TO_COMPANY.get(key)
+            if comp:
+                universe.append(
+                    UniverseEntry(
+                        symbol=comp.symbol,
+                        name=comp.name,
+                        sector=comp.sector_bucket,
+                        source="nq_signal",
+                    )
+                )
+            else:
+                universe.append(
+                    UniverseEntry(symbol=key, name=key, sector="—", source="nq_signal")
+                )
+    else:
+        universe = resolve_trading_universe(settings=cfg, limit=universe_limit)
     symbols = [u.symbol for u in universe]
     upcoming = get_upcoming_earnings_batch(symbols, horizon_days=horizon_days, settings=cfg)
     best_strategy, hist_hit = _load_best_strategy()

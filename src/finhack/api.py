@@ -43,6 +43,18 @@ from finhack.market_data import (
     ohlc_frame_to_point_rows,
 )
 from finhack.paper_signals import build_earnings_paper_signals, paper_signals_to_dict
+from finhack.research.constants import NQ_SIGNAL_SYMBOLS, OVERLAY_PRE_REGISTERED_MIN_CONFIDENCE
+from finhack.nq_session import build_futures_chart_payload
+from finhack.research.nq_session_backtest import run_nq_session_backtest
+from finhack.session_watch import build_session_watch_payload
+from finhack.trade_journal import (
+    create_trade,
+    delete_trade,
+    journal_stats,
+    list_trades,
+    trade_to_dict,
+    update_trade,
+)
 
 app = FastAPI(
     title="BladeTrader Research API",
@@ -290,6 +302,9 @@ class PaperSignalsRequest(BaseModel):
 
 CASE4_PATH = PROJECT_ROOT / "data" / "case4_earnings_validation.json"
 CASE4_BACKTEST_PATH = PROJECT_ROOT / "data" / "case4_backtest_summary.json"
+CASE4_MODEL_COMPARISON_PATH = PROJECT_ROOT / "data" / "case4_model_comparison.json"
+CASE4_MODEL_ARTIFACT_PATH = PROJECT_ROOT / "data" / "models" / "case4_enhanced.pkl"
+CASE4_NQ_MEGACAP_PATH = PROJECT_ROOT / "data" / "case4_nq_megacap_uplift.json"
 
 
 def _load_case4_summary_data() -> dict[str, Any]:
@@ -645,6 +660,160 @@ def get_dashboard_backtest() -> DashboardBacktestResponse:
     )
 
 
+@app.get("/api/dashboard/feature_importance")
+def get_dashboard_feature_importance() -> dict[str, Any]:
+    """Per-feature LightGBM gain for the persisted enhanced model.
+
+    Reads the saved model artifact (``data/models/case4_enhanced.pkl``) and,
+    if it is a LightGBM booster, returns the per-feature gain + split count.
+    This is the cleanest way to surface "which features the model actually
+    relies on" — important context for the upstream-model card, since a
+    feature with zero splits is dead weight regardless of its label.
+    """
+    out: dict[str, Any] = {
+        "available": False,
+        "backend": None,
+        "model_path": str(CASE4_MODEL_ARTIFACT_PATH.as_posix()),
+        "trained_at_utc": None,
+        "train_events": None,
+        "features": [],
+        "model_comparison": None,
+        "note": None,
+    }
+
+    if CASE4_MODEL_COMPARISON_PATH.exists():
+        try:
+            cmp_payload = json.loads(CASE4_MODEL_COMPARISON_PATH.read_text(encoding="utf-8"))
+            if isinstance(cmp_payload, dict):
+                out["model_comparison"] = {
+                    "generated_at_utc": cmp_payload.get("generated_at_utc"),
+                    "results": cmp_payload.get("results"),
+                    "dataset": {
+                        k: v
+                        for k, v in (cmp_payload.get("dataset") or {}).items()
+                        if k in {"events_total", "train_events", "test_events", "news_coverage"}
+                    },
+                }
+        except (json.JSONDecodeError, OSError):
+            pass
+
+    if not CASE4_MODEL_ARTIFACT_PATH.exists():
+        out["note"] = "Model artifact missing — run scripts/train_case4_prototype_model.py."
+        return out
+
+    try:
+        from finhack.research.model_store import load_trained_model
+
+        model = load_trained_model(CASE4_MODEL_ARTIFACT_PATH)
+    except Exception as exc:  # noqa: BLE001
+        out["note"] = f"Could not load model artifact: {exc!r}"
+        return out
+
+    if model is None:
+        out["note"] = "Model artifact present but failed to deserialize."
+        return out
+
+    out["backend"] = model.backend
+    out["trained_at_utc"] = (model.extras or {}).get("trained_at_utc")
+    out["train_events"] = model.train_events
+
+    if model.backend != "lightgbm":
+        out["note"] = (
+            f"Feature importance is only surfaced for LightGBM artifacts; "
+            f"current backend is {model.backend!r}."
+        )
+        out["available"] = True
+        return out
+
+    try:
+        import lightgbm as lgb  # type: ignore
+
+        booster = lgb.Booster(model_str=model.model_blob.decode("utf-8"))
+        gains = booster.feature_importance(importance_type="gain")
+        splits = booster.feature_importance(importance_type="split")
+    except Exception as exc:  # noqa: BLE001
+        out["note"] = f"LightGBM unavailable: {exc!r}"
+        return out
+
+    total_gain = float(sum(gains)) or 1.0
+    rows = []
+    for name, gain, split in zip(model.feature_names, gains, splits):
+        rows.append(
+            {
+                "feature": str(name),
+                "gain": float(gain),
+                "gain_share": round(float(gain) / total_gain, 6),
+                "splits": int(split),
+                "is_new_keyword_feature": str(name).startswith("earnings_kw_"),
+            }
+        )
+    rows.sort(key=lambda r: r["gain"], reverse=True)
+
+    new_kw_gain = sum(r["gain"] for r in rows if r["is_new_keyword_feature"])
+    dead_features = [r["feature"] for r in rows if r["splits"] == 0]
+
+    out["available"] = True
+    out["total_gain"] = total_gain
+    out["features"] = rows
+    out["summary"] = {
+        "new_keyword_gain_share": round(new_kw_gain / total_gain, 6),
+        "dead_feature_count": len(dead_features),
+        "dead_features": dead_features,
+        "active_feature_count": len(rows) - len(dead_features),
+    }
+    return out
+
+
+@app.get("/api/dashboard/model_comparison")
+def get_dashboard_model_comparison() -> dict[str, Any]:
+    """Latest train/test metrics from scripts/train_case4_prototype_model.py.
+
+    This is separate from /api/dashboard/summary because that endpoint
+    reads ``case4_earnings_validation.json``, whose stored metrics can be
+    stale relative to the most recent re-training of the artifact.
+    """
+    out: dict[str, Any] = {
+        "available": False,
+        "path": str(CASE4_MODEL_COMPARISON_PATH.as_posix()),
+        "results": None,
+        "dataset": None,
+        "encoder": None,
+        "generated_at_utc": None,
+        "nq_megacap": None,
+    }
+    if CASE4_MODEL_COMPARISON_PATH.exists():
+        try:
+            payload = json.loads(CASE4_MODEL_COMPARISON_PATH.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError) as exc:
+            return out | {"error": f"could not parse model comparison: {exc!r}"}
+        if isinstance(payload, dict):
+            out["available"] = True
+            out["generated_at_utc"] = payload.get("generated_at_utc")
+            out["results"] = payload.get("results")
+            out["dataset"] = payload.get("dataset")
+            out["encoder"] = payload.get("encoder")
+            out["model_backend"] = payload.get("model_backend")
+            out["model_artifact"] = payload.get("model_artifact")
+
+    if CASE4_NQ_MEGACAP_PATH.exists():
+        try:
+            mega = json.loads(CASE4_NQ_MEGACAP_PATH.read_text(encoding="utf-8"))
+            if isinstance(mega, dict):
+                out["nq_megacap"] = {
+                    "generated_at_utc": mega.get("generated_at_utc"),
+                    "subset": mega.get("subset"),
+                    "results_subset": mega.get("results_subset"),
+                    "results_full_universe_for_reference": mega.get(
+                        "results_full_universe_for_reference"
+                    ),
+                    "interpretation": mega.get("interpretation"),
+                }
+        except (json.JSONDecodeError, OSError):
+            pass
+
+    return out
+
+
 @app.get("/api/dashboard/events", response_model=list[DashboardEventPreview])
 def get_dashboard_events(limit: int = 8) -> list[DashboardEventPreview]:
     safe_limit = max(1, min(limit, 30))
@@ -694,6 +863,7 @@ def get_paper_earnings_signals(
             horizon_days=req.horizon_days,
             universe_limit=req.universe_limit,
             min_confidence=req.min_confidence,
+            symbol_filter=list(NQ_SIGNAL_SYMBOLS),
         )
     except Exception as exc:  # noqa: BLE001
         raise HTTPException(status_code=502, detail=str(exc)) from exc
@@ -702,6 +872,196 @@ def get_paper_earnings_signals(
         payload["signals"] = [s for s in payload["signals"] if s.get("actionable")]
         payload["upcoming_earnings_count"] = len(payload["signals"])
     return payload
+
+
+# ---------- Routes: futures chart (NQ/MNQ + structure + trade plan) ----------
+
+
+@app.get("/api/futures/chart")
+def get_futures_chart(
+    instrument: str = "MNQ",
+    days: int = 120,
+    interval: str = "1d",
+    horizon_days: int = 14,
+    min_confidence: float = OVERLAY_PRE_REGISTERED_MIN_CONFIDENCE,
+) -> dict[str, Any]:
+    """Candlestick OHLC for the instrument proxy + PDH/PDL/fib levels + SL/TP."""
+    safe_days = max(7, min(days, 730))
+    raw_iv = (interval or "1d").strip().lower()
+    if raw_iv not in MARKET_HISTORY_INTERVALS:
+        raw_iv = "1d"
+    try:
+        return build_futures_chart_payload(
+            instrument,
+            days=safe_days,
+            interval=raw_iv,
+            horizon_days=horizon_days,
+            min_confidence=min_confidence,
+        )
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+class JournalTradeCreate(BaseModel):
+    instrument: str = "MNQ"
+    direction: str
+    session_date: str | None = None
+    contracts: int = 1
+    entry_price: float | None = None
+    exit_price: float | None = None
+    stop_price: float | None = None
+    target_price: float | None = None
+    pnl_usd: float | None = None
+    pnl_pct: float | None = None
+    status: str = "planned"
+    signal_confidence: float | None = None
+    signal_contributors: list[str] = Field(default_factory=list)
+    notes: str = ""
+    tags: list[str] = Field(default_factory=list)
+
+
+class JournalTradeUpdate(BaseModel):
+    session_date: str | None = None
+    instrument: str | None = None
+    direction: str | None = None
+    contracts: int | None = None
+    entry_price: float | None = None
+    exit_price: float | None = None
+    stop_price: float | None = None
+    target_price: float | None = None
+    pnl_usd: float | None = None
+    pnl_pct: float | None = None
+    status: str | None = None
+    signal_confidence: float | None = None
+    signal_contributors: list[str] | None = None
+    notes: str | None = None
+    tags: list[str] | None = None
+
+
+@app.get("/api/futures/backtest")
+def get_futures_backtest(
+    min_confidence: float = 0.0,
+    cost_bps: float = 5.0,
+    n_sims: int = 3000,
+) -> dict[str, Any]:
+    """Cap-weight vs equal-weight QQQ session backtest + Monte Carlo null."""
+    try:
+        return run_nq_session_backtest(
+            min_confidence=min_confidence,
+            cost_bps=cost_bps,
+            n_sims=max(500, min(n_sims, 10000)),
+        )
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@app.get("/api/journal/trades")
+def get_journal_trades(
+    limit: int = 100,
+    status: str | None = None,
+) -> dict[str, Any]:
+    trades = list_trades(limit=max(1, min(limit, 500)), status=status)
+    return {
+        "trades": [trade_to_dict(t) for t in trades],
+        "stats": journal_stats(),
+    }
+
+
+@app.post("/api/journal/trades")
+def post_journal_trade(body: JournalTradeCreate) -> dict[str, Any]:
+    try:
+        trade = create_trade(
+            instrument=body.instrument,
+            direction=body.direction,
+            session_date=body.session_date,
+            contracts=body.contracts,
+            entry_price=body.entry_price,
+            exit_price=body.exit_price,
+            stop_price=body.stop_price,
+            target_price=body.target_price,
+            pnl_usd=body.pnl_usd,
+            pnl_pct=body.pnl_pct,
+            status=body.status,
+            signal_confidence=body.signal_confidence,
+            signal_contributors=body.signal_contributors,
+            notes=body.notes,
+            tags=body.tags,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return trade_to_dict(trade)
+
+
+@app.patch("/api/journal/trades/{trade_id}")
+def patch_journal_trade(trade_id: str, body: JournalTradeUpdate) -> dict[str, Any]:
+    updates = body.model_dump(exclude_none=True)
+    trade = update_trade(trade_id, updates=updates)
+    if trade is None:
+        raise HTTPException(status_code=404, detail="trade not found")
+    return trade_to_dict(trade)
+
+
+@app.delete("/api/journal/trades/{trade_id}")
+def remove_journal_trade(trade_id: str) -> dict[str, Any]:
+    if not delete_trade(trade_id):
+        raise HTTPException(status_code=404, detail="trade not found")
+    return {"ok": True, "trade_id": trade_id}
+
+
+@app.get("/api/journal/stats")
+def get_journal_stats() -> dict[str, Any]:
+    return journal_stats()
+
+
+# ---------- Routes: session watch (overlay + upcoming + topstep risk) ----------
+
+
+@app.get("/api/session_watch")
+def get_session_watch(
+    variant: str | None = None,
+    horizon_days: int = 14,
+    min_confidence_floor: float = OVERLAY_PRE_REGISTERED_MIN_CONFIDENCE,
+    universe_limit: int = 40,
+    account: str = "50K",
+    current_balance: float | None = None,
+    peak_eod_balance: float | None = None,
+    todays_pnl: float = 0.0,
+) -> dict[str, Any]:
+    """Aggregate the overlay validation, today's upcoming-session signal,
+    and a TopStep risk-state calculator into a single research payload.
+
+    Inputs:
+      - variant: which overlay variant to surface (defaults to the first
+        available file in finhack.session_watch.OVERLAY_VARIANTS).
+      - horizon_days: how many days of upcoming earnings to scan.
+      - min_confidence_floor: actionability threshold for next-session signal.
+      - account: TopStep account preset key (50K, 100K, 150K).
+      - current_balance / peak_eod_balance / todays_pnl: account state.
+    """
+    cfg = load_settings()
+    starting = {
+        "50K": 50_000.0, "100K": 100_000.0, "150K": 150_000.0,
+    }.get(account, 50_000.0)
+    cur = float(current_balance) if current_balance is not None else starting
+    peak = float(peak_eod_balance) if peak_eod_balance is not None else cur
+    try:
+        return build_session_watch_payload(
+            variant_key=variant,
+            horizon_days=horizon_days,
+            min_confidence_floor=min_confidence_floor,
+            universe_limit=universe_limit,
+            account_label=account,
+            current_balance=cur,
+            peak_eod_balance=peak,
+            todays_pnl=todays_pnl,
+            settings=cfg,
+        )
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
 # ---------- Routes: news document inspector (read-only) ----------

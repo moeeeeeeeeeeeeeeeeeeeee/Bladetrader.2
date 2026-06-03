@@ -1,0 +1,168 @@
+{
+  "generated_at_utc": "2026-05-30T07:58:39.174195+00:00",
+  "objective": "Test whether the enhanced model beats the price-only baseline on the NQ-100 mega-cap subset, where translating to a same-session MNQ direction bet is most defensible.",
+  "subset": {
+    "name": "nq_megacaps",
+    "symbols": [
+      "AAPL",
+      "ADBE",
+      "ADI",
+      "AMAT",
+      "AMD",
+      "AMGN",
+      "AMZN",
+      "AVGO",
+      "BKNG",
+      "CMCSA",
+      "COST",
+      "CSCO",
+      "GILD",
+      "GOOG",
+      "GOOGL",
+      "INTC",
+      "INTU",
+      "ISRG",
+      "LRCX",
+      "MDLZ",
+      "META",
+      "MSFT",
+      "MU",
+      "NFLX",
+      "NVDA",
+      "PEP",
+      "QCOM",
+      "REGN",
+      "TSLA",
+      "TXN"
+    ],
+    "events_in_universe": 35,
+    "events_covered_full_universe": 911,
+    "train_events": 24,
+    "test_events": 11,
+    "news_coverage_subset": {
+      "events_total": 35,
+      "events_with_any_news": 22,
+      "events_with_finbert_score": 22,
+      "events_with_spillover": 16,
+      "zero_news_event_pct": 0.3714,
+      "low_coverage_symbols": []
+    }
+  },
+  "results_subset": {
+    "baseline": {
+      "accuracy": 0.18181818181818182,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "n_test": 11
+    },
+    "sentiment_enhanced": {
+      "accuracy": 0.18181818181818182,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "n_test": 11
+    },
+    "accuracy_uplift_pp": 0.0
+  },
+  "results_full_universe_for_reference": {
+    "baseline_accuracy": 0.5474,
+    "enhanced_accuracy": 0.4964,
+    "accuracy_uplift_pp": -5.11,
+    "events_total": 911,
+    "news_coverage": {
+      "events_total": 911,
+      "events_with_any_news": 497,
+      "events_with_finbert_score": 497,
+      "events_with_spillover": 16,
+      "zero_news_event_pct": 0.4544,
+      "low_coverage_symbols": [
+        {
+          "symbol": "AAVVF",
+          "events": 11,
+          "events_with_news": 0,
+          "coverage_pct": 0.0
+        },
+        {
+          "symbol": "ADAPY",
+          "events": 9,
+          "events_with_news": 0,
+          "coverage_pct": 0.0
+        },
+        {
+          "symbol": "ACTU",
+          "events": 5,
+          "events_with_news": 0,
+          "coverage_pct": 0.0
+        },
+        {
+          "symbol": "ABPO",
+          "events": 4,
+          "events_with_news": 0,
+          "coverage_pct": 0.0
+        },
+        {
+          "symbol": "ACNT",
+          "events": 4,
+          "events_with_news": 0,
+          "coverage_pct": 0.0
+        },
+        {
+          "symbol": "ACXP",
+          "events": 12,
+          "events_with_news": 1,
+          "coverage_pct": 0.0833
+        },
+        {
+          "symbol": "ABUS",
+          "events": 11,
+          "events_with_news": 1,
+          "coverage_pct": 0.0909
+        },
+        {
+          "symbol": "ACET",
+          "events": 12,
+          "events_with_news": 2,
+          "coverage_pct": 0.1667
+        },
+        {
+          "symbol": "ACH",
+          "events": 12,
+          "events_with_news": 2,
+          "coverage_pct": 0.1667
+        },
+        {
+          "symbol": "ACTG",
+          "events": 12,
+          "events_with_news": 2,
+          "coverage_pct": 0.1667
+        },
+        {
+          "symbol": "ADIL",
+          "events": 11,
+          "events_with_news": 2,
+          "coverage_pct": 0.1818
+        },
+        {
+          "symbol": "ACCS",
+          "events": 10,
+          "events_with_news": 2,
+          "coverage_pct": 0.2
+        },
+        {
+          "symbol": "ABAT",
+          "events": 9,
+          "events_with_news": 2,
+          "coverage_pct": 0.2222
+        },
+        {
+          "symbol": "ACRV",
+          "events": 13,
+          "events_with_news": 3,
+          "coverage_pct": 0.2308
+        }
+      ]
+    }
+  },
+  "interpretation": "If the subset uplift is positive while the full-universe uplift is ~0, the signal lives in the NQ-relevant names but is diluted across the long tail of the catalog. That is the configuration that makes the overlay actionable. If subset uplift is also ~0, the enhanced features add no real edge over price momentum anywhere yet."
+}

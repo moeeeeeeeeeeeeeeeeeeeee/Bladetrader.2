@@ -1,0 +1,435 @@
+{
+  "generated_at_utc": "2026-05-30T07:15:57.100634+00:00",
+  "objective": "Test whether per-earnings enhanced_pred_sign signals translate into a same-session directional bet on the Nasdaq-100 (proxied by QQQ; same underlying index MNQ futures track).",
+  "data_source": "C:\\Users\\moham\\Bladetrader.2\\data\\case4_earnings_validation.json",
+  "proxy_instrument": {
+    "symbol": "QQQ",
+    "rationale": "QQQ is the cash ETF on NDX; MNQ/NQ futures track NDX. Daily OPEN->CLOSE return is a faithful proxy for an intraday MNQ session bet under TopStep's 4PM-ET flat rule."
+  },
+  "methodology": {
+    "session_assignment": "Conservative T+1: signal for earnings event on calendar day T applied to the NEXT US trading session strictly after T. No intraday data needed; no leakage.",
+    "aggregation": "agg_score(session) = sum_i sign_i * confidence_i over events mapped to that session. Direction = sign(agg_score). Sessions with agg_score = 0 skipped.",
+    "signal_filter": "all non-zero enhanced_pred_sign",
+    "session_return": "QQQ Open -> QQQ Close, same trading day.",
+    "leakage_guards": [
+      "Signals built from documents in [T-7d, T] only (upstream).",
+      "Signal applied to session strictly after T (this script).",
+      "No intraday news touches the bet; news-window rule never violated."
+    ]
+  },
+  "parameters": {
+    "require_news": false,
+    "symbol_filter": "nq_megacaps",
+    "min_confidence": 0.8,
+    "n_permutations": 1000,
+    "seed": 42,
+    "cost_bps_per_side": 1.0,
+    "min_sessions_for_confidence": 80
+  },
+  "upstream_uplift_on_subset": {
+    "events_in_subset": 36,
+    "baseline": {
+      "correct": 16,
+      "total": 34,
+      "accuracy": 0.4706
+    },
+    "enhanced": {
+      "correct": 11,
+      "total": 21,
+      "accuracy": 0.5238
+    },
+    "uplift_pp": 5.32
+  },
+  "coverage": {
+    "raw_signals_loaded": 21,
+    "sessions_with_signal": 21,
+    "date_range": [
+      "2023-08-04",
+      "2026-05-21"
+    ],
+    "unique_contributing_symbols": 3,
+    "coverage_warning": "Only 21 signal-bearing sessions. Below the 80-session threshold; results are noisy and must not be acted on. Acquire more history (longer validation window) before drawing conclusions."
+  },
+  "results": {
+    "trades": 21,
+    "hit_rate": 0.381,
+    "long_trades": 15,
+    "short_trades": 6,
+    "mean_session_return_long_pct": -0.5718,
+    "mean_session_return_short_pct": -0.8083,
+    "directional_return_pct_mean": -0.1775,
+    "directional_return_pct_cum": -3.7663,
+    "sharpe_annualized": -2.7006,
+    "max_drawdown_pct": -6.186,
+    "after_cost": {
+      "round_trip_cost_pct": 0.02,
+      "hit_rate": 0.3333,
+      "directional_return_pct_mean": -0.1975,
+      "directional_return_pct_cum": -4.1704,
+      "sharpe_annualized": -3.0049
+    }
+  },
+  "by_confidence_bucket": [
+    {
+      "bucket": "0.50-0.55",
+      "trades": 0,
+      "hit_rate": null,
+      "directional_return_pct_mean": null
+    },
+    {
+      "bucket": "0.55-0.60",
+      "trades": 0,
+      "hit_rate": null,
+      "directional_return_pct_mean": null
+    },
+    {
+      "bucket": "0.60-0.70",
+      "trades": 0,
+      "hit_rate": null,
+      "directional_return_pct_mean": null
+    },
+    {
+      "bucket": "0.70-0.80",
+      "trades": 0,
+      "hit_rate": null,
+      "directional_return_pct_mean": null
+    },
+    {
+      "bucket": ">=0.80",
+      "trades": 21,
+      "hit_rate": 0.381,
+      "directional_return_pct_mean": -0.1775
+    }
+  ],
+  "permutation": {
+    "iterations": 1000,
+    "observed_hit_rate": 0.381,
+    "p_value_hit_rate_greater": 0.7233,
+    "p_value_cum_return_greater": 0.3287,
+    "null_mean_hit_rate": 0.3733,
+    "null_p95_hit_rate": 0.4762,
+    "null_mean_cum_return_pct": -5.3806
+  },
+  "honesty_notes": [
+    "The upstream validation file reports enhanced_accuracy == baseline_accuracy on the full 929-event universe; the enhanced model currently does not beat the price-only baseline in aggregate. If this overlay shows edge, it is because the subset of events with non-zero signal AND non-trivial confidence is informative -- not because the model wins across all events.",
+    "QQQ is a cash proxy. Real MNQ fills, slippage, and overnight settlement differences will degrade these numbers further; the after_cost block is a minimal correction, not a real fill simulator.",
+    "Conservative T+1 throws away any same-day-BMO edge. A tighter session assignment using ET hour-of-day could be added later."
+  ],
+  "sessions": [
+    {
+      "session_date": "2023-08-04",
+      "direction": -1,
+      "agg_signed_confidence": -1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "AAPL"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 375.75,
+      "qqq_close": 366.0582,
+      "session_return_pct": -2.5793,
+      "directional_return_pct": 2.5793,
+      "hit": true
+    },
+    {
+      "session_date": "2023-11-03",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "AAPL"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 364.75,
+      "qqq_close": 362.3211,
+      "session_return_pct": -0.6659,
+      "directional_return_pct": -0.6659,
+      "hit": false
+    },
+    {
+      "session_date": "2023-12-14",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ADBE"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 404.98,
+      "qqq_close": 397.4782,
+      "session_return_pct": -1.8524,
+      "directional_return_pct": -1.8524,
+      "hit": false
+    },
+    {
+      "session_date": "2024-02-02",
+      "direction": -1,
+      "agg_signed_confidence": -1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "AAPL"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 423.8,
+      "qqq_close": 423.7899,
+      "session_return_pct": -0.0024,
+      "directional_return_pct": 0.0024,
+      "hit": true
+    },
+    {
+      "session_date": "2024-05-03",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "AAPL"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 434.44,
+      "qqq_close": 430.7505,
+      "session_return_pct": -0.8493,
+      "directional_return_pct": -0.8493,
+      "hit": false
+    },
+    {
+      "session_date": "2024-08-02",
+      "direction": -1,
+      "agg_signed_confidence": -0.9829,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "AAPL"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 450.89,
+      "qqq_close": 444.5814,
+      "session_return_pct": -1.3991,
+      "directional_return_pct": 1.3991,
+      "hit": true
+    },
+    {
+      "session_date": "2024-11-01",
+      "direction": -1,
+      "agg_signed_confidence": -0.9471,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "AAPL"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 485.5,
+      "qqq_close": 483.5805,
+      "session_return_pct": -0.3954,
+      "directional_return_pct": 0.3954,
+      "hit": true
+    },
+    {
+      "session_date": "2025-01-31",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "AAPL"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 526.92,
+      "qqq_close": 519.0004,
+      "session_return_pct": -1.503,
+      "directional_return_pct": -1.503,
+      "hit": false
+    },
+    {
+      "session_date": "2025-02-20",
+      "direction": 1,
+      "agg_signed_confidence": 0.8657,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ADI"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 538.73,
+      "qqq_close": 533.8463,
+      "session_return_pct": -0.9065,
+      "directional_return_pct": -0.9065,
+      "hit": false
+    },
+    {
+      "session_date": "2025-05-02",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "AAPL"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 486.54,
+      "qqq_close": 486.4753,
+      "session_return_pct": -0.0133,
+      "directional_return_pct": -0.0133,
+      "hit": false
+    },
+    {
+      "session_date": "2025-08-01",
+      "direction": -1,
+      "agg_signed_confidence": -1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "AAPL"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 558.83,
+      "qqq_close": 551.8311,
+      "session_return_pct": -1.2524,
+      "directional_return_pct": 1.2524,
+      "hit": true
+    },
+    {
+      "session_date": "2025-08-21",
+      "direction": 1,
+      "agg_signed_confidence": 0.9386,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ADI"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 564.35,
+      "qqq_close": 561.1963,
+      "session_return_pct": -0.5588,
+      "directional_return_pct": -0.5588,
+      "hit": false
+    },
+    {
+      "session_date": "2025-09-12",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ADBE"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 585.04,
+      "qqq_close": 584.4898,
+      "session_return_pct": -0.094,
+      "directional_return_pct": -0.094,
+      "hit": false
+    },
+    {
+      "session_date": "2025-10-31",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "AAPL"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 634.17,
+      "qqq_close": 627.4695,
+      "session_return_pct": -1.0566,
+      "directional_return_pct": -1.0566,
+      "hit": false
+    },
+    {
+      "session_date": "2025-11-26",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ADI"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 612.51,
+      "qqq_close": 612.7071,
+      "session_return_pct": 0.0322,
+      "directional_return_pct": 0.0322,
+      "hit": true
+    },
+    {
+      "session_date": "2025-12-11",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ADBE"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 623.82,
+      "qqq_close": 623.9883,
+      "session_return_pct": 0.027,
+      "directional_return_pct": 0.027,
+      "hit": true
+    },
+    {
+      "session_date": "2026-01-30",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "AAPL"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 625.71,
+      "qqq_close": 621.0871,
+      "session_return_pct": -0.7388,
+      "directional_return_pct": -0.7388,
+      "hit": false
+    },
+    {
+      "session_date": "2026-02-19",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ADI"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 602.81,
+      "qqq_close": 602.7102,
+      "session_return_pct": -0.0166,
+      "directional_return_pct": -0.0166,
+      "hit": false
+    },
+    {
+      "session_date": "2026-03-13",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ADBE"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 599.73,
+      "qqq_close": 592.9725,
+      "session_return_pct": -1.1268,
+      "directional_return_pct": -1.1268,
+      "hit": false
+    },
+    {
+      "session_date": "2026-05-01",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "AAPL"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 669.16,
+      "qqq_close": 674.15,
+      "session_return_pct": 0.7457,
+      "directional_return_pct": 0.7457,
+      "hit": true
+    },
+    {
+      "session_date": "2026-05-21",
+      "direction": -1,
+      "agg_signed_confidence": -1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ADI"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 708.99,
+      "qqq_close": 714.51,
+      "session_return_pct": 0.7786,
+      "directional_return_pct": -0.7786,
+      "hit": false
+    }
+  ]
+}

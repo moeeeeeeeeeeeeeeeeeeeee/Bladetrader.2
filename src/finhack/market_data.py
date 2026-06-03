@@ -1,12 +1,16 @@
 """Market data access for validation and Case 4 dashboard.
 
-EODHD is the only supported provider for prices, quotes, and earnings dates.
+EODHD is the primary provider for prices, quotes, and earnings dates.
+When the EODHD earnings calendar is unavailable (no key, or 403 from a plan
+that excludes ``/calendar/earnings``), historical earnings dates are sourced
+from yfinance as a no-key fallback. Prices/quotes still require EODHD.
 """
 
 from __future__ import annotations
 
 import logging
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from threading import Lock
@@ -22,6 +26,8 @@ logger = logging.getLogger(__name__)
 
 EODHD_BASE_URL = "https://eodhd.com/api"
 _EODHD_EARNINGS_FORBIDDEN = False
+_YFINANCE_FALLBACK_LOGGED = False
+_YFINANCE_MODULE_MISSING_LOGGED = False
 _CHART_INTRADAY_MAX_BARS = 450
 
 _EODHD_INTRADAY_MAP: dict[str, tuple[str, int, str]] = {
@@ -312,6 +318,221 @@ def _eodhd_earnings_events_batch(
     return out
 
 
+def _yfinance_module() -> Any | None:
+    """Lazy-import yfinance. Logs once on absence."""
+    global _YFINANCE_MODULE_MISSING_LOGGED
+    try:
+        import yfinance  # type: ignore
+
+        return yfinance
+    except Exception as exc:  # noqa: BLE001 - any import failure is fatal here
+        if not _YFINANCE_MODULE_MISSING_LOGGED:
+            _YFINANCE_MODULE_MISSING_LOGGED = True
+            logger.warning(
+                "yfinance unavailable for earnings fallback (%s); install yfinance to enable.",
+                exc,
+            )
+        return None
+
+
+def _note_yfinance_fallback_active(scope: str) -> None:
+    """Log once per process when the yfinance earnings fallback first runs."""
+    global _YFINANCE_FALLBACK_LOGGED
+    if _YFINANCE_FALLBACK_LOGGED:
+        return
+    _YFINANCE_FALLBACK_LOGGED = True
+    logger.warning(
+        "Earnings dates falling back to yfinance (%s); EODHD calendar unavailable.",
+        scope,
+    )
+    # yfinance logs "No earnings dates found, symbol may be delisted" at ERROR
+    # for every unmatched ticker. On a 500-symbol universe that buries the
+    # validator's own output. Our wrapper already swallows and DEBUG-logs the
+    # failure, so silence yfinance's logger here.
+    logging.getLogger("yfinance").setLevel(logging.CRITICAL)
+
+
+def _yfinance_earnings_events(
+    symbol: str,
+    limit: int,
+    recent_days: int,
+    *,
+    retries: int = 3,
+) -> list[datetime]:
+    """Past earnings datetimes for a single symbol via yfinance."""
+    yf = _yfinance_module()
+    if yf is None:
+        return []
+    sym = (symbol or "").strip().upper()
+    if not sym:
+        return []
+
+    now = datetime.now(timezone.utc)
+    from_dt = now - timedelta(days=max(30, recent_days))
+    fetch_limit = max(8, min(80, limit * 4))
+
+    df = None
+    last_exc: Exception | None = None
+    for attempt in range(max(1, retries)):
+        try:
+            df = yf.Ticker(sym).get_earnings_dates(limit=fetch_limit)
+            break
+        except Exception as exc:  # noqa: BLE001 - upstream raises many shapes
+            last_exc = exc
+            time.sleep(min(8.0, 0.5 * (2**attempt)))
+    if df is None or getattr(df, "empty", True):
+        if last_exc is not None:
+            logger.debug("yfinance earnings empty for %s: %s", sym, last_exc)
+        return []
+
+    events: list[datetime] = []
+    for ts in df.index:
+        try:
+            py = ts.to_pydatetime()
+        except AttributeError:
+            continue
+        if py.tzinfo is None:
+            py = py.replace(tzinfo=timezone.utc)
+        py_utc = py.astimezone(timezone.utc)
+        if from_dt <= py_utc < now:
+            events.append(py_utc)
+
+    deduped = sorted(set(events), reverse=True)
+    return sorted(deduped[: max(1, limit)])
+
+
+def _yfinance_upcoming_earnings_events(
+    symbol: str,
+    horizon_days: int,
+    *,
+    retries: int = 3,
+) -> list[datetime]:
+    """Future earnings datetimes for a single symbol via yfinance.
+
+    yfinance's ``Ticker.get_earnings_dates`` returns a mix of past and future
+    events. We keep only events in ``(now, now + horizon_days]``.
+    """
+    yf = _yfinance_module()
+    if yf is None:
+        return []
+    sym = (symbol or "").strip().upper()
+    if not sym:
+        return []
+
+    now = datetime.now(timezone.utc)
+    horizon = now + timedelta(days=max(1, horizon_days))
+    fetch_limit = 8  # yfinance returns chronological; a small window suffices
+
+    df = None
+    last_exc: Exception | None = None
+    for attempt in range(max(1, retries)):
+        try:
+            df = yf.Ticker(sym).get_earnings_dates(limit=fetch_limit)
+            break
+        except Exception as exc:  # noqa: BLE001
+            last_exc = exc
+            time.sleep(min(8.0, 0.5 * (2**attempt)))
+    if df is None or getattr(df, "empty", True):
+        if last_exc is not None:
+            logger.debug("yfinance upcoming empty for %s: %s", sym, last_exc)
+        return []
+
+    events: list[datetime] = []
+    for ts in df.index:
+        try:
+            py = ts.to_pydatetime()
+        except AttributeError:
+            continue
+        if py.tzinfo is None:
+            py = py.replace(tzinfo=timezone.utc)
+        py_utc = py.astimezone(timezone.utc)
+        if now <= py_utc <= horizon:
+            events.append(py_utc)
+    return sorted(set(events))
+
+
+def _yfinance_upcoming_earnings_batch(
+    symbols: list[str],
+    *,
+    horizon_days: int,
+    max_workers: int = 6,
+    progress_every: int = 25,
+) -> dict[str, datetime]:
+    """Fan out per-symbol upcoming-earnings lookups with bounded concurrency."""
+    out: dict[str, datetime] = {}
+    if not symbols:
+        return out
+    workers = max(1, min(max_workers, len(symbols)))
+    done = 0
+    with ThreadPoolExecutor(max_workers=workers) as ex:
+        future_to_sym = {
+            ex.submit(_yfinance_upcoming_earnings_events, sym, horizon_days): sym
+            for sym in symbols
+        }
+        for fut in as_completed(future_to_sym):
+            sym = future_to_sym[fut]
+            try:
+                events = fut.result()
+            except Exception as exc:  # noqa: BLE001
+                logger.debug("yfinance upcoming worker failed for %s: %s", sym, exc)
+                events = []
+            if events:
+                out[sym] = min(events)
+            done += 1
+            if progress_every and (done % progress_every == 0 or done == len(symbols)):
+                logger.info(
+                    "yfinance upcoming earnings: %d/%d symbols resolved (%d with events).",
+                    done,
+                    len(symbols),
+                    len(out),
+                )
+    return out
+
+
+def _yfinance_earnings_events_batch(
+    symbols: list[str],
+    *,
+    limit: int,
+    recent_days: int,
+    max_workers: int = 6,
+    progress_every: int = 50,
+) -> dict[str, list[datetime]]:
+    """Fan out per-symbol yfinance lookups with bounded concurrency."""
+    out: dict[str, list[datetime]] = {s: [] for s in symbols}
+    if not symbols:
+        return out
+
+    workers = max(1, min(max_workers, len(symbols)))
+    done = 0
+    with ThreadPoolExecutor(max_workers=workers) as ex:
+        future_to_sym = {
+            ex.submit(
+                _yfinance_earnings_events,
+                sym,
+                limit,
+                recent_days,
+            ): sym
+            for sym in symbols
+        }
+        for fut in as_completed(future_to_sym):
+            sym = future_to_sym[fut]
+            try:
+                out[sym] = fut.result()
+            except Exception as exc:  # noqa: BLE001
+                logger.debug("yfinance earnings worker failed for %s: %s", sym, exc)
+                out[sym] = []
+            done += 1
+            if progress_every and (done % progress_every == 0 or done == len(symbols)):
+                resolved = sum(1 for v in out.values() if v)
+                logger.info(
+                    "yfinance earnings: %d/%d symbols resolved (%d with events).",
+                    done,
+                    len(symbols),
+                    resolved,
+                )
+    return out
+
+
 def get_close_series(
     symbol: str, start: str, end: str, *, settings: Settings | None = None
 ) -> pd.Series:
@@ -335,6 +556,125 @@ def get_close_series(
 
 _OHLC_EOD_INTERVALS = frozenset({"1d", "1wk", "1mo"})
 _EODHD_OHLC_PERIOD = {"1d": "d", "1wk": "w", "1mo": "m"}
+CHART_INTRADAY_INTERVALS = frozenset({"1m", "2m", "5m", "15m", "30m", "1h"})
+CHART_ALL_INTERVALS = frozenset(CHART_INTRADAY_INTERVALS | _OHLC_EOD_INTERVALS)
+
+_YFINANCE_OHLC_INTERVAL = {
+    "1d": "1d",
+    "1wk": "1wk",
+    "1mo": "1mo",
+    "1m": "1m",
+    "2m": "2m",
+    "5m": "5m",
+    "15m": "15m",
+    "30m": "30m",
+    "1h": "1h",
+    "60m": "60m",
+}
+
+# yfinance intraday history limits (approximate max calendar lookback).
+_YFINANCE_INTRADAY_MAX_DAYS: dict[str, int] = {
+    "1m": 7,
+    "2m": 7,
+    "5m": 60,
+    "15m": 60,
+    "30m": 60,
+    "1h": 730,
+}
+
+
+def _yfinance_intraday_df(
+    symbol: str,
+    interval: str,
+    *,
+    days: int | None = None,
+    max_bars: int = _CHART_INTRADAY_MAX_BARS,
+) -> pd.DataFrame:
+    """Intraday OHLC via yfinance when EODHD intraday is unavailable."""
+    yf = _yfinance_module()
+    if yf is None:
+        return pd.DataFrame()
+    sym = (symbol or "").strip().upper()
+    iv = (interval or "5m").strip().lower()
+    yf_iv = _YFINANCE_OHLC_INTERVAL.get(iv, "5m")
+    max_days = _YFINANCE_INTRADAY_MAX_DAYS.get(iv, 60)
+    lookback = max(1, min(max_days, int(days) if days else max_days))
+    end_dt = datetime.now(timezone.utc)
+    start_dt = end_dt - timedelta(days=lookback)
+    try:
+        ticker = yf.Ticker(sym)
+        hist = ticker.history(
+            start=start_dt.date().isoformat(),
+            end=(end_dt + timedelta(days=1)).date().isoformat(),
+            interval=yf_iv,
+            auto_adjust=False,
+        )
+    except Exception as exc:  # noqa: BLE001
+        logger.debug("yfinance intraday failed for %s (%s): %s", sym, iv, exc)
+        return pd.DataFrame()
+    if hist is None or hist.empty:
+        return pd.DataFrame()
+    frame = pd.DataFrame(
+        {
+            "Open": pd.to_numeric(hist["Open"], errors="coerce"),
+            "High": pd.to_numeric(hist["High"], errors="coerce"),
+            "Low": pd.to_numeric(hist["Low"], errors="coerce"),
+            "Close": pd.to_numeric(hist["Close"], errors="coerce"),
+        },
+        index=hist.index,
+    )
+    frame = frame.dropna(how="all")
+    if frame.empty:
+        return pd.DataFrame()
+    if frame.index.tz is None:
+        frame.index = frame.index.tz_localize("America/New_York")
+    else:
+        frame.index = frame.index.tz_convert("America/New_York")
+    frame = frame.sort_index()
+    if len(frame) > max_bars:
+        frame = frame.tail(max_bars)
+    return frame
+
+
+def _yfinance_ohlc_df(
+    symbol: str,
+    start: str,
+    end: str,
+    *,
+    interval: str = "1d",
+) -> pd.DataFrame:
+    """Daily/weekly/monthly OHLC via yfinance when EODHD is unavailable."""
+    yf = _yfinance_module()
+    if yf is None:
+        return pd.DataFrame()
+    sym = (symbol or "").strip().upper()
+    iv = (interval or "1d").lower()
+    yf_iv = _YFINANCE_OHLC_INTERVAL.get(iv, "1d")
+    try:
+        ticker = yf.Ticker(sym)
+        if iv in CHART_INTRADAY_INTERVALS:
+            return _yfinance_intraday_df(symbol, iv, days=None)
+        hist = ticker.history(start=start, end=end, interval=yf_iv, auto_adjust=False)
+    except Exception as exc:  # noqa: BLE001
+        logger.debug("yfinance OHLC failed for %s: %s", sym, exc)
+        return pd.DataFrame()
+    if hist is None or hist.empty:
+        return pd.DataFrame()
+    frame = pd.DataFrame(
+        {
+            "Open": pd.to_numeric(hist["Open"], errors="coerce"),
+            "High": pd.to_numeric(hist["High"], errors="coerce"),
+            "Low": pd.to_numeric(hist["Low"], errors="coerce"),
+            "Close": pd.to_numeric(hist["Close"], errors="coerce"),
+        },
+        index=hist.index,
+    )
+    frame = frame.dropna(how="all")
+    if frame.empty:
+        return pd.DataFrame()
+    if frame.index.tz is not None:
+        frame.index = frame.index.tz_convert("America/New_York").tz_localize(None)
+    return frame.sort_index()
 
 
 def get_ohlc_series(
@@ -354,17 +694,21 @@ def get_ohlc_series(
     if cached is not None:
         return cached.copy()
 
-    if not _eodhd_enabled(cfg):
-        return pd.DataFrame()
+    out = pd.DataFrame()
+    if _eodhd_enabled(cfg):
+        eodhd_period = _EODHD_OHLC_PERIOD[iv]
+        try:
+            out = _eodhd_ohlc_df(
+                symbol, start, end, cfg.eodhd_api_key or "", period=eodhd_period
+            )
+        except Exception as exc:
+            logger.warning("EODHD OHLC failed for %s: %s", symbol, exc)
 
-    eodhd_period = _EODHD_OHLC_PERIOD[iv]
-    try:
-        out = _eodhd_ohlc_df(
-            symbol, start, end, cfg.eodhd_api_key or "", period=eodhd_period
-        )
-    except Exception as exc:
-        logger.warning("EODHD OHLC failed for %s: %s", symbol, exc)
-        return pd.DataFrame()
+    if out.empty:
+        out = _yfinance_ohlc_df(symbol, start, end, interval=iv)
+        if not out.empty:
+            logger.info("OHLC for %s via yfinance fallback (%d bars).", symbol, len(out))
+
     _cache_set(cache_key, out)
     return out
 
@@ -454,29 +798,43 @@ def get_ohlc_intraday(
     *,
     settings: Settings | None = None,
     max_bars: int = _CHART_INTRADAY_MAX_BARS,
+    days: int | None = None,
 ) -> tuple[pd.DataFrame, str, str]:
-    """Intraday OHLC (EODHD only). Returns (df, note, provider)."""
+    """Intraday OHLC. EODHD when available; yfinance fallback otherwise."""
     cfg = settings or load_settings()
     iv = (interval or "").strip().lower()
-    cache_key = f"intraday:{symbol}:{iv}:{cfg.market_data_provider.value}"
+    cache_key = f"intraday:{symbol}:{iv}:{days}:{cfg.market_data_provider.value}"
     cached = _cache_get(cache_key, cfg.market_data_live_cache_ttl_seconds)
     if cached is not None:
         frame, note, provider = cached
         return frame.copy(), note, provider
 
-    if not _eodhd_enabled(cfg):
-        return pd.DataFrame(), "", "eodhd-intraday"
+    frame = pd.DataFrame()
+    note = ""
+    provider = "none"
 
-    try:
-        frame, note = _eodhd_ohlc_intraday_df(
-            symbol, iv, cfg.eodhd_api_key or "", max_bars=max_bars
-        )
-    except Exception as exc:
-        logger.warning("EODHD intraday failed for %s (%s): %s", symbol, iv, exc)
-        return pd.DataFrame(), "", "eodhd-intraday"
+    if _eodhd_enabled(cfg):
+        try:
+            frame, note = _eodhd_ohlc_intraday_df(
+                symbol, iv, cfg.eodhd_api_key or "", max_bars=max_bars
+            )
+            if not frame.empty:
+                provider = "eodhd-intraday"
+        except Exception as exc:
+            logger.warning("EODHD intraday failed for %s (%s): %s", symbol, iv, exc)
 
-    _cache_set(cache_key, (frame, note, "eodhd-intraday"))
-    return frame, note, "eodhd-intraday"
+    if frame.empty:
+        frame = _yfinance_intraday_df(symbol, iv, days=days, max_bars=max_bars)
+        if not frame.empty:
+            provider = "yfinance-intraday"
+            max_d = _YFINANCE_INTRADAY_MAX_DAYS.get(iv, 60)
+            note = f"{len(frame)} bars · {iv} · yfinance · ~{min(max_d, days or max_d)}d window"
+
+    if frame.empty:
+        return pd.DataFrame(), note or f"no intraday data for {iv}", provider
+
+    _cache_set(cache_key, (frame, note, provider))
+    return frame, note, provider
 
 
 def get_earnings_events(
@@ -492,15 +850,23 @@ def get_earnings_events(
     if cached is not None:
         return list(cached)
 
-    if not _eodhd_earnings_enabled(cfg):
-        return []
+    out: list[datetime] = []
+    if _eodhd_earnings_enabled(cfg):
+        try:
+            out = _eodhd_earnings_events(
+                symbol, limit, recent_days, cfg.eodhd_api_key or ""
+            )
+        except Exception as exc:
+            _note_eodhd_earnings_forbidden(exc)
+            logger.warning("EODHD earnings failed for %s: %s", symbol, exc)
+            out = []
 
-    try:
-        out = _eodhd_earnings_events(symbol, limit, recent_days, cfg.eodhd_api_key or "")
-    except Exception as exc:
-        _note_eodhd_earnings_forbidden(exc)
-        logger.warning("EODHD earnings failed for %s: %s", symbol, exc)
-        return []
+    if not out and not _eodhd_earnings_enabled(cfg):
+        # EODHD unavailable (no key or 403): try yfinance.
+        fallback = _yfinance_earnings_events(symbol, limit, recent_days)
+        if fallback:
+            _note_yfinance_fallback_active("symbol")
+            out = fallback
 
     _cache_set(cache_key, out)
     return out
@@ -514,7 +880,12 @@ def get_earnings_events_batch(
     settings: Settings | None = None,
     chunk_size: int = 40,
 ) -> dict[str, list[datetime]]:
-    """Fetch earnings dates for many symbols (EODHD batched)."""
+    """Fetch earnings dates for many symbols.
+
+    Primary source is EODHD's ``/calendar/earnings``. When that endpoint is
+    unavailable (no key or a 403 from a plan that excludes the calendar), the
+    function falls back to yfinance per-symbol with bounded concurrency.
+    """
     cfg = settings or load_settings()
     clean = sorted({(s or "").strip().upper() for s in symbols if (s or "").strip()})
     if not clean:
@@ -527,24 +898,35 @@ def get_earnings_events_batch(
     if cached is not None:
         return dict(cached)
 
-    if not _eodhd_earnings_enabled(cfg):
-        return {s: [] for s in clean}
-
     merged: dict[str, list[datetime]] = {s: [] for s in clean}
-    step = max(1, chunk_size)
-    try:
-        for i in range(0, len(clean), step):
-            chunk = clean[i : i + step]
-            part = _eodhd_earnings_events_batch(
-                chunk, limit, recent_days, cfg.eodhd_api_key or ""
+
+    if _eodhd_earnings_enabled(cfg):
+        step = max(1, chunk_size)
+        try:
+            for i in range(0, len(clean), step):
+                chunk = clean[i : i + step]
+                part = _eodhd_earnings_events_batch(
+                    chunk, limit, recent_days, cfg.eodhd_api_key or ""
+                )
+                for sym, events in part.items():
+                    if sym in merged:
+                        merged[sym] = events
+        except Exception as exc:
+            _note_eodhd_earnings_forbidden(exc)
+            logger.warning("EODHD batch earnings failed: %s", exc)
+
+    if not _eodhd_earnings_enabled(cfg):
+        # Either EODHD was disabled to start with, or a 403 mid-loop just
+        # tripped the global flag. Fill remaining gaps via yfinance.
+        unresolved = [s for s, events in merged.items() if not events]
+        if unresolved:
+            _note_yfinance_fallback_active("batch")
+            fb = _yfinance_earnings_events_batch(
+                unresolved, limit=limit, recent_days=recent_days
             )
-            for sym, events in part.items():
-                if sym in merged:
+            for sym, events in fb.items():
+                if events:
                     merged[sym] = events
-    except Exception as exc:
-        _note_eodhd_earnings_forbidden(exc)
-        logger.warning("EODHD batch earnings failed: %s", exc)
-        return {s: [] for s in clean}
 
     _cache_set(cache_key, merged)
     return merged
@@ -581,49 +963,76 @@ def get_upcoming_earnings_batch(
     settings: Settings | None = None,
     chunk_size: int = 40,
 ) -> dict[str, datetime]:
-    """Next earnings date per symbol within horizon (EODHD)."""
+    """Next earnings date per symbol within ``horizon_days``.
+
+    Primary source is the EODHD ``/calendar/earnings`` endpoint. When EODHD is
+    disabled or the plan returns 403, falls back to per-symbol yfinance
+    lookups with bounded concurrency.
+
+    Results are cached for ``market_data_cache_ttl_seconds`` to keep the
+    fallback (which is much slower than EODHD) from re-running on every
+    page load during a research session.
+    """
     cfg = settings or load_settings()
     clean = sorted({(s or "").strip().upper() for s in symbols if (s or "").strip()})
     if not clean:
         return {}
 
-    if not _eodhd_earnings_enabled(cfg):
-        return {}
+    cache_key = (
+        f"upcoming-earnings:{','.join(clean)}:{horizon_days}:"
+        f"{cfg.market_data_provider.value}"
+    )
+    cached = _cache_get(cache_key, cfg.market_data_cache_ttl_seconds)
+    if cached is not None:
+        return dict(cached)
 
     now = datetime.now(timezone.utc)
     horizon = now + timedelta(days=max(1, horizon_days))
     out: dict[str, datetime] = {}
 
-    step = max(1, chunk_size)
-    for i in range(0, len(clean), step):
-        chunk = clean[i : i + step]
-        params = {
-            "api_token": cfg.eodhd_api_key or "",
-            "fmt": "json",
-            "symbols": ",".join(_symbol_to_eodhd(s) for s in chunk),
-            "from": now.date().isoformat(),
-            "to": horizon.date().isoformat(),
-        }
-        try:
-            payload = _eodhd_get("/calendar/earnings", params)
-            rows = _parse_eodhd_earnings_rows(payload)
-            grouped: dict[str, list[datetime]] = {s: [] for s in chunk}
-            for row in rows:
-                code = str(row.get("code", "")).upper()
-                sym = _symbol_from_eodhd(code)
-                if sym not in grouped:
-                    continue
-                dt = _parse_dt(row.get("date") or row.get("report_date"))
-                if dt and now <= dt <= horizon:
-                    grouped[sym].append(dt)
-            for sym, dts in grouped.items():
-                if dts:
-                    out[sym] = min(dts)
-        except Exception as exc:
-            _note_eodhd_earnings_forbidden(exc)
-            logger.warning("EODHD upcoming earnings chunk failed: %s", exc)
-            break
+    if _eodhd_earnings_enabled(cfg):
+        step = max(1, chunk_size)
+        for i in range(0, len(clean), step):
+            chunk = clean[i : i + step]
+            params = {
+                "api_token": cfg.eodhd_api_key or "",
+                "fmt": "json",
+                "symbols": ",".join(_symbol_to_eodhd(s) for s in chunk),
+                "from": now.date().isoformat(),
+                "to": horizon.date().isoformat(),
+            }
+            try:
+                payload = _eodhd_get("/calendar/earnings", params)
+                rows = _parse_eodhd_earnings_rows(payload)
+                grouped: dict[str, list[datetime]] = {s: [] for s in chunk}
+                for row in rows:
+                    code = str(row.get("code", "")).upper()
+                    sym = _symbol_from_eodhd(code)
+                    if sym not in grouped:
+                        continue
+                    dt = _parse_dt(row.get("date") or row.get("report_date"))
+                    if dt and now <= dt <= horizon:
+                        grouped[sym].append(dt)
+                for sym, dts in grouped.items():
+                    if dts:
+                        out[sym] = min(dts)
+            except Exception as exc:
+                _note_eodhd_earnings_forbidden(exc)
+                logger.warning("EODHD upcoming earnings chunk failed: %s", exc)
+                break
 
+    if not _eodhd_earnings_enabled(cfg):
+        # Either no EODHD key, or a 403 mid-loop tripped the global flag.
+        # Fill remaining unresolved symbols via yfinance.
+        unresolved = [s for s in clean if s not in out]
+        if unresolved:
+            _note_yfinance_fallback_active("upcoming")
+            fb = _yfinance_upcoming_earnings_batch(
+                unresolved, horizon_days=horizon_days
+            )
+            out.update(fb)
+
+    _cache_set(cache_key, out)
     return out
 
 

@@ -68,26 +68,44 @@ def _standardize(x: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
 
 
 def _fit_lightgbm(x: np.ndarray, y: np.ndarray, *, lgb) -> bytes:
-    train_set = lgb.Dataset(x, label=y, free_raw_data=False)
+    """Fit LightGBM with a fixed conservative boost budget.
+
+    Earlier versions either:
+    - Ran 400 rounds with no real early stopping (``valid_sets=[train_set]``
+      is a no-op since training loss is monotonically decreasing), which
+      meant the booster always overfit and produced spuriously confident
+      probabilities; or
+    - Used an internal 15% time-aware holdout for early stopping, which
+      triggered too early on a 95-row noisy validation set and collapsed
+      the entire output distribution into [0.50, 0.53].
+
+    Both extremes mislead. The first hides that the OOS accuracy uplift
+    is negative behind confident-looking calls; the second admits the
+    model has no edge but produces no usable signals downstream.
+
+    Compromise: a small fixed budget (80 rounds), modest leaf capacity,
+    gentle L1/L2, and explicit acknowledgement that with the current
+    feature set the booster's confidence spread is largely a function of
+    how long it runs — not actual calibration.
+    """
+    n = int(len(y))
     params = {
         "objective": "binary",
         "metric": "binary_logloss",
         "learning_rate": 0.05,
-        "num_leaves": 31,
-        "min_data_in_leaf": 20,
+        "num_leaves": 23,
+        "min_data_in_leaf": max(15, n // 40),
         "feature_fraction": 0.9,
         "bagging_fraction": 0.9,
         "bagging_freq": 5,
+        "lambda_l1": 0.02,
+        "lambda_l2": 0.02,
         "verbose": -1,
         "num_threads": -1,
     }
-    booster = lgb.train(
-        params,
-        train_set,
-        num_boost_round=400,
-        callbacks=[lgb.early_stopping(50, verbose=False)] if len(y) > 100 else None,
-        valid_sets=[train_set] if len(y) > 100 else None,
-    )
+    train_set = lgb.Dataset(x, label=y, free_raw_data=False)
+    num_rounds = 80 if n >= 200 else 40
+    booster = lgb.train(params, train_set, num_boost_round=num_rounds)
     return booster.model_to_string().encode("utf-8")
 
 

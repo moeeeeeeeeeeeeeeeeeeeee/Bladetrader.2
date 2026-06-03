@@ -1,0 +1,3648 @@
+{
+  "generated_at_utc": "2026-05-30T07:08:55.196499+00:00",
+  "objective": "Test whether per-earnings enhanced_pred_sign signals translate into a same-session directional bet on the Nasdaq-100 (proxied by QQQ; same underlying index MNQ futures track).",
+  "data_source": "C:\\Users\\moham\\Bladetrader.2\\data\\case4_earnings_validation.json",
+  "proxy_instrument": {
+    "symbol": "QQQ",
+    "rationale": "QQQ is the cash ETF on NDX; MNQ/NQ futures track NDX. Daily OPEN->CLOSE return is a faithful proxy for an intraday MNQ session bet under TopStep's 4PM-ET flat rule."
+  },
+  "methodology": {
+    "session_assignment": "Conservative T+1: signal for earnings event on calendar day T applied to the NEXT US trading session strictly after T. No intraday data needed; no leakage.",
+    "aggregation": "agg_score(session) = sum_i sign_i * confidence_i over events mapped to that session. Direction = sign(agg_score). Sessions with agg_score = 0 skipped.",
+    "signal_filter": "require_news=true",
+    "session_return": "QQQ Open -> QQQ Close, same trading day.",
+    "leakage_guards": [
+      "Signals built from documents in [T-7d, T] only (upstream).",
+      "Signal applied to session strictly after T (this script).",
+      "No intraday news touches the bet; news-window rule never violated."
+    ]
+  },
+  "parameters": {
+    "require_news": true,
+    "n_permutations": 1000,
+    "seed": 42,
+    "cost_bps_per_side": 1.0,
+    "min_sessions_for_confidence": 80
+  },
+  "coverage": {
+    "raw_signals_loaded": 502,
+    "sessions_with_signal": 220,
+    "date_range": [
+      "2023-06-15",
+      "2026-05-22"
+    ],
+    "unique_contributing_symbols": 81,
+    "coverage_warning": null
+  },
+  "results": {
+    "trades": 220,
+    "hit_rate": 0.5045,
+    "long_trades": 114,
+    "short_trades": 106,
+    "mean_session_return_long_pct": -0.5456,
+    "mean_session_return_short_pct": -0.6293,
+    "directional_return_pct_mean": 0.0205,
+    "directional_return_pct_cum": 2.9192,
+    "sharpe_annualized": 0.2663,
+    "max_drawdown_pct": -22.6927,
+    "after_cost": {
+      "round_trip_cost_pct": 0.02,
+      "hit_rate": 0.4955,
+      "directional_return_pct_mean": 0.0005,
+      "directional_return_pct_cum": -1.5113,
+      "sharpe_annualized": 0.0062
+    }
+  },
+  "by_confidence_bucket": [
+    {
+      "bucket": "0.50-0.55",
+      "trades": 45,
+      "hit_rate": 0.4889,
+      "directional_return_pct_mean": 0.1188
+    },
+    {
+      "bucket": "0.55-0.60",
+      "trades": 1,
+      "hit_rate": 0.0,
+      "directional_return_pct_mean": -2.0225
+    },
+    {
+      "bucket": "0.60-0.70",
+      "trades": 4,
+      "hit_rate": 0.25,
+      "directional_return_pct_mean": 0.1353
+    },
+    {
+      "bucket": "0.70-0.80",
+      "trades": 6,
+      "hit_rate": 0.5,
+      "directional_return_pct_mean": 0.0915
+    },
+    {
+      "bucket": ">=0.80",
+      "trades": 164,
+      "hit_rate": 0.5183,
+      "directional_return_pct_mean": 0.0006
+    }
+  ],
+  "permutation": {
+    "iterations": 1000,
+    "observed_hit_rate": 0.5045,
+    "p_value_hit_rate_greater": 0.4156,
+    "p_value_cum_return_greater": 0.2617,
+    "null_mean_hit_rate": 0.4924,
+    "null_p95_hit_rate": 0.5409,
+    "null_mean_cum_return_pct": -5.4418
+  },
+  "honesty_notes": [
+    "The upstream validation file reports enhanced_accuracy == baseline_accuracy on the full 929-event universe; the enhanced model currently does not beat the price-only baseline in aggregate. If this overlay shows edge, it is because the subset of events with non-zero signal AND non-trivial confidence is informative -- not because the model wins across all events.",
+    "QQQ is a cash proxy. Real MNQ fills, slippage, and overnight settlement differences will degrade these numbers further; the after_cost block is a minimal correction, not a real fill simulator.",
+    "Conservative T+1 throws away any same-day-BMO edge. A tighter session assignment using ET hour-of-day could be added later."
+  ],
+  "sessions": [
+    {
+      "session_date": "2023-06-15",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ACB"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 364.61,
+      "qqq_close": 363.8064,
+      "session_return_pct": -0.2204,
+      "directional_return_pct": -0.2204,
+      "hit": false
+    },
+    {
+      "session_date": "2023-07-26",
+      "direction": -1,
+      "agg_signed_confidence": -1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ABG"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 377.72,
+      "qqq_close": 371.4501,
+      "session_return_pct": -1.6599,
+      "directional_return_pct": 1.6599,
+      "hit": true
+    },
+    {
+      "session_date": "2023-07-28",
+      "direction": 1,
+      "agg_signed_confidence": 0.9477,
+      "n_contributing_events": 3,
+      "contributing_symbols": [
+        "AB",
+        "ABCB",
+        "ACNB"
+      ],
+      "confidence_bucket": "0.50-0.55",
+      "qqq_open": 380.74,
+      "qqq_close": 377.3142,
+      "session_return_pct": -0.8998,
+      "directional_return_pct": -0.8998,
+      "hit": false
+    },
+    {
+      "session_date": "2023-08-03",
+      "direction": 1,
+      "agg_signed_confidence": 0.1424,
+      "n_contributing_events": 6,
+      "contributing_symbols": [
+        "ACAD",
+        "ACLS",
+        "ACRE",
+        "ADAM",
+        "ADNT",
+        "ADPT"
+      ],
+      "confidence_bucket": "0.50-0.55",
+      "qqq_open": 371.94,
+      "qqq_close": 367.78,
+      "session_return_pct": -1.1185,
+      "directional_return_pct": -1.1185,
+      "hit": false
+    },
+    {
+      "session_date": "2023-08-04",
+      "direction": -1,
+      "agg_signed_confidence": -3.9377,
+      "n_contributing_events": 6,
+      "contributing_symbols": [
+        "AAOI",
+        "AAON",
+        "AAPL",
+        "ABCL",
+        "ACEL",
+        "ACIW"
+      ],
+      "confidence_bucket": "0.60-0.70",
+      "qqq_open": 375.75,
+      "qqq_close": 366.0582,
+      "session_return_pct": -2.5793,
+      "directional_return_pct": 2.5793,
+      "hit": true
+    },
+    {
+      "session_date": "2023-08-07",
+      "direction": -1,
+      "agg_signed_confidence": -1.0173,
+      "n_contributing_events": 3,
+      "contributing_symbols": [
+        "ACIU",
+        "ACMR",
+        "AD"
+      ],
+      "confidence_bucket": "0.50-0.55",
+      "qqq_open": 373.88,
+      "qqq_close": 369.1575,
+      "session_return_pct": -1.2631,
+      "directional_return_pct": 1.2631,
+      "hit": true
+    },
+    {
+      "session_date": "2023-08-08",
+      "direction": 1,
+      "agg_signed_confidence": 1.1903,
+      "n_contributing_events": 3,
+      "contributing_symbols": [
+        "ACM",
+        "ACRS",
+        "ADEA"
+      ],
+      "confidence_bucket": "0.50-0.55",
+      "qqq_open": 372.64,
+      "qqq_close": 366.0188,
+      "session_return_pct": -1.7768,
+      "directional_return_pct": -1.7768,
+      "hit": false
+    },
+    {
+      "session_date": "2023-08-10",
+      "direction": -1,
+      "agg_signed_confidence": -2.0,
+      "n_contributing_events": 2,
+      "contributing_symbols": [
+        "ACET",
+        "ADMA"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 370.97,
+      "qqq_close": 362.6636,
+      "session_return_pct": -2.2391,
+      "directional_return_pct": 2.2391,
+      "hit": true
+    },
+    {
+      "session_date": "2023-08-14",
+      "direction": -1,
+      "agg_signed_confidence": -1.8936,
+      "n_contributing_events": 2,
+      "contributing_symbols": [
+        "ACDC",
+        "ACRV"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 365.43,
+      "qqq_close": 364.3953,
+      "session_return_pct": -0.2831,
+      "directional_return_pct": 0.2831,
+      "hit": true
+    },
+    {
+      "session_date": "2023-08-15",
+      "direction": -1,
+      "agg_signed_confidence": -1.8414,
+      "n_contributing_events": 2,
+      "contributing_symbols": [
+        "ABSI",
+        "ACHV"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 369.36,
+      "qqq_close": 360.5285,
+      "session_return_pct": -2.391,
+      "directional_return_pct": 2.391,
+      "hit": true
+    },
+    {
+      "session_date": "2023-08-16",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "A"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 365.87,
+      "qqq_close": 356.7109,
+      "session_return_pct": -2.5034,
+      "directional_return_pct": -2.5034,
+      "hit": false
+    },
+    {
+      "session_date": "2023-09-15",
+      "direction": -1,
+      "agg_signed_confidence": -0.7067,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ADBE"
+      ],
+      "confidence_bucket": "0.70-0.80",
+      "qqq_open": 375.91,
+      "qqq_close": 364.8479,
+      "session_return_pct": -2.9428,
+      "directional_return_pct": 2.9428,
+      "hit": true
+    },
+    {
+      "session_date": "2023-10-18",
+      "direction": -1,
+      "agg_signed_confidence": -0.8884,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ACI"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 365.67,
+      "qqq_close": 358.0447,
+      "session_return_pct": -2.0853,
+      "directional_return_pct": 2.0853,
+      "hit": true
+    },
+    {
+      "session_date": "2023-10-25",
+      "direction": -1,
+      "agg_signed_confidence": -2.0,
+      "n_contributing_events": 2,
+      "contributing_symbols": [
+        "ABG",
+        "ADC"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 356.7,
+      "qqq_close": 345.2056,
+      "session_return_pct": -3.2224,
+      "directional_return_pct": 3.2224,
+      "hit": true
+    },
+    {
+      "session_date": "2023-10-27",
+      "direction": -1,
+      "agg_signed_confidence": -2.0,
+      "n_contributing_events": 2,
+      "contributing_symbols": [
+        "AB",
+        "ABCB"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 346.43,
+      "qqq_close": 340.2494,
+      "session_return_pct": -1.7841,
+      "directional_return_pct": 1.7841,
+      "hit": true
+    },
+    {
+      "session_date": "2023-10-30",
+      "direction": -1,
+      "agg_signed_confidence": -1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ABR"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 347.83,
+      "qqq_close": 344.0823,
+      "session_return_pct": -1.0775,
+      "directional_return_pct": 1.0775,
+      "hit": true
+    },
+    {
+      "session_date": "2023-11-01",
+      "direction": -1,
+      "agg_signed_confidence": -1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ABEV"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 351.72,
+      "qqq_close": 351.7286,
+      "session_return_pct": 0.0024,
+      "directional_return_pct": -0.0024,
+      "hit": false
+    },
+    {
+      "session_date": "2023-11-02",
+      "direction": 1,
+      "agg_signed_confidence": 2.0,
+      "n_contributing_events": 4,
+      "contributing_symbols": [
+        "ACA",
+        "ACLS",
+        "ACT",
+        "ADAM"
+      ],
+      "confidence_bucket": "0.50-0.55",
+      "qqq_open": 361.54,
+      "qqq_close": 358.1137,
+      "session_return_pct": -0.9477,
+      "directional_return_pct": -0.9477,
+      "hit": false
+    },
+    {
+      "session_date": "2023-11-03",
+      "direction": -1,
+      "agg_signed_confidence": -1.6518,
+      "n_contributing_events": 6,
+      "contributing_symbols": [
+        "AAPL",
+        "ABCL",
+        "ACAD",
+        "ACCO",
+        "ACHC",
+        "ACIW"
+      ],
+      "confidence_bucket": "0.50-0.55",
+      "qqq_open": 364.75,
+      "qqq_close": 362.3211,
+      "session_return_pct": -0.6659,
+      "directional_return_pct": 0.6659,
+      "hit": true
+    },
+    {
+      "session_date": "2023-11-06",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 3,
+      "contributing_symbols": [
+        "ACIU",
+        "ACRE",
+        "AD"
+      ],
+      "confidence_bucket": "0.50-0.55",
+      "qqq_open": 368.49,
+      "qqq_close": 363.7991,
+      "session_return_pct": -1.273,
+      "directional_return_pct": -1.273,
+      "hit": false
+    },
+    {
+      "session_date": "2023-11-07",
+      "direction": 1,
+      "agg_signed_confidence": 4.0,
+      "n_contributing_events": 4,
+      "contributing_symbols": [
+        "AAON",
+        "ACRS",
+        "ACVA",
+        "ADEA"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 370.27,
+      "qqq_close": 367.2379,
+      "session_return_pct": -0.8189,
+      "directional_return_pct": -0.8189,
+      "hit": false
+    },
+    {
+      "session_date": "2023-11-08",
+      "direction": 1,
+      "agg_signed_confidence": 2.0,
+      "n_contributing_events": 2,
+      "contributing_symbols": [
+        "ACMR",
+        "ADCT"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 373.08,
+      "qqq_close": 367.4744,
+      "session_return_pct": -1.5025,
+      "directional_return_pct": -1.5025,
+      "hit": false
+    },
+    {
+      "session_date": "2023-11-09",
+      "direction": 1,
+      "agg_signed_confidence": 1.7861,
+      "n_contributing_events": 2,
+      "contributing_symbols": [
+        "ACET",
+        "ADNT"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 373.64,
+      "qqq_close": 364.6465,
+      "session_return_pct": -2.407,
+      "directional_return_pct": -2.407,
+      "hit": false
+    },
+    {
+      "session_date": "2023-11-10",
+      "direction": 1,
+      "agg_signed_confidence": 3.8618,
+      "n_contributing_events": 4,
+      "contributing_symbols": [
+        "ACB",
+        "ACHV",
+        "ACRV",
+        "ADPT"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 371.82,
+      "qqq_close": 372.8446,
+      "session_return_pct": 0.2756,
+      "directional_return_pct": 0.2756,
+      "hit": true
+    },
+    {
+      "session_date": "2023-11-14",
+      "direction": 1,
+      "agg_signed_confidence": 1.8158,
+      "n_contributing_events": 4,
+      "contributing_symbols": [
+        "ABOS",
+        "ACLX",
+        "ACM",
+        "ACXP"
+      ],
+      "confidence_bucket": "0.50-0.55",
+      "qqq_open": 383.71,
+      "qqq_close": 379.6829,
+      "session_return_pct": -1.0495,
+      "directional_return_pct": -1.0495,
+      "hit": false
+    },
+    {
+      "session_date": "2023-11-15",
+      "direction": -1,
+      "agg_signed_confidence": -0.0558,
+      "n_contributing_events": 2,
+      "contributing_symbols": [
+        "ABSI",
+        "ACON"
+      ],
+      "confidence_bucket": "0.50-0.55",
+      "qqq_open": 387.25,
+      "qqq_close": 379.9686,
+      "session_return_pct": -1.8803,
+      "directional_return_pct": 1.8803,
+      "hit": true
+    },
+    {
+      "session_date": "2023-11-21",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "A"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 389.01,
+      "qqq_close": 382.7768,
+      "session_return_pct": -1.6023,
+      "directional_return_pct": -1.6023,
+      "hit": false
+    },
+    {
+      "session_date": "2023-12-14",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ADBE"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 404.98,
+      "qqq_close": 397.4782,
+      "session_return_pct": -1.8524,
+      "directional_return_pct": -1.8524,
+      "hit": false
+    },
+    {
+      "session_date": "2024-01-26",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ABCB"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 424.44,
+      "qqq_close": 418.6532,
+      "session_return_pct": -1.3634,
+      "directional_return_pct": -1.3634,
+      "hit": false
+    },
+    {
+      "session_date": "2024-02-06",
+      "direction": 1,
+      "agg_signed_confidence": 0.983,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ACM"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 429.61,
+      "qqq_close": 422.3872,
+      "session_return_pct": -1.6812,
+      "directional_return_pct": -1.6812,
+      "hit": false
+    },
+    {
+      "session_date": "2024-02-07",
+      "direction": -1,
+      "agg_signed_confidence": -3.0,
+      "n_contributing_events": 3,
+      "contributing_symbols": [
+        "AAT",
+        "AB",
+        "ACT"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 430.41,
+      "qqq_close": 426.7337,
+      "session_return_pct": -0.8541,
+      "directional_return_pct": 0.8541,
+      "hit": true
+    },
+    {
+      "session_date": "2024-02-09",
+      "direction": -1,
+      "agg_signed_confidence": -1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ABG"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 433.94,
+      "qqq_close": 431.7321,
+      "session_return_pct": -0.5088,
+      "directional_return_pct": 0.5088,
+      "hit": true
+    },
+    {
+      "session_date": "2024-02-14",
+      "direction": -1,
+      "agg_signed_confidence": -1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ADC"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 431.26,
+      "qqq_close": 427.9487,
+      "session_return_pct": -0.7678,
+      "directional_return_pct": 0.7678,
+      "hit": true
+    },
+    {
+      "session_date": "2024-02-15",
+      "direction": 1,
+      "agg_signed_confidence": 1.9229,
+      "n_contributing_events": 2,
+      "contributing_symbols": [
+        "ACGL",
+        "ADPT"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 433.92,
+      "qqq_close": 429.223,
+      "session_return_pct": -1.0825,
+      "directional_return_pct": -1.0825,
+      "hit": false
+    },
+    {
+      "session_date": "2024-02-20",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ABR"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 428.55,
+      "qqq_close": 422.1205,
+      "session_return_pct": -1.5003,
+      "directional_return_pct": -1.5003,
+      "hit": false
+    },
+    {
+      "session_date": "2024-02-22",
+      "direction": -1,
+      "agg_signed_confidence": -0.9493,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ACVA"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 434.49,
+      "qqq_close": 432.7397,
+      "session_return_pct": -0.4028,
+      "directional_return_pct": 0.4028,
+      "hit": true
+    },
+    {
+      "session_date": "2024-02-28",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 3,
+      "contributing_symbols": [
+        "A",
+        "ACAD",
+        "ACHC"
+      ],
+      "confidence_bucket": "0.50-0.55",
+      "qqq_open": 435.43,
+      "qqq_close": 429.9738,
+      "session_return_pct": -1.2531,
+      "directional_return_pct": -1.2531,
+      "hit": false
+    },
+    {
+      "session_date": "2024-02-29",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ACMR"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 438.23,
+      "qqq_close": 433.6584,
+      "session_return_pct": -1.0432,
+      "directional_return_pct": -1.0432,
+      "hit": false
+    },
+    {
+      "session_date": "2024-03-01",
+      "direction": 1,
+      "agg_signed_confidence": 1.9571,
+      "n_contributing_events": 2,
+      "contributing_symbols": [
+        "ABEV",
+        "ACIW"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 439.9,
+      "qqq_close": 440.1879,
+      "session_return_pct": 0.0654,
+      "directional_return_pct": 0.0654,
+      "hit": true
+    },
+    {
+      "session_date": "2024-04-18",
+      "direction": -1,
+      "agg_signed_confidence": -1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ABT"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 426.49,
+      "qqq_close": 418.8116,
+      "session_return_pct": -1.8004,
+      "directional_return_pct": 1.8004,
+      "hit": true
+    },
+    {
+      "session_date": "2024-04-23",
+      "direction": -1,
+      "agg_signed_confidence": -0.7704,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ACI"
+      ],
+      "confidence_bucket": "0.70-0.80",
+      "qqq_open": 420.77,
+      "qqq_close": 420.4535,
+      "session_return_pct": -0.0752,
+      "directional_return_pct": 0.0752,
+      "hit": true
+    },
+    {
+      "session_date": "2024-04-24",
+      "direction": 1,
+      "agg_signed_confidence": 0.9035,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ADC"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 428.2,
+      "qqq_close": 421.8779,
+      "session_return_pct": -1.4764,
+      "directional_return_pct": -1.4764,
+      "hit": false
+    },
+    {
+      "session_date": "2024-04-26",
+      "direction": 1,
+      "agg_signed_confidence": 3.0,
+      "n_contributing_events": 3,
+      "contributing_symbols": [
+        "AB",
+        "ABCB",
+        "ABG"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 427.62,
+      "qqq_close": 426.3191,
+      "session_return_pct": -0.3042,
+      "directional_return_pct": -0.3042,
+      "hit": false
+    },
+    {
+      "session_date": "2024-05-01",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ACIW"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 423.15,
+      "qqq_close": 416.9421,
+      "session_return_pct": -1.4671,
+      "directional_return_pct": -1.4671,
+      "hit": false
+    },
+    {
+      "session_date": "2024-05-02",
+      "direction": 1,
+      "agg_signed_confidence": 0.8359,
+      "n_contributing_events": 3,
+      "contributing_symbols": [
+        "ACHC",
+        "ACLS",
+        "ACT"
+      ],
+      "confidence_bucket": "0.50-0.55",
+      "qqq_open": 425.3,
+      "qqq_close": 422.2637,
+      "session_return_pct": -0.7139,
+      "directional_return_pct": -0.7139,
+      "hit": false
+    },
+    {
+      "session_date": "2024-05-03",
+      "direction": 1,
+      "agg_signed_confidence": 0.9077,
+      "n_contributing_events": 3,
+      "contributing_symbols": [
+        "AAON",
+        "AAPL",
+        "ACA"
+      ],
+      "confidence_bucket": "0.50-0.55",
+      "qqq_open": 434.44,
+      "qqq_close": 430.7505,
+      "session_return_pct": -0.8493,
+      "directional_return_pct": -0.8493,
+      "hit": false
+    },
+    {
+      "session_date": "2024-05-06",
+      "direction": 1,
+      "agg_signed_confidence": 1.976,
+      "n_contributing_events": 2,
+      "contributing_symbols": [
+        "ABR",
+        "ADNT"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 437.3,
+      "qqq_close": 435.4687,
+      "session_return_pct": -0.4188,
+      "directional_return_pct": -0.4188,
+      "hit": false
+    },
+    {
+      "session_date": "2024-05-07",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ACM"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 440.7,
+      "qqq_close": 435.5379,
+      "session_return_pct": -1.1713,
+      "directional_return_pct": -1.1713,
+      "hit": false
+    },
+    {
+      "session_date": "2024-05-09",
+      "direction": 1,
+      "agg_signed_confidence": 1.0745,
+      "n_contributing_events": 5,
+      "contributing_symbols": [
+        "ABEV",
+        "ABNB",
+        "ACAD",
+        "ACMR",
+        "ACVA"
+      ],
+      "confidence_bucket": "0.50-0.55",
+      "qqq_open": 440.33,
+      "qqq_close": 436.2303,
+      "session_return_pct": -0.9311,
+      "directional_return_pct": -0.9311,
+      "hit": false
+    },
+    {
+      "session_date": "2024-05-10",
+      "direction": 1,
+      "agg_signed_confidence": 3.0,
+      "n_contributing_events": 3,
+      "contributing_symbols": [
+        "AAOI",
+        "ACLX",
+        "ADMA"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 442.54,
+      "qqq_close": 437.259,
+      "session_return_pct": -1.1933,
+      "directional_return_pct": -1.1933,
+      "hit": false
+    },
+    {
+      "session_date": "2024-05-14",
+      "direction": -1,
+      "agg_signed_confidence": -1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ACIU"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 442.65,
+      "qqq_close": 441.087,
+      "session_return_pct": -0.3531,
+      "directional_return_pct": 0.3531,
+      "hit": true
+    },
+    {
+      "session_date": "2024-05-30",
+      "direction": -1,
+      "agg_signed_confidence": -1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "A"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 455.5,
+      "qqq_close": 446.6459,
+      "session_return_pct": -1.9438,
+      "directional_return_pct": 1.9438,
+      "hit": true
+    },
+    {
+      "session_date": "2024-06-07",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ABM"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 463.0,
+      "qqq_close": 457.932,
+      "session_return_pct": -1.0946,
+      "directional_return_pct": -1.0946,
+      "hit": false
+    },
+    {
+      "session_date": "2024-06-21",
+      "direction": -1,
+      "agg_signed_confidence": -1.8855,
+      "n_contributing_events": 2,
+      "contributing_symbols": [
+        "ACB",
+        "ACN"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 481.19,
+      "qqq_close": 474.965,
+      "session_return_pct": -1.2937,
+      "directional_return_pct": 1.2937,
+      "hit": true
+    },
+    {
+      "session_date": "2024-07-19",
+      "direction": 1,
+      "agg_signed_confidence": 0.9895,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ABBNY"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 479.15,
+      "qqq_close": 470.8253,
+      "session_return_pct": -1.7374,
+      "directional_return_pct": -1.7374,
+      "hit": false
+    },
+    {
+      "session_date": "2024-07-24",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ADC"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 473.82,
+      "qqq_close": 459.0755,
+      "session_return_pct": -3.1118,
+      "directional_return_pct": -3.1118,
+      "hit": false
+    },
+    {
+      "session_date": "2024-07-26",
+      "direction": 1,
+      "agg_signed_confidence": 0.8266,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ABCB"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 462.65,
+      "qqq_close": 458.6693,
+      "session_return_pct": -0.8604,
+      "directional_return_pct": -0.8604,
+      "hit": false
+    },
+    {
+      "session_date": "2024-07-29",
+      "direction": 1,
+      "agg_signed_confidence": 0.8717,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "AB"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 465.71,
+      "qqq_close": 459.5907,
+      "session_return_pct": -1.314,
+      "directional_return_pct": -1.314,
+      "hit": false
+    },
+    {
+      "session_date": "2024-07-31",
+      "direction": 1,
+      "agg_signed_confidence": 2.0,
+      "n_contributing_events": 2,
+      "contributing_symbols": [
+        "ACEL",
+        "ACGL"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 467.87,
+      "qqq_close": 466.6941,
+      "session_return_pct": -0.2513,
+      "directional_return_pct": -0.2513,
+      "hit": false
+    },
+    {
+      "session_date": "2024-08-01",
+      "direction": -1,
+      "agg_signed_confidence": -0.8246,
+      "n_contributing_events": 3,
+      "contributing_symbols": [
+        "ACLS",
+        "ACT",
+        "ADAM"
+      ],
+      "confidence_bucket": "0.50-0.55",
+      "qqq_open": 471.76,
+      "qqq_close": 455.39,
+      "session_return_pct": -3.47,
+      "directional_return_pct": 3.47,
+      "hit": true
+    },
+    {
+      "session_date": "2024-08-02",
+      "direction": -1,
+      "agg_signed_confidence": -0.3502,
+      "n_contributing_events": 6,
+      "contributing_symbols": [
+        "AAON",
+        "AAPL",
+        "ABEV",
+        "ACA",
+        "ACIW",
+        "ADPT"
+      ],
+      "confidence_bucket": "0.50-0.55",
+      "qqq_open": 450.89,
+      "qqq_close": 444.5814,
+      "session_return_pct": -1.3991,
+      "directional_return_pct": 1.3991,
+      "hit": true
+    },
+    {
+      "session_date": "2024-08-05",
+      "direction": 1,
+      "agg_signed_confidence": 2.862,
+      "n_contributing_events": 3,
+      "contributing_symbols": [
+        "ABG",
+        "ABR",
+        "AD"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 424.71,
+      "qqq_close": 431.3257,
+      "session_return_pct": 1.5577,
+      "directional_return_pct": 1.5577,
+      "hit": true
+    },
+    {
+      "session_date": "2024-08-06",
+      "direction": -1,
+      "agg_signed_confidence": -1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ACM"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 437.23,
+      "qqq_close": 435.447,
+      "session_return_pct": -0.4078,
+      "directional_return_pct": 0.4078,
+      "hit": true
+    },
+    {
+      "session_date": "2024-08-07",
+      "direction": -1,
+      "agg_signed_confidence": -2.0,
+      "n_contributing_events": 2,
+      "contributing_symbols": [
+        "ACAD",
+        "ADNT"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 446.49,
+      "qqq_close": 430.7313,
+      "session_return_pct": -3.5295,
+      "directional_return_pct": 3.5295,
+      "hit": true
+    },
+    {
+      "session_date": "2024-08-08",
+      "direction": -1,
+      "agg_signed_confidence": -3.9653,
+      "n_contributing_events": 4,
+      "contributing_symbols": [
+        "ACB",
+        "ACIC",
+        "ACMR",
+        "ACVA"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 441.06,
+      "qqq_close": 443.9077,
+      "session_return_pct": 0.6456,
+      "directional_return_pct": -0.6456,
+      "hit": false
+    },
+    {
+      "session_date": "2024-08-09",
+      "direction": -1,
+      "agg_signed_confidence": -2.0,
+      "n_contributing_events": 2,
+      "contributing_symbols": [
+        "ACLX",
+        "ADMA"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 446.74,
+      "qqq_close": 446.226,
+      "session_return_pct": -0.1151,
+      "directional_return_pct": 0.1151,
+      "hit": true
+    },
+    {
+      "session_date": "2024-08-22",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "A"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 484.84,
+      "qqq_close": 470.4389,
+      "session_return_pct": -2.9703,
+      "directional_return_pct": -2.9703,
+      "hit": false
+    },
+    {
+      "session_date": "2024-09-09",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ABM"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 453.06,
+      "qqq_close": 450.2384,
+      "session_return_pct": -0.6228,
+      "directional_return_pct": -0.6228,
+      "hit": false
+    },
+    {
+      "session_date": "2024-10-16",
+      "direction": -1,
+      "agg_signed_confidence": -1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ACI"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 491.18,
+      "qqq_close": 487.0331,
+      "session_return_pct": -0.8443,
+      "directional_return_pct": 0.8443,
+      "hit": true
+    },
+    {
+      "session_date": "2024-10-17",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "AA"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 496.44,
+      "qqq_close": 487.3704,
+      "session_return_pct": -1.8269,
+      "directional_return_pct": -1.8269,
+      "hit": false
+    },
+    {
+      "session_date": "2024-10-23",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ADC"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 493.59,
+      "qqq_close": 484.5032,
+      "session_return_pct": -1.841,
+      "directional_return_pct": -1.841,
+      "hit": false
+    },
+    {
+      "session_date": "2024-10-30",
+      "direction": -1,
+      "agg_signed_confidence": -0.9607,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "AAT"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 499.39,
+      "qqq_close": 492.4599,
+      "session_return_pct": -1.3877,
+      "directional_return_pct": 1.3877,
+      "hit": true
+    },
+    {
+      "session_date": "2024-10-31",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ACA"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 492.38,
+      "qqq_close": 480.0288,
+      "session_return_pct": -2.5085,
+      "directional_return_pct": -2.5085,
+      "hit": false
+    },
+    {
+      "session_date": "2024-11-01",
+      "direction": -1,
+      "agg_signed_confidence": -0.9471,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "AAPL"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 485.5,
+      "qqq_close": 483.5805,
+      "session_return_pct": -0.3954,
+      "directional_return_pct": 0.3954,
+      "hit": true
+    },
+    {
+      "session_date": "2024-11-07",
+      "direction": -1,
+      "agg_signed_confidence": -1.0,
+      "n_contributing_events": 3,
+      "contributing_symbols": [
+        "ACAD",
+        "ACLS",
+        "ACT"
+      ],
+      "confidence_bucket": "0.50-0.55",
+      "qqq_open": 508.4,
+      "qqq_close": 509.4843,
+      "session_return_pct": 0.2133,
+      "directional_return_pct": -0.2133,
+      "hit": false
+    },
+    {
+      "session_date": "2024-11-08",
+      "direction": 1,
+      "agg_signed_confidence": 4.0,
+      "n_contributing_events": 4,
+      "contributing_symbols": [
+        "ACIW",
+        "ACLX",
+        "ACVA",
+        "ADCT"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 513.035,
+      "qqq_close": 510.0796,
+      "session_return_pct": -0.5761,
+      "directional_return_pct": -0.5761,
+      "hit": false
+    },
+    {
+      "session_date": "2024-11-11",
+      "direction": -1,
+      "agg_signed_confidence": -0.8726,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ADNT"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 515.37,
+      "qqq_close": 509.782,
+      "session_return_pct": -1.0843,
+      "directional_return_pct": 1.0843,
+      "hit": true
+    },
+    {
+      "session_date": "2024-11-15",
+      "direction": -1,
+      "agg_signed_confidence": -1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ACON"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 502.94,
+      "qqq_close": 492.6484,
+      "session_return_pct": -2.0463,
+      "directional_return_pct": 2.0463,
+      "hit": true
+    },
+    {
+      "session_date": "2024-11-19",
+      "direction": 1,
+      "agg_signed_confidence": 0.8274,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ADM"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 497.42,
+      "qqq_close": 499.4839,
+      "session_return_pct": 0.4149,
+      "directional_return_pct": 0.4149,
+      "hit": true
+    },
+    {
+      "session_date": "2024-11-26",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "A"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 508.08,
+      "qqq_close": 505.2877,
+      "session_return_pct": -0.5496,
+      "directional_return_pct": -0.5496,
+      "hit": false
+    },
+    {
+      "session_date": "2025-01-23",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "AA"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 529.04,
+      "qqq_close": 529.2853,
+      "session_return_pct": 0.0464,
+      "directional_return_pct": 0.0464,
+      "hit": true
+    },
+    {
+      "session_date": "2025-01-29",
+      "direction": 1,
+      "agg_signed_confidence": 0.786,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ADNT"
+      ],
+      "confidence_bucket": "0.70-0.80",
+      "qqq_open": 522.46,
+      "qqq_close": 517.5496,
+      "session_return_pct": -0.9399,
+      "directional_return_pct": -0.9399,
+      "hit": false
+    },
+    {
+      "session_date": "2025-01-31",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 3,
+      "contributing_symbols": [
+        "AAPL",
+        "ABCB",
+        "ABG"
+      ],
+      "confidence_bucket": "0.50-0.55",
+      "qqq_open": 526.92,
+      "qqq_close": 519.0004,
+      "session_return_pct": -1.503,
+      "directional_return_pct": -1.503,
+      "hit": false
+    },
+    {
+      "session_date": "2025-02-04",
+      "direction": -1,
+      "agg_signed_confidence": -1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ACM"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 518.63,
+      "qqq_close": 521.1667,
+      "session_return_pct": 0.4891,
+      "directional_return_pct": -0.4891,
+      "hit": false
+    },
+    {
+      "session_date": "2025-02-07",
+      "direction": -1,
+      "agg_signed_confidence": -1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "AB"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 530.14,
+      "qqq_close": 519.6265,
+      "session_return_pct": -1.9832,
+      "directional_return_pct": 1.9832,
+      "hit": true
+    },
+    {
+      "session_date": "2025-02-11",
+      "direction": -1,
+      "agg_signed_confidence": -2.0,
+      "n_contributing_events": 2,
+      "contributing_symbols": [
+        "ACGL",
+        "ACLS"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 525.96,
+      "qqq_close": 524.6645,
+      "session_return_pct": -0.2463,
+      "directional_return_pct": 0.2463,
+      "hit": true
+    },
+    {
+      "session_date": "2025-02-12",
+      "direction": -1,
+      "agg_signed_confidence": -0.7277,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ADPT"
+      ],
+      "confidence_bucket": "0.70-0.80",
+      "qqq_open": 522.3,
+      "qqq_close": 524.9726,
+      "session_return_pct": 0.5117,
+      "directional_return_pct": -0.5117,
+      "hit": false
+    },
+    {
+      "session_date": "2025-02-13",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ACRE"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 529.98,
+      "qqq_close": 532.5247,
+      "session_return_pct": 0.4802,
+      "directional_return_pct": 0.4802,
+      "hit": true
+    },
+    {
+      "session_date": "2025-02-14",
+      "direction": -1,
+      "agg_signed_confidence": -1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ACDVF"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 536.005,
+      "qqq_close": 534.7606,
+      "session_return_pct": -0.2322,
+      "directional_return_pct": 0.2322,
+      "hit": true
+    },
+    {
+      "session_date": "2025-02-19",
+      "direction": 1,
+      "agg_signed_confidence": 0.9477,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ADEA"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 538.57,
+      "qqq_close": 536.1219,
+      "session_return_pct": -0.4546,
+      "directional_return_pct": -0.4546,
+      "hit": false
+    },
+    {
+      "session_date": "2025-02-20",
+      "direction": -1,
+      "agg_signed_confidence": -0.1343,
+      "n_contributing_events": 2,
+      "contributing_symbols": [
+        "ACVA",
+        "ADI"
+      ],
+      "confidence_bucket": "0.50-0.55",
+      "qqq_open": 538.73,
+      "qqq_close": 533.8463,
+      "session_return_pct": -0.9065,
+      "directional_return_pct": 0.9065,
+      "hit": true
+    },
+    {
+      "session_date": "2025-02-24",
+      "direction": 1,
+      "agg_signed_confidence": 2.0,
+      "n_contributing_events": 2,
+      "contributing_symbols": [
+        "ABR",
+        "AD"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 527.88,
+      "qqq_close": 516.5957,
+      "session_return_pct": -2.1377,
+      "directional_return_pct": -2.1377,
+      "hit": false
+    },
+    {
+      "session_date": "2025-02-27",
+      "direction": -1,
+      "agg_signed_confidence": -4.0,
+      "n_contributing_events": 4,
+      "contributing_symbols": [
+        "A",
+        "AAOI",
+        "ABEV",
+        "ACMR"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 518.13,
+      "qqq_close": 497.1191,
+      "session_return_pct": -4.0551,
+      "directional_return_pct": 4.0551,
+      "hit": true
+    },
+    {
+      "session_date": "2025-02-28",
+      "direction": -1,
+      "agg_signed_confidence": -5.0,
+      "n_contributing_events": 5,
+      "contributing_symbols": [
+        "AAON",
+        "ACA",
+        "ACHC",
+        "ACIW",
+        "ACLX"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 500.13,
+      "qqq_close": 504.9694,
+      "session_return_pct": 0.9676,
+      "directional_return_pct": -0.9676,
+      "hit": false
+    },
+    {
+      "session_date": "2025-03-03",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ACH"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 511.52,
+      "qqq_close": 493.9194,
+      "session_return_pct": -3.4408,
+      "directional_return_pct": -3.4408,
+      "hit": false
+    },
+    {
+      "session_date": "2025-03-04",
+      "direction": 1,
+      "agg_signed_confidence": 0.8399,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ADMA"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 494.18,
+      "qqq_close": 492.4289,
+      "session_return_pct": -0.3543,
+      "directional_return_pct": -0.3543,
+      "hit": false
+    },
+    {
+      "session_date": "2025-03-05",
+      "direction": -1,
+      "agg_signed_confidence": -1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ADIL"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 496.2,
+      "qqq_close": 498.8482,
+      "session_return_pct": 0.5337,
+      "directional_return_pct": -0.5337,
+      "hit": false
+    },
+    {
+      "session_date": "2025-03-12",
+      "direction": -1,
+      "agg_signed_confidence": -0.8135,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ACHV"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 479.16,
+      "qqq_close": 473.9162,
+      "session_return_pct": -1.0944,
+      "directional_return_pct": 1.0944,
+      "hit": true
+    },
+    {
+      "session_date": "2025-03-13",
+      "direction": -1,
+      "agg_signed_confidence": -1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ABM"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 476.25,
+      "qqq_close": 465.3902,
+      "session_return_pct": -2.2803,
+      "directional_return_pct": 2.2803,
+      "hit": true
+    },
+    {
+      "session_date": "2025-03-14",
+      "direction": -1,
+      "agg_signed_confidence": -0.9638,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ACIU"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 473.73,
+      "qqq_close": 476.6389,
+      "session_return_pct": 0.614,
+      "directional_return_pct": -0.614,
+      "hit": false
+    },
+    {
+      "session_date": "2025-03-21",
+      "direction": -1,
+      "agg_signed_confidence": -0.6256,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ACN"
+      ],
+      "confidence_bucket": "0.60-0.70",
+      "qqq_open": 474.08,
+      "qqq_close": 477.8115,
+      "session_return_pct": 0.7871,
+      "directional_return_pct": -0.7871,
+      "hit": false
+    },
+    {
+      "session_date": "2025-04-16",
+      "direction": -1,
+      "agg_signed_confidence": -1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ACI"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 449.03,
+      "qqq_close": 442.0404,
+      "session_return_pct": -1.5566,
+      "directional_return_pct": 1.5566,
+      "hit": true
+    },
+    {
+      "session_date": "2025-04-17",
+      "direction": 1,
+      "agg_signed_confidence": 0.8638,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "AA"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 447.17,
+      "qqq_close": 441.9608,
+      "session_return_pct": -1.1649,
+      "directional_return_pct": -1.1649,
+      "hit": false
+    },
+    {
+      "session_date": "2025-04-23",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ADC"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 458.17,
+      "qqq_close": 452.3704,
+      "session_return_pct": -1.2658,
+      "directional_return_pct": -1.2658,
+      "hit": false
+    },
+    {
+      "session_date": "2025-04-25",
+      "direction": 1,
+      "agg_signed_confidence": 0.0526,
+      "n_contributing_events": 2,
+      "contributing_symbols": [
+        "AB",
+        "ACNB"
+      ],
+      "confidence_bucket": "0.50-0.55",
+      "qqq_open": 466.97,
+      "qqq_close": 470.2837,
+      "session_return_pct": 0.7096,
+      "directional_return_pct": 0.7096,
+      "hit": true
+    },
+    {
+      "session_date": "2025-04-29",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ABCB"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 470.17,
+      "qqq_close": 473.2394,
+      "session_return_pct": 0.6528,
+      "directional_return_pct": 0.6528,
+      "hit": true
+    },
+    {
+      "session_date": "2025-05-01",
+      "direction": 1,
+      "agg_signed_confidence": 4.0,
+      "n_contributing_events": 4,
+      "contributing_symbols": [
+        "ACIU",
+        "ACR",
+        "ACT",
+        "ADAM"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 483.41,
+      "qqq_close": 479.3597,
+      "session_return_pct": -0.8379,
+      "directional_return_pct": -0.8379,
+      "hit": false
+    },
+    {
+      "session_date": "2025-05-02",
+      "direction": 1,
+      "agg_signed_confidence": 2.0,
+      "n_contributing_events": 2,
+      "contributing_symbols": [
+        "AAON",
+        "AAPL"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 486.54,
+      "qqq_close": 486.4753,
+      "session_return_pct": -0.0133,
+      "directional_return_pct": -0.0133,
+      "hit": false
+    },
+    {
+      "session_date": "2025-05-05",
+      "direction": 1,
+      "agg_signed_confidence": 0.1023,
+      "n_contributing_events": 2,
+      "contributing_symbols": [
+        "ABR",
+        "AD"
+      ],
+      "confidence_bucket": "0.50-0.55",
+      "qqq_open": 484.6,
+      "qqq_close": 483.5893,
+      "session_return_pct": -0.2086,
+      "directional_return_pct": -0.2086,
+      "hit": false
+    },
+    {
+      "session_date": "2025-05-07",
+      "direction": 1,
+      "agg_signed_confidence": 2.0,
+      "n_contributing_events": 2,
+      "contributing_symbols": [
+        "ACA",
+        "ACLS"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 482.08,
+      "qqq_close": 480.9719,
+      "session_return_pct": -0.2299,
+      "directional_return_pct": -0.2299,
+      "hit": false
+    },
+    {
+      "session_date": "2025-05-08",
+      "direction": -1,
+      "agg_signed_confidence": -0.0616,
+      "n_contributing_events": 4,
+      "contributing_symbols": [
+        "ACAD",
+        "ACVA",
+        "ADMA",
+        "ADNT"
+      ],
+      "confidence_bucket": "0.50-0.55",
+      "qqq_open": 488.53,
+      "qqq_close": 485.9379,
+      "session_return_pct": -0.5306,
+      "directional_return_pct": 0.5306,
+      "hit": true
+    },
+    {
+      "session_date": "2025-05-13",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ACHC"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 509.16,
+      "qqq_close": 513.1064,
+      "session_return_pct": 0.7751,
+      "directional_return_pct": 0.7751,
+      "hit": true
+    },
+    {
+      "session_date": "2025-05-14",
+      "direction": -1,
+      "agg_signed_confidence": -0.8724,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ABOS"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 516.77,
+      "qqq_close": 516.1815,
+      "session_return_pct": -0.1139,
+      "directional_return_pct": 0.1139,
+      "hit": true
+    },
+    {
+      "session_date": "2025-05-15",
+      "direction": -1,
+      "agg_signed_confidence": -1.6978,
+      "n_contributing_events": 2,
+      "contributing_symbols": [
+        "AARD",
+        "ADIL"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 516.52,
+      "qqq_close": 516.7488,
+      "session_return_pct": 0.0443,
+      "directional_return_pct": -0.0443,
+      "hit": false
+    },
+    {
+      "session_date": "2025-05-16",
+      "direction": -1,
+      "agg_signed_confidence": -1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ABEO"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 520.66,
+      "qqq_close": 518.9979,
+      "session_return_pct": -0.3192,
+      "directional_return_pct": 0.3192,
+      "hit": true
+    },
+    {
+      "session_date": "2025-05-23",
+      "direction": -1,
+      "agg_signed_confidence": -1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "AAP"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 506.18,
+      "qqq_close": 506.787,
+      "session_return_pct": 0.1199,
+      "directional_return_pct": -0.1199,
+      "hit": false
+    },
+    {
+      "session_date": "2025-05-29",
+      "direction": -1,
+      "agg_signed_confidence": -1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "A"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 526.33,
+      "qqq_close": 517.4255,
+      "session_return_pct": -1.6918,
+      "directional_return_pct": 1.6918,
+      "hit": true
+    },
+    {
+      "session_date": "2025-06-03",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ABVX"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 523.56,
+      "qqq_close": 524.76,
+      "session_return_pct": 0.2292,
+      "directional_return_pct": 0.2292,
+      "hit": true
+    },
+    {
+      "session_date": "2025-06-09",
+      "direction": -1,
+      "agg_signed_confidence": -1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ABM"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 530.14,
+      "qqq_close": 528.1436,
+      "session_return_pct": -0.3766,
+      "directional_return_pct": 0.3766,
+      "hit": true
+    },
+    {
+      "session_date": "2025-06-20",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ACB"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 532.26,
+      "qqq_close": 524.2922,
+      "session_return_pct": -1.497,
+      "directional_return_pct": -1.497,
+      "hit": false
+    },
+    {
+      "session_date": "2025-06-23",
+      "direction": -1,
+      "agg_signed_confidence": -1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ACN"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 526.81,
+      "qqq_close": 529.6833,
+      "session_return_pct": 0.5454,
+      "directional_return_pct": -0.5454,
+      "hit": false
+    },
+    {
+      "session_date": "2025-07-16",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ACI"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 557.28,
+      "qqq_close": 555.2285,
+      "session_return_pct": -0.3681,
+      "directional_return_pct": -0.3681,
+      "hit": false
+    },
+    {
+      "session_date": "2025-07-17",
+      "direction": -1,
+      "agg_signed_confidence": -1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "AA"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 558.02,
+      "qqq_close": 559.7218,
+      "session_return_pct": 0.305,
+      "directional_return_pct": -0.305,
+      "hit": false
+    },
+    {
+      "session_date": "2025-07-18",
+      "direction": -1,
+      "agg_signed_confidence": -1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ABT"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 563.12,
+      "qqq_close": 559.1838,
+      "session_return_pct": -0.699,
+      "directional_return_pct": 0.699,
+      "hit": true
+    },
+    {
+      "session_date": "2025-07-25",
+      "direction": 1,
+      "agg_signed_confidence": 3.0,
+      "n_contributing_events": 3,
+      "contributing_symbols": [
+        "AAL",
+        "AB",
+        "ACNB"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 564.93,
+      "qqq_close": 564.2749,
+      "session_return_pct": -0.116,
+      "directional_return_pct": -0.116,
+      "hit": false
+    },
+    {
+      "session_date": "2025-07-29",
+      "direction": -1,
+      "agg_signed_confidence": -0.2724,
+      "n_contributing_events": 2,
+      "contributing_symbols": [
+        "ABCB",
+        "ACDVF"
+      ],
+      "confidence_bucket": "0.50-0.55",
+      "qqq_open": 570.76,
+      "qqq_close": 565.1616,
+      "session_return_pct": -0.9809,
+      "directional_return_pct": 0.9809,
+      "hit": true
+    },
+    {
+      "session_date": "2025-07-30",
+      "direction": -1,
+      "agg_signed_confidence": -2.8516,
+      "n_contributing_events": 3,
+      "contributing_symbols": [
+        "AAT",
+        "ABG",
+        "ACGL"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 568.18,
+      "qqq_close": 565.9188,
+      "session_return_pct": -0.398,
+      "directional_return_pct": 0.398,
+      "hit": true
+    },
+    {
+      "session_date": "2025-07-31",
+      "direction": 1,
+      "agg_signed_confidence": 2.8169,
+      "n_contributing_events": 5,
+      "contributing_symbols": [
+        "ACR",
+        "ACT",
+        "ADAM",
+        "ADDYY",
+        "ADP"
+      ],
+      "confidence_bucket": "0.55-0.60",
+      "qqq_open": 574.54,
+      "qqq_close": 562.9199,
+      "session_return_pct": -2.0225,
+      "directional_return_pct": -2.0225,
+      "hit": false
+    },
+    {
+      "session_date": "2025-08-01",
+      "direction": -1,
+      "agg_signed_confidence": -1.7966,
+      "n_contributing_events": 6,
+      "contributing_symbols": [
+        "AAMI",
+        "AAPL",
+        "ABBV",
+        "ABEV",
+        "ACCO",
+        "ADC"
+      ],
+      "confidence_bucket": "0.50-0.55",
+      "qqq_open": 558.83,
+      "qqq_close": 551.8311,
+      "session_return_pct": -1.2524,
+      "directional_return_pct": 1.2524,
+      "hit": true
+    },
+    {
+      "session_date": "2025-08-04",
+      "direction": -1,
+      "agg_signed_confidence": -1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ABR"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 559.05,
+      "qqq_close": 562.0133,
+      "session_return_pct": 0.5301,
+      "directional_return_pct": -0.5301,
+      "hit": false
+    },
+    {
+      "session_date": "2025-08-05",
+      "direction": -1,
+      "agg_signed_confidence": -1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ACM"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 565.39,
+      "qqq_close": 558.1975,
+      "session_return_pct": -1.2721,
+      "directional_return_pct": 1.2721,
+      "hit": true
+    },
+    {
+      "session_date": "2025-08-06",
+      "direction": -1,
+      "agg_signed_confidence": -4.8858,
+      "n_contributing_events": 7,
+      "contributing_symbols": [
+        "ACEL",
+        "ACHC",
+        "ACIU",
+        "ACLS",
+        "ACRE",
+        "ADM",
+        "ADPT"
+      ],
+      "confidence_bucket": "0.60-0.70",
+      "qqq_open": 561.11,
+      "qqq_close": 565.2214,
+      "session_return_pct": 0.7327,
+      "directional_return_pct": -0.7327,
+      "hit": false
+    },
+    {
+      "session_date": "2025-08-07",
+      "direction": -1,
+      "agg_signed_confidence": -3.9555,
+      "n_contributing_events": 8,
+      "contributing_symbols": [
+        "ABNB",
+        "ACAD",
+        "ACB",
+        "ACIC",
+        "ACMR",
+        "ACTG",
+        "ADMA",
+        "ADNT"
+      ],
+      "confidence_bucket": "0.50-0.55",
+      "qqq_open": 571.67,
+      "qqq_close": 567.1343,
+      "session_return_pct": -0.7934,
+      "directional_return_pct": 0.7934,
+      "hit": true
+    },
+    {
+      "session_date": "2025-08-08",
+      "direction": -1,
+      "agg_signed_confidence": -2.2719,
+      "n_contributing_events": 8,
+      "contributing_symbols": [
+        "AAOI",
+        "AAPG",
+        "ABCL",
+        "ACA",
+        "ACDC",
+        "ACHV",
+        "ACIW",
+        "ACLX"
+      ],
+      "confidence_bucket": "0.50-0.55",
+      "qqq_open": 570.45,
+      "qqq_close": 572.4246,
+      "session_return_pct": 0.3461,
+      "directional_return_pct": -0.3461,
+      "hit": false
+    },
+    {
+      "session_date": "2025-08-11",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ABX"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 574.69,
+      "qqq_close": 570.7309,
+      "session_return_pct": -0.6889,
+      "directional_return_pct": -0.6889,
+      "hit": false
+    },
+    {
+      "session_date": "2025-08-12",
+      "direction": -1,
+      "agg_signed_confidence": -1.9954,
+      "n_contributing_events": 4,
+      "contributing_symbols": [
+        "AAON",
+        "ACHR",
+        "ACVA",
+        "AD"
+      ],
+      "confidence_bucket": "0.50-0.55",
+      "qqq_open": 575.16,
+      "qqq_close": 577.9043,
+      "session_return_pct": 0.4771,
+      "directional_return_pct": -0.4771,
+      "hit": false
+    },
+    {
+      "session_date": "2025-08-13",
+      "direction": -1,
+      "agg_signed_confidence": -1.84,
+      "n_contributing_events": 2,
+      "contributing_symbols": [
+        "ABSI",
+        "ACCS"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 582.76,
+      "qqq_close": 578.1932,
+      "session_return_pct": -0.7837,
+      "directional_return_pct": 0.7837,
+      "hit": true
+    },
+    {
+      "session_date": "2025-08-14",
+      "direction": -1,
+      "agg_signed_confidence": -1.7594,
+      "n_contributing_events": 2,
+      "contributing_symbols": [
+        "AAME",
+        "AARD"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 578.28,
+      "qqq_close": 577.7449,
+      "session_return_pct": -0.0925,
+      "directional_return_pct": 0.0925,
+      "hit": true
+    },
+    {
+      "session_date": "2025-08-15",
+      "direction": 1,
+      "agg_signed_confidence": 0.8508,
+      "n_contributing_events": 3,
+      "contributing_symbols": [
+        "AAP",
+        "ACON",
+        "ACRV"
+      ],
+      "confidence_bucket": "0.50-0.55",
+      "qqq_open": 579.8,
+      "qqq_close": 575.2043,
+      "session_return_pct": -0.7926,
+      "directional_return_pct": -0.7926,
+      "hit": false
+    },
+    {
+      "session_date": "2025-08-21",
+      "direction": 1,
+      "agg_signed_confidence": 0.9386,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ADI"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 564.35,
+      "qqq_close": 561.1963,
+      "session_return_pct": -0.5588,
+      "directional_return_pct": -0.5588,
+      "hit": false
+    },
+    {
+      "session_date": "2025-08-28",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "A"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 574.11,
+      "qqq_close": 574.9453,
+      "session_return_pct": 0.1455,
+      "directional_return_pct": 0.1455,
+      "hit": true
+    },
+    {
+      "session_date": "2025-09-08",
+      "direction": -1,
+      "agg_signed_confidence": -1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ABM"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 578.37,
+      "qqq_close": 576.7287,
+      "session_return_pct": -0.2838,
+      "directional_return_pct": 0.2838,
+      "hit": true
+    },
+    {
+      "session_date": "2025-09-09",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ABVX"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 579.67,
+      "qqq_close": 578.3626,
+      "session_return_pct": -0.2255,
+      "directional_return_pct": -0.2255,
+      "hit": false
+    },
+    {
+      "session_date": "2025-09-12",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ADBE"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 585.04,
+      "qqq_close": 584.4898,
+      "session_return_pct": -0.094,
+      "directional_return_pct": -0.094,
+      "hit": false
+    },
+    {
+      "session_date": "2025-09-19",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ABAT"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 597.33,
+      "qqq_close": 597.1329,
+      "session_return_pct": -0.033,
+      "directional_return_pct": -0.033,
+      "hit": false
+    },
+    {
+      "session_date": "2025-09-26",
+      "direction": 1,
+      "agg_signed_confidence": 0.8926,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ACN"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 594.35,
+      "qqq_close": 594.4537,
+      "session_return_pct": 0.0174,
+      "directional_return_pct": 0.0174,
+      "hit": true
+    },
+    {
+      "session_date": "2025-10-15",
+      "direction": -1,
+      "agg_signed_confidence": -1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ACI"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 604.01,
+      "qqq_close": 600.6878,
+      "session_return_pct": -0.55,
+      "directional_return_pct": 0.55,
+      "hit": true
+    },
+    {
+      "session_date": "2025-10-16",
+      "direction": -1,
+      "agg_signed_confidence": -1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ABT"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 605.11,
+      "qqq_close": 598.4635,
+      "session_return_pct": -1.0984,
+      "directional_return_pct": 1.0984,
+      "hit": true
+    },
+    {
+      "session_date": "2025-10-17",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ABBNY"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 597.95,
+      "qqq_close": 602.3934,
+      "session_return_pct": 0.7431,
+      "directional_return_pct": 0.7431,
+      "hit": true
+    },
+    {
+      "session_date": "2025-10-22",
+      "direction": 1,
+      "agg_signed_confidence": 1.7601,
+      "n_contributing_events": 2,
+      "contributing_symbols": [
+        "ACU",
+        "ADC"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 610.82,
+      "qqq_close": 603.9495,
+      "session_return_pct": -1.1248,
+      "directional_return_pct": -1.1248,
+      "hit": false
+    },
+    {
+      "session_date": "2025-10-23",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "AA"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 604.91,
+      "qqq_close": 609.0265,
+      "session_return_pct": 0.6805,
+      "directional_return_pct": 0.6805,
+      "hit": true
+    },
+    {
+      "session_date": "2025-10-24",
+      "direction": -1,
+      "agg_signed_confidence": -3.0,
+      "n_contributing_events": 3,
+      "contributing_symbols": [
+        "AAL",
+        "AB",
+        "ACNB"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 615.99,
+      "qqq_close": 615.5299,
+      "session_return_pct": -0.0747,
+      "directional_return_pct": 0.0747,
+      "hit": true
+    },
+    {
+      "session_date": "2025-10-28",
+      "direction": 1,
+      "agg_signed_confidence": 2.0,
+      "n_contributing_events": 2,
+      "contributing_symbols": [
+        "ABCB",
+        "ACGL"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 630.36,
+      "qqq_close": 631.3097,
+      "session_return_pct": 0.1507,
+      "directional_return_pct": 0.1507,
+      "hit": true
+    },
+    {
+      "session_date": "2025-10-29",
+      "direction": -1,
+      "agg_signed_confidence": -1.0,
+      "n_contributing_events": 3,
+      "contributing_symbols": [
+        "AAT",
+        "ABG",
+        "ADDYY"
+      ],
+      "confidence_bucket": "0.50-0.55",
+      "qqq_open": 635.59,
+      "qqq_close": 634.1524,
+      "session_return_pct": -0.2262,
+      "directional_return_pct": 0.2262,
+      "hit": true
+    },
+    {
+      "session_date": "2025-10-30",
+      "direction": -1,
+      "agg_signed_confidence": -2.6756,
+      "n_contributing_events": 3,
+      "contributing_symbols": [
+        "ACR",
+        "ADAM",
+        "ADP"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 632.17,
+      "qqq_close": 624.4571,
+      "session_return_pct": -1.2201,
+      "directional_return_pct": 1.2201,
+      "hit": true
+    },
+    {
+      "session_date": "2025-10-31",
+      "direction": -1,
+      "agg_signed_confidence": -1.7912,
+      "n_contributing_events": 6,
+      "contributing_symbols": [
+        "AAMI",
+        "AAP",
+        "AAPL",
+        "ABEV",
+        "ACA",
+        "ACCO"
+      ],
+      "confidence_bucket": "0.50-0.55",
+      "qqq_open": 634.17,
+      "qqq_close": 627.4695,
+      "session_return_pct": -1.0566,
+      "directional_return_pct": 1.0566,
+      "hit": true
+    },
+    {
+      "session_date": "2025-11-03",
+      "direction": -1,
+      "agg_signed_confidence": -2.0,
+      "n_contributing_events": 2,
+      "contributing_symbols": [
+        "ABBV",
+        "ABR"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 635.11,
+      "qqq_close": 630.4718,
+      "session_return_pct": -0.7303,
+      "directional_return_pct": 0.7303,
+      "hit": true
+    },
+    {
+      "session_date": "2025-11-04",
+      "direction": 1,
+      "agg_signed_confidence": 0.8285,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ADEA"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 623.28,
+      "qqq_close": 617.6744,
+      "session_return_pct": -0.8994,
+      "directional_return_pct": -0.8994,
+      "hit": false
+    },
+    {
+      "session_date": "2025-11-05",
+      "direction": -1,
+      "agg_signed_confidence": -3.0,
+      "n_contributing_events": 5,
+      "contributing_symbols": [
+        "ACDVF",
+        "ACEL",
+        "ACIU",
+        "ACLS",
+        "ADM"
+      ],
+      "confidence_bucket": "0.60-0.70",
+      "qqq_open": 618.49,
+      "qqq_close": 621.6942,
+      "session_return_pct": 0.5181,
+      "directional_return_pct": -0.5181,
+      "hit": false
+    },
+    {
+      "session_date": "2025-11-06",
+      "direction": -1,
+      "agg_signed_confidence": -3.954,
+      "n_contributing_events": 10,
+      "contributing_symbols": [
+        "ACAD",
+        "ACB",
+        "ACHC",
+        "ACLX",
+        "ACMR",
+        "ACT",
+        "ACVA",
+        "ADMA",
+        "ADNT",
+        "ADPT"
+      ],
+      "confidence_bucket": "0.50-0.55",
+      "qqq_open": 621.79,
+      "qqq_close": 610.1137,
+      "session_return_pct": -1.8779,
+      "directional_return_pct": 1.8779,
+      "hit": true
+    },
+    {
+      "session_date": "2025-11-07",
+      "direction": -1,
+      "agg_signed_confidence": -6.0126,
+      "n_contributing_events": 8,
+      "contributing_symbols": [
+        "AAOI",
+        "AAON",
+        "ABNB",
+        "ABX",
+        "ACHR",
+        "ACHV",
+        "ACIW",
+        "ACRS"
+      ],
+      "confidence_bucket": "0.70-0.80",
+      "qqq_open": 608.31,
+      "qqq_close": 608.1886,
+      "session_return_pct": -0.02,
+      "directional_return_pct": 0.02,
+      "hit": true
+    },
+    {
+      "session_date": "2025-11-10",
+      "direction": -1,
+      "agg_signed_confidence": -0.0169,
+      "n_contributing_events": 2,
+      "contributing_symbols": [
+        "ACRE",
+        "AD"
+      ],
+      "confidence_bucket": "0.50-0.55",
+      "qqq_open": 618.92,
+      "qqq_close": 621.6443,
+      "session_return_pct": 0.4402,
+      "directional_return_pct": -0.4402,
+      "hit": false
+    },
+    {
+      "session_date": "2025-11-11",
+      "direction": -1,
+      "agg_signed_confidence": -2.0,
+      "n_contributing_events": 2,
+      "contributing_symbols": [
+        "ACDC",
+        "ADCT"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 620.57,
+      "qqq_close": 619.9885,
+      "session_return_pct": -0.0937,
+      "directional_return_pct": 0.0937,
+      "hit": true
+    },
+    {
+      "session_date": "2025-11-13",
+      "direction": -1,
+      "agg_signed_confidence": -3.0,
+      "n_contributing_events": 3,
+      "contributing_symbols": [
+        "ABEO",
+        "ACCS",
+        "ACON"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 617.54,
+      "qqq_close": 606.8521,
+      "session_return_pct": -1.7307,
+      "directional_return_pct": 1.7307,
+      "hit": true
+    },
+    {
+      "session_date": "2025-11-14",
+      "direction": 1,
+      "agg_signed_confidence": 2.0,
+      "n_contributing_events": 2,
+      "contributing_symbols": [
+        "AARD",
+        "ACOG"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 599.55,
+      "qqq_close": 607.3109,
+      "session_return_pct": 1.2945,
+      "directional_return_pct": 1.2945,
+      "hit": true
+    },
+    {
+      "session_date": "2025-11-19",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ACM"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 597.07,
+      "qqq_close": 598.3438,
+      "session_return_pct": 0.2133,
+      "directional_return_pct": 0.2133,
+      "hit": true
+    },
+    {
+      "session_date": "2025-11-25",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "A"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 603.51,
+      "qqq_close": 607.3408,
+      "session_return_pct": 0.6348,
+      "directional_return_pct": 0.6348,
+      "hit": true
+    },
+    {
+      "session_date": "2025-11-26",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ADI"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 612.51,
+      "qqq_close": 612.7071,
+      "session_return_pct": 0.0322,
+      "directional_return_pct": 0.0322,
+      "hit": true
+    },
+    {
+      "session_date": "2025-12-11",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ADBE"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 623.82,
+      "qqq_close": 623.9883,
+      "session_return_pct": 0.027,
+      "directional_return_pct": 0.027,
+      "hit": true
+    },
+    {
+      "session_date": "2025-12-16",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ABVX"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 608.26,
+      "qqq_close": 610.1935,
+      "session_return_pct": 0.3179,
+      "directional_return_pct": 0.3179,
+      "hit": true
+    },
+    {
+      "session_date": "2025-12-18",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ABM"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 609.8,
+      "qqq_close": 607.5602,
+      "session_return_pct": -0.3673,
+      "directional_return_pct": -0.3673,
+      "hit": false
+    },
+    {
+      "session_date": "2025-12-19",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ACN"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 611.95,
+      "qqq_close": 615.48,
+      "session_return_pct": 0.5768,
+      "directional_return_pct": 0.5768,
+      "hit": true
+    },
+    {
+      "session_date": "2026-01-08",
+      "direction": -1,
+      "agg_signed_confidence": -1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ACI"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 623.03,
+      "qqq_close": 619.6888,
+      "session_return_pct": -0.5363,
+      "directional_return_pct": 0.5363,
+      "hit": true
+    },
+    {
+      "session_date": "2026-01-23",
+      "direction": -1,
+      "agg_signed_confidence": -1.0,
+      "n_contributing_events": 3,
+      "contributing_symbols": [
+        "AA",
+        "ABT",
+        "ACNB"
+      ],
+      "confidence_bucket": "0.50-0.55",
+      "qqq_open": 619.73,
+      "qqq_close": 621.936,
+      "session_return_pct": 0.356,
+      "directional_return_pct": -0.356,
+      "hit": false
+    },
+    {
+      "session_date": "2026-01-28",
+      "direction": -1,
+      "agg_signed_confidence": -1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "AAL"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 635.46,
+      "qqq_close": 632.4228,
+      "session_return_pct": -0.478,
+      "directional_return_pct": 0.478,
+      "hit": true
+    },
+    {
+      "session_date": "2026-01-29",
+      "direction": -1,
+      "agg_signed_confidence": -1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ADP"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 632.65,
+      "qqq_close": 628.6375,
+      "session_return_pct": -0.6342,
+      "directional_return_pct": 0.6342,
+      "hit": true
+    },
+    {
+      "session_date": "2026-01-30",
+      "direction": 1,
+      "agg_signed_confidence": 3.0,
+      "n_contributing_events": 3,
+      "contributing_symbols": [
+        "AAPL",
+        "ABBNY",
+        "ABCB"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 625.71,
+      "qqq_close": 621.0871,
+      "session_return_pct": -0.7388,
+      "directional_return_pct": -0.7388,
+      "hit": false
+    },
+    {
+      "session_date": "2026-02-04",
+      "direction": 1,
+      "agg_signed_confidence": 2.9634,
+      "n_contributing_events": 3,
+      "contributing_symbols": [
+        "AAT",
+        "ACT",
+        "ADM"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 615.02,
+      "qqq_close": 604.9874,
+      "session_return_pct": -1.6313,
+      "directional_return_pct": -1.6313,
+      "hit": false
+    },
+    {
+      "session_date": "2026-02-05",
+      "direction": -1,
+      "agg_signed_confidence": -1.0,
+      "n_contributing_events": 3,
+      "contributing_symbols": [
+        "ABBV",
+        "ACB",
+        "ADNT"
+      ],
+      "confidence_bucket": "0.50-0.55",
+      "qqq_open": 600.21,
+      "qqq_close": 596.2783,
+      "session_return_pct": -0.6551,
+      "directional_return_pct": 0.6551,
+      "hit": true
+    },
+    {
+      "session_date": "2026-02-06",
+      "direction": -1,
+      "agg_signed_confidence": -1.0,
+      "n_contributing_events": 3,
+      "contributing_symbols": [
+        "AB",
+        "ABG",
+        "ADPT"
+      ],
+      "confidence_bucket": "0.50-0.55",
+      "qqq_open": 600.19,
+      "qqq_close": 608.8824,
+      "session_return_pct": 1.4483,
+      "directional_return_pct": -1.4483,
+      "hit": false
+    },
+    {
+      "session_date": "2026-02-10",
+      "direction": 1,
+      "agg_signed_confidence": 2.0,
+      "n_contributing_events": 2,
+      "contributing_symbols": [
+        "ACGL",
+        "ACM"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 615.305,
+      "qqq_close": 610.7002,
+      "session_return_pct": -0.7484,
+      "directional_return_pct": -0.7484,
+      "hit": false
+    },
+    {
+      "session_date": "2026-02-13",
+      "direction": -1,
+      "agg_signed_confidence": -1.0,
+      "n_contributing_events": 3,
+      "contributing_symbols": [
+        "ABEV",
+        "ABNB",
+        "ACDVF"
+      ],
+      "confidence_bucket": "0.50-0.55",
+      "qqq_open": 600.43,
+      "qqq_close": 601.1622,
+      "session_return_pct": 0.1219,
+      "directional_return_pct": -0.1219,
+      "hit": false
+    },
+    {
+      "session_date": "2026-02-17",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "AAP"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 598.375,
+      "qqq_close": 600.543,
+      "session_return_pct": 0.3623,
+      "directional_return_pct": 0.3623,
+      "hit": true
+    },
+    {
+      "session_date": "2026-02-18",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ACLS"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 602.11,
+      "qqq_close": 605.0273,
+      "session_return_pct": 0.4845,
+      "directional_return_pct": 0.4845,
+      "hit": true
+    },
+    {
+      "session_date": "2026-02-19",
+      "direction": 1,
+      "agg_signed_confidence": 2.0,
+      "n_contributing_events": 2,
+      "contributing_symbols": [
+        "ADAM",
+        "ADI"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 602.81,
+      "qqq_close": 602.7102,
+      "session_return_pct": -0.0166,
+      "directional_return_pct": -0.0166,
+      "hit": false
+    },
+    {
+      "session_date": "2026-02-20",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ACIC"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 600.12,
+      "qqq_close": 608.0435,
+      "session_return_pct": 1.3203,
+      "directional_return_pct": 1.3203,
+      "hit": true
+    },
+    {
+      "session_date": "2026-02-23",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "AD"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 606.605,
+      "qqq_close": 600.6528,
+      "session_return_pct": -0.9812,
+      "directional_return_pct": -0.9812,
+      "hit": false
+    },
+    {
+      "session_date": "2026-02-24",
+      "direction": -1,
+      "agg_signed_confidence": -1.9871,
+      "n_contributing_events": 2,
+      "contributing_symbols": [
+        "ACVA",
+        "ADEA"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 602.4,
+      "qqq_close": 607.1047,
+      "session_return_pct": 0.781,
+      "directional_return_pct": -0.781,
+      "hit": false
+    },
+    {
+      "session_date": "2026-02-27",
+      "direction": 1,
+      "agg_signed_confidence": 5.9499,
+      "n_contributing_events": 6,
+      "contributing_symbols": [
+        "AAOI",
+        "ACA",
+        "ACIW",
+        "ACLX",
+        "ACMR",
+        "ACRS"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 602.98,
+      "qqq_close": 606.5254,
+      "session_return_pct": 0.588,
+      "directional_return_pct": 0.588,
+      "hit": true
+    },
+    {
+      "session_date": "2026-03-02",
+      "direction": -1,
+      "agg_signed_confidence": -1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ABR"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 598.86,
+      "qqq_close": 607.3244,
+      "session_return_pct": 1.4134,
+      "directional_return_pct": -1.4134,
+      "hit": false
+    },
+    {
+      "session_date": "2026-03-04",
+      "direction": -1,
+      "agg_signed_confidence": -1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ACEL"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 604.16,
+      "qqq_close": 609.9811,
+      "session_return_pct": 0.9635,
+      "directional_return_pct": -0.9635,
+      "hit": false
+    },
+    {
+      "session_date": "2026-03-05",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ACR"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 607.4,
+      "qqq_close": 608.1434,
+      "session_return_pct": 0.1224,
+      "directional_return_pct": 0.1224,
+      "hit": true
+    },
+    {
+      "session_date": "2026-03-10",
+      "direction": -1,
+      "agg_signed_confidence": -1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ACCO"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 607.78,
+      "qqq_close": 607.0048,
+      "session_return_pct": -0.1275,
+      "directional_return_pct": 0.1275,
+      "hit": true
+    },
+    {
+      "session_date": "2026-03-12",
+      "direction": 1,
+      "agg_signed_confidence": 0.7947,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ACTG"
+      ],
+      "confidence_bucket": "0.70-0.80",
+      "qqq_open": 602.76,
+      "qqq_close": 596.508,
+      "session_return_pct": -1.0372,
+      "directional_return_pct": -1.0372,
+      "hit": false
+    },
+    {
+      "session_date": "2026-03-13",
+      "direction": 1,
+      "agg_signed_confidence": 2.0,
+      "n_contributing_events": 2,
+      "contributing_symbols": [
+        "ABX",
+        "ADBE"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 599.73,
+      "qqq_close": 592.9725,
+      "session_return_pct": -1.1268,
+      "directional_return_pct": -1.1268,
+      "hit": false
+    },
+    {
+      "session_date": "2026-03-16",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ACDC"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 600.04,
+      "qqq_close": 599.6241,
+      "session_return_pct": -0.0693,
+      "directional_return_pct": -0.0693,
+      "hit": false
+    },
+    {
+      "session_date": "2026-03-18",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ABEO"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 601.49,
+      "qqq_close": 594.151,
+      "session_return_pct": -1.2201,
+      "directional_return_pct": -1.2201,
+      "hit": false
+    },
+    {
+      "session_date": "2026-03-19",
+      "direction": -1,
+      "agg_signed_confidence": -0.8187,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ACON"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 589.51,
+      "qqq_close": 592.2734,
+      "session_return_pct": 0.4688,
+      "directional_return_pct": -0.4688,
+      "hit": false
+    },
+    {
+      "session_date": "2026-03-20",
+      "direction": -1,
+      "agg_signed_confidence": -1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ACN"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 591.06,
+      "qqq_close": 581.3272,
+      "session_return_pct": -1.6467,
+      "directional_return_pct": 1.6467,
+      "hit": true
+    },
+    {
+      "session_date": "2026-03-24",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ABVX"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 584.81,
+      "qqq_close": 583.98,
+      "session_return_pct": -0.1419,
+      "directional_return_pct": -0.1419,
+      "hit": false
+    },
+    {
+      "session_date": "2026-03-25",
+      "direction": 1,
+      "agg_signed_confidence": 0.3561,
+      "n_contributing_events": 2,
+      "contributing_symbols": [
+        "ABSI",
+        "ACHV"
+      ],
+      "confidence_bucket": "0.50-0.55",
+      "qqq_open": 589.14,
+      "qqq_close": 587.82,
+      "session_return_pct": -0.2241,
+      "directional_return_pct": -0.2241,
+      "hit": false
+    },
+    {
+      "session_date": "2026-03-27",
+      "direction": -1,
+      "agg_signed_confidence": -2.0,
+      "n_contributing_events": 2,
+      "contributing_symbols": [
+        "ABOS",
+        "ACOG"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 570.81,
+      "qqq_close": 562.58,
+      "session_return_pct": -1.4418,
+      "directional_return_pct": 1.4418,
+      "hit": true
+    },
+    {
+      "session_date": "2026-03-30",
+      "direction": -1,
+      "agg_signed_confidence": -1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ABTC"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 567.38,
+      "qqq_close": 558.28,
+      "session_return_pct": -1.6039,
+      "directional_return_pct": 1.6039,
+      "hit": true
+    },
+    {
+      "session_date": "2026-04-02",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ABXXF"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 573.97,
+      "qqq_close": 584.98,
+      "session_return_pct": 1.9182,
+      "directional_return_pct": 1.9182,
+      "hit": true
+    },
+    {
+      "session_date": "2026-04-15",
+      "direction": -1,
+      "agg_signed_confidence": -1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ACI"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 629.08,
+      "qqq_close": 637.4,
+      "session_return_pct": 1.3226,
+      "directional_return_pct": -1.3226,
+      "hit": false
+    },
+    {
+      "session_date": "2026-04-22",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ADC"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 650.15,
+      "qqq_close": 655.11,
+      "session_return_pct": 0.7629,
+      "directional_return_pct": 0.7629,
+      "hit": true
+    },
+    {
+      "session_date": "2026-04-24",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 3,
+      "contributing_symbols": [
+        "AAL",
+        "ABCB",
+        "ACU"
+      ],
+      "confidence_bucket": "0.50-0.55",
+      "qqq_open": 658.51,
+      "qqq_close": 663.88,
+      "session_return_pct": 0.8155,
+      "directional_return_pct": 0.8155,
+      "hit": true
+    },
+    {
+      "session_date": "2026-04-29",
+      "direction": -1,
+      "agg_signed_confidence": -2.0,
+      "n_contributing_events": 4,
+      "contributing_symbols": [
+        "AAT",
+        "AB",
+        "ABG",
+        "ACGL"
+      ],
+      "confidence_bucket": "0.50-0.55",
+      "qqq_open": 658.63,
+      "qqq_close": 661.57,
+      "session_return_pct": 0.4464,
+      "directional_return_pct": -0.4464,
+      "hit": false
+    },
+    {
+      "session_date": "2026-04-30",
+      "direction": -1,
+      "agg_signed_confidence": -2.0,
+      "n_contributing_events": 4,
+      "contributing_symbols": [
+        "ABBV",
+        "ACHC",
+        "ADAM",
+        "ADP"
+      ],
+      "confidence_bucket": "0.50-0.55",
+      "qqq_open": 665.35,
+      "qqq_close": 667.74,
+      "session_return_pct": 0.3592,
+      "directional_return_pct": -0.3592,
+      "hit": false
+    },
+    {
+      "session_date": "2026-05-01",
+      "direction": 1,
+      "agg_signed_confidence": 1.0718,
+      "n_contributing_events": 7,
+      "contributing_symbols": [
+        "AAMI",
+        "AAPL",
+        "ACA",
+        "ACCO",
+        "ACDVF",
+        "ACIU",
+        "ACR"
+      ],
+      "confidence_bucket": "0.50-0.55",
+      "qqq_open": 669.16,
+      "qqq_close": 674.15,
+      "session_return_pct": 0.7457,
+      "directional_return_pct": 0.7457,
+      "hit": true
+    },
+    {
+      "session_date": "2026-05-05",
+      "direction": 1,
+      "agg_signed_confidence": 0.3359,
+      "n_contributing_events": 2,
+      "contributing_symbols": [
+        "ADCT",
+        "ADEA"
+      ],
+      "confidence_bucket": "0.50-0.55",
+      "qqq_open": 677.96,
+      "qqq_close": 681.61,
+      "session_return_pct": 0.5384,
+      "directional_return_pct": 0.5384,
+      "hit": true
+    },
+    {
+      "session_date": "2026-05-06",
+      "direction": 1,
+      "agg_signed_confidence": 0.8758,
+      "n_contributing_events": 5,
+      "contributing_symbols": [
+        "ABEV",
+        "ACEL",
+        "ACT",
+        "ADM",
+        "ADPT"
+      ],
+      "confidence_bucket": "0.50-0.55",
+      "qqq_open": 687.78,
+      "qqq_close": 695.77,
+      "session_return_pct": 1.1617,
+      "directional_return_pct": 1.1617,
+      "hit": true
+    },
+    {
+      "session_date": "2026-05-08",
+      "direction": 1,
+      "agg_signed_confidence": 3.2492,
+      "n_contributing_events": 9,
+      "contributing_symbols": [
+        "AAOI",
+        "AAON",
+        "ABNB",
+        "ABSI",
+        "ABX",
+        "ACIW",
+        "ACLS",
+        "ACMR",
+        "ACRE"
+      ],
+      "confidence_bucket": "0.50-0.55",
+      "qqq_open": 699.92,
+      "qqq_close": 711.23,
+      "session_return_pct": 1.6159,
+      "directional_return_pct": 1.6159,
+      "hit": true
+    },
+    {
+      "session_date": "2026-05-11",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 3,
+      "contributing_symbols": [
+        "ABR",
+        "ACDC",
+        "AD"
+      ],
+      "confidence_bucket": "0.50-0.55",
+      "qqq_open": 710.36,
+      "qqq_close": 713.29,
+      "session_return_pct": 0.4125,
+      "directional_return_pct": 0.4125,
+      "hit": true
+    },
+    {
+      "session_date": "2026-05-12",
+      "direction": -1,
+      "agg_signed_confidence": -1.0,
+      "n_contributing_events": 5,
+      "contributing_symbols": [
+        "ABAT",
+        "ABCL",
+        "ACH",
+        "ACHR",
+        "ACM"
+      ],
+      "confidence_bucket": "0.50-0.55",
+      "qqq_open": 708.22,
+      "qqq_close": 707.24,
+      "session_return_pct": -0.1384,
+      "directional_return_pct": 0.1384,
+      "hit": true
+    },
+    {
+      "session_date": "2026-05-13",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ACHV"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 709.96,
+      "qqq_close": 714.71,
+      "session_return_pct": 0.6691,
+      "directional_return_pct": 0.6691,
+      "hit": true
+    },
+    {
+      "session_date": "2026-05-14",
+      "direction": -1,
+      "agg_signed_confidence": -3.0,
+      "n_contributing_events": 3,
+      "contributing_symbols": [
+        "ABEO",
+        "ABUS",
+        "ACON"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 714.62,
+      "qqq_close": 719.79,
+      "session_return_pct": 0.7235,
+      "directional_return_pct": -0.7235,
+      "hit": false
+    },
+    {
+      "session_date": "2026-05-18",
+      "direction": 1,
+      "agg_signed_confidence": 1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ABXXF"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 711.54,
+      "qqq_close": 705.88,
+      "session_return_pct": -0.7955,
+      "directional_return_pct": -0.7955,
+      "hit": false
+    },
+    {
+      "session_date": "2026-05-21",
+      "direction": -1,
+      "agg_signed_confidence": -1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "ADI"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 708.99,
+      "qqq_close": 714.51,
+      "session_return_pct": 0.7786,
+      "directional_return_pct": -0.7786,
+      "hit": false
+    },
+    {
+      "session_date": "2026-05-22",
+      "direction": -1,
+      "agg_signed_confidence": -1.0,
+      "n_contributing_events": 1,
+      "contributing_symbols": [
+        "AAP"
+      ],
+      "confidence_bucket": ">=0.80",
+      "qqq_open": 718.07,
+      "qqq_close": 717.54,
+      "session_return_pct": -0.0738,
+      "directional_return_pct": 0.0738,
+      "hit": true
+    }
+  ]
+}
